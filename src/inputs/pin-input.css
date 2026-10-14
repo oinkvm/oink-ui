@@ -1,0 +1,20 @@
+/* PinInput · 新增组件：一格一位的验证码输入 */
+.ok-pin { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-width: 0; }
+.ok-pin__cell {
+  flex: 1 1 var(--ok-h-lg); width: var(--ok-h-lg); min-width: 0; max-width: var(--ok-h-lg); height: var(--ok-h-lg); margin: 0; padding: 0; border: 0; outline: 0;
+  border-radius: calc(14px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-well); color: var(--ok-text); text-align: center; caret-color: var(--ok-accent);
+  box-shadow: inset 0 0 0 1.5px transparent;
+  font: 600 20px/1 var(--ok-font); font-variant-numeric: tabular-nums;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), box-shadow var(--ok-dur-3) var(--ok-ease-out),
+    transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+@media (hover: hover) { .ok-pin__cell:hover:not(:focus):not(:disabled) { background: color-mix(in srgb, var(--ok-well) 70%, var(--ok-well-2)); } }
+/* 聚焦时整格内容是选中的（打字直接替换），但格子里只有一个字，不显示选中高亮：
+   看起来不像“被选中的文字”，拖动、双击也不会出现蓝底。只改外观，原生的选中行为不动 */
+.ok-pin__cell::selection { background: transparent; color: inherit; }
+.ok-pin__cell:focus { background: var(--ok-raised); box-shadow: inset 0 0 0 1.5px var(--ok-accent); transform: scale(1.04); }
+.ok-pin[data-invalid] .ok-pin__cell { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+.ok-pin__cell:disabled { opacity: .5; cursor: not-allowed; }
+.ok-pin--sm .ok-pin__cell { flex-basis: var(--ok-h-md); width: var(--ok-h-md); max-width: var(--ok-h-md); height: var(--ok-h-md); font-size: 16px; border-radius: calc(12px * var(--ok-rk)); }
+.ok-pin--sm { gap: 6px; }

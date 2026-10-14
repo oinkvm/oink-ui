@@ -1,0 +1,11 @@
+/* ==========================================================================
+   Combobox / Autocomplete：外壳是 .ok-input（inputs 组提供），这里只补尺寸和状态
+   ========================================================================== */
+.ok-combobox { min-width: 0; }
+.ok-combobox[data-size="sm"] { height: var(--ok-h-sm); padding: 0 12px; }
+.ok-combobox[data-size="sm"] input { font-size: 14px; }
+.ok-combobox[data-invalid] { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+.ok-combobox[data-disabled] { cursor: not-allowed; }
+.ok-combobox[data-disabled] input { color: var(--ok-text-3); cursor: not-allowed; }
+.ok-combobox__icon { display: inline-flex; }
+.ok-combobox__icon .ok-icon { width: 18px; height: 18px; }

@@ -1,0 +1,37 @@
+/* ==========================================================================
+   Tooltip：文字提示
+   ========================================================================== */
+.ok-tip {
+  position: fixed; z-index: 400; left: 0; top: 0;
+  display: flex; align-items: center; gap: 8px;
+  max-width: var(--ok-popup-avail-w, calc(100vw - 16px));
+  padding: 7px 10px; border-radius: calc(10px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-inverse); color: var(--ok-on-inverse);
+  font: 500 12.5px/1.2 var(--ok-font); white-space: nowrap;
+  pointer-events: none;
+  user-select: text; -webkit-user-select: text;   /* 文字可选中复制 */
+  opacity: 0; translate: 0 6px; scale: .86; transform-origin: 50% 100%;
+  transition: opacity var(--ok-dur-2) var(--ok-ease-in), translate var(--ok-dur-2) var(--ok-ease-in), scale var(--ok-dur-2) var(--ok-ease-in);
+}
+/* 窄屏上放不下一行时允许折行 */
+@media (max-width: 519.98px) { .ok-tip { white-space: normal; } }
+/* 透明的桥：补上提示与目标之间的空隙，指针移向提示时不会掉出去 */
+.ok-tip::before { content: ""; position: absolute; top: 100%; left: calc(var(--bl, 0px) * -1); right: calc(var(--br, 0px) * -1); height: 8px; }
+.ok-tip[data-side="bottom"] { translate: 0 -6px; transform-origin: 50% 0; }
+.ok-tip[data-side="bottom"]::before { top: auto; bottom: 100%; }
+.ok-tip[data-side="left"] { translate: 6px 0; transform-origin: 100% 50%; }
+.ok-tip[data-side="right"] { translate: -6px 0; transform-origin: 0 50%; }
+.ok-tip[data-side="left"]::before,
+.ok-tip[data-side="right"]::before { top: 0; bottom: 0; height: auto; left: auto; right: auto; width: 8px; }
+.ok-tip[data-side="left"]::before { left: 100%; }
+.ok-tip[data-side="right"]::before { right: 100%; }
+.ok-tip[data-state="open"] {
+  pointer-events: auto;   /* 显示时可以移上去停留 */
+  opacity: 1; translate: 0 0; scale: 1;
+  transition: opacity var(--ok-dur-2) var(--ok-ease-out), translate var(--ok-spring-dur) var(--ok-spring), scale var(--ok-spring-dur) var(--ok-spring);
+}
+/* 热切换：从相邻目标滑过来的提示不再重新淡入（位移由脚本用 spring-snappy 完成） */
+.ok-tip[data-warm] { opacity: 1; translate: 0 0; scale: 1; transition: none; pointer-events: auto; }
+/* 让位给下一个提示：立刻消失 */
+.ok-tip[data-instant] { transition: none; }
+.ok-tip kbd { font: 600 11px/1 var(--ok-font); color: color-mix(in srgb, var(--ok-on-inverse) 60%, var(--ok-inverse)); }

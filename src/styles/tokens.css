@@ -1,0 +1,271 @@
+/*!
+ * Oink UI · 设计令牌
+ * 颜色、圆角、间距、字阶、控件高度、时长与弹簧。组件样式在各组目录里。
+ * 命名：令牌 --ok-*，组件 .ok-*，状态 .is-* / aria-*。
+ */
+
+/* ==========================================================================
+   1. 设计令牌
+   ========================================================================== */
+:root {
+  color-scheme: light;
+
+  /* —— 品牌 —— */
+  --ok-ink: #1B1C22;
+  --ok-pink: #FF6B8E;
+  --ok-paper: #F4F4F6;
+
+  /* —— 语义：表面 —— */
+  --ok-bg-light: #F9F9FB;
+  --ok-bg-dark: #1B1A18;     /* 暖灰，不用死黑 */
+  --ok-bg: var(--ok-bg-light);  /* 画布 */
+  --ok-surface: #FDFDFE;     /* 面板 */
+  --ok-card: #FFFFFF;        /* 分组卡片 */
+  --ok-raised: #FFFFFF;      /* 浮起的控件 */
+  --ok-well: #ECECEF;        /* 凹槽 */
+  --ok-well-2: #E0E0E5;      /* 深凹槽 / 轨道 */
+  --ok-well-hi: #F6F6F8;
+  --ok-fill: #ECECEF;        /* 默认按钮、标签的填充 */
+  --ok-fill-hover: #E0E0E5;
+  /* 半透明只留给四样东西：禁用态、悬停高亮（--ok-hover）、发丝线（--ok-line / --ok-line-2 / --ok-hi）、模态遮罩（--ok-scrim）。
+     其余颜色一律不透明：原来半透明的，按“页面底色 + 原透明度”算出的结果写成固有色 */
+  --ok-scrollbar: color-mix(in srgb, var(--ok-text-3) 55%, var(--ok-bg));         /* 滚动条滑块 */
+  --ok-scrollbar-hover: color-mix(in srgb, var(--ok-text-3) 85%, var(--ok-bg));   /* 指向或拖动滑块时 */
+  --ok-hover: rgb(27 28 34 / .055);   /* 列表行悬停高亮：半透明中性色，比填充色更浅 */
+  --ok-pop: #FFFFFF;   /* 浮层（菜单、下拉、通知）：不透明，不再磨砂 */
+  --ok-thumb: #FFFFFF;
+  /* 描边规则：底色和背景分不开才描边。
+     · 有底色（灰底、彩色底）的控件不描
+     · 白底的块描 1px --ok-line；盖在内容上的浮层描 1px --ok-line-2
+     · 复选框、单选框、描边按钮 1.5px --ok-line-2；滑块 1px --ok-line-2
+     · 悬停只把浅边加深成深边，粗细不变；聚焦和校验结果用 1.5px 状态色 */
+  --ok-line: rgb(27 28 34 / .07);
+  --ok-line-2: rgb(27 28 34 / .14);
+  --ok-hi: rgb(255 255 255 / .9);   /* 顶部高光：只给大块容器（面板、分组、卡片、表格、菜单、通知、对话框），控件不带 */
+  --ok-scrim: rgb(17 18 22 / .38);
+
+  /* —— 语义：文字 —— */
+  --ok-text: #1B1C22;
+  --ok-text-2: #5F606A;
+  --ok-text-3: #989AA4;
+  --ok-inverse: #1B1C22;
+  --ok-inverse-hover: #2D2E36;
+  --ok-on-inverse: #F4F4F6;
+
+  /* —— 语义：强调色（可通过 data-accent 切换） —— */
+  --ok-accent: #FF6B8E;
+  --ok-accent-deep: #D42E62;
+  --ok-on-accent: #1B1C22;
+
+  /* —— 语义：状态 —— */
+  --ok-success: #2FBF71;
+  --ok-success-text: #17794D;
+  --ok-warning: #F5A524;
+  --ok-warning-text: #96600A;
+  --ok-danger: #F04452;
+  --ok-danger-text: #C7283A;
+  --ok-info: #3B82F6;
+  --ok-info-text: #1D5FD1;
+
+  /* —— 层级：不用阴影。靠表面色阶（well → bg → surface → card → raised）和发丝线区分；浮层用 --ok-line-2 加深描边，对话框靠遮罩 —— */
+
+  /* —— 字体 —— */
+  --ok-font: "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei UI", "Segoe UI", system-ui, sans-serif;
+  --ok-font-display: ui-rounded, "SF Pro Rounded", "Nunito", "Inter", -apple-system,
+    BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei UI", system-ui, sans-serif;
+  --ok-font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* —— 圆角 —— */
+  /* 容器类圆角用连续曲率的超椭圆曲线（直边到弧线之间没有曲率突变）。
+     --ok-corner 是曲线形状，--ok-rk 是配套的半径倍率：超椭圆在同样的半径下显得更方，
+     所以把曲线起点外扩，让视觉上的圆角大小与标称值一致。不支持 corner-shape 的浏览器回退为普通圆角。
+     全圆（胶囊、圆）不受影响，始终是正圆。 */
+  --ok-corner: round;
+  --ok-rk: 1;
+  --ok-r-1: calc(8px * var(--ok-rk));
+  --ok-r-2: calc(12px * var(--ok-rk));
+  --ok-r-3: calc(16px * var(--ok-rk));
+  --ok-r-4: calc(24px * var(--ok-rk));
+  --ok-r-5: calc(32px * var(--ok-rk));
+  --ok-r-6: calc(44px * var(--ok-rk));
+  --ok-r-full: 999px;
+
+  /* —— 间距（4pt 栅格） —— */
+  --ok-s-1: 4px;
+  --ok-s-2: 8px;
+  --ok-s-3: 12px;
+  --ok-s-4: 16px;
+  --ok-s-5: 20px;
+  --ok-s-6: 24px;
+  --ok-s-8: 32px;
+  --ok-s-10: 40px;
+  --ok-s-12: 48px;
+  --ok-s-16: 64px;
+
+  /* —— 控件高度：按钮、输入框、选择器、分段、步进、快捷键框、量条共用同一组高度，并排时等高 —— */
+  --ok-h-sm: 32px;
+  --ok-h-md: 40px;
+  --ok-h-lg: 48px;
+  /* 可点击列表项（菜单项、下拉选项、导航项、命令面板结果、树节点）的高度。触屏与窄屏抬到 44，满足 44pt 点按热区 */
+  /* 标题字阶：桌面 56 / 40 / 28 / 20 / 17，窄屏（< 520）收一档，见 base.css */
+  --ok-fs-display: 56px;
+  --ok-fs-h1: 40px;
+  --ok-fs-h2: 28px;
+  --ok-fs-h3: 20px;
+  --ok-fs-h4: 17px;
+  --ok-h-item: 36px;
+  --ok-h-item-sub: 30px;
+
+  /* —— 动效：时长（× --ok-ms 全局倍率） —— */
+  --ok-ms: 1;
+  --ok-dur-1: calc(90ms * var(--ok-ms));    /* 即时：按压 */
+  --ok-dur-2: calc(150ms * var(--ok-ms));   /* 快：悬停、颜色、退场 */
+  --ok-dur-3: calc(240ms * var(--ok-ms));   /* 基准：小位移 */
+  --ok-dur-4: calc(360ms * var(--ok-ms));   /* 中：浮层、面板 */
+  --ok-dur-5: calc(520ms * var(--ok-ms));   /* 慢：对话框、页面 */
+  --ok-dur-6: calc(800ms * var(--ok-ms));   /* 表现：插画、描线 */
+
+  /* —— 动效：缓动 —— */
+  --ok-ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ok-ease-in: cubic-bezier(.55, 0, 1, .45);
+  --ok-ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ok-ease-standard: cubic-bezier(.2, 0, 0, 1);
+
+  /* —— 动效：弹簧（不支持 linear() 时的回退） —— */
+  --ok-spring-soft: cubic-bezier(.22, 1, .36, 1);
+  --ok-spring: cubic-bezier(.3, 1.3, .5, 1);
+  --ok-spring-snappy: cubic-bezier(.3, 1.25, .45, 1);
+  --ok-spring-bouncy: cubic-bezier(.3, 1.7, .5, 1);
+  --ok-spring-wobbly: cubic-bezier(.3, 2.3, .5, 1);
+  --ok-spring-soft-dur: calc(587ms * var(--ok-ms));
+  --ok-spring-dur: calc(454ms * var(--ok-ms));
+  --ok-spring-snappy-dur: calc(325ms * var(--ok-ms));
+  --ok-spring-bouncy-dur: calc(542ms * var(--ok-ms));
+  --ok-spring-wobbly-dur: calc(1104ms * var(--ok-ms));
+
+  /* —— 动效：悬浮卡片（FloatingCard 以及 Dialog / Drawer / Sheet / Panel / 命令面板 / AppShell 抽屉）——
+     所有位置、所有屏宽共用这一组：进场一条曲线，退场一条曲线。
+     进场位移用 soft 弹簧的曲线（不过冲：贴边的抽屉不会冲出边距），时长 303ms（原来 454ms 的 2/3，提速 50%）；淡入同比 150 → 100ms。
+     退场：卡片位移、透明度和遮罩一起 160ms 加速离开（240 → 160ms），遮罩淡入也是 160ms。
+     脚本里的卸载兜底读 core/motion.ts 的 floatMotion，改这里要一起改 */
+  --ok-float-in-dur: calc(303ms * var(--ok-ms));
+  --ok-float-in-ease: var(--ok-spring-soft);
+  --ok-float-fade-dur: calc(100ms * var(--ok-ms));
+  --ok-float-out-dur: calc(160ms * var(--ok-ms));
+  --ok-float-out-ease: var(--ok-ease-in);
+}
+
+@supports (corner-shape: squircle) {
+  :root { --ok-corner: superellipse(1.75); --ok-rk: 1.45; }
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    /* stiffness 170 · damping 26 — 无过冲 */
+    --ok-spring-soft: linear(0, 0.015, 0.055, 0.109, 0.173, 0.24, 0.309, 0.377, 0.441, 0.502, 0.558, 0.61, 0.657, 0.699, 0.737, 0.771, 0.801, 0.827, 0.85, 0.871, 0.888, 0.904, 0.917, 0.929, 0.939, 0.948, 0.955, 0.962, 0.967, 0.972, 0.976, 0.98, 0.983, 0.985, 0.988, 0.989, 0.991, 0.992, 0.994, 0.995, 0.995, 1);
+    /* stiffness 260 · damping 24 — 过冲 3% */
+    --ok-spring: linear(0, 0.023, 0.083, 0.166, 0.262, 0.363, 0.463, 0.558, 0.645, 0.722, 0.79, 0.847, 0.894, 0.933, 0.963, 0.986, 1.003, 1.016, 1.023, 1.028, 1.03, 1.03, 1.029, 1.027, 1.024, 1.021, 1.018, 1.015, 1.012, 1.01, 1.007, 1.006, 1);
+    /* stiffness 520 · damping 34 — 过冲 3%，更快 */
+    --ok-spring-snappy: linear(0, 0.044, 0.15, 0.284, 0.426, 0.561, 0.68, 0.78, 0.86, 0.92, 0.965, 0.995, 1.014, 1.024, 1.029, 1.03, 1.027, 1.024, 1.02, 1.016, 1.012, 1.008, 1.006, 1);
+    /* stiffness 300 · damping 18 — 过冲 15% */
+    --ok-spring-bouncy: linear(0, 0.028, 0.101, 0.206, 0.33, 0.462, 0.592, 0.715, 0.825, 0.92, 0.997, 1.058, 1.101, 1.129, 1.144, 1.148, 1.143, 1.131, 1.116, 1.097, 1.078, 1.058, 1.04, 1.024, 1.01, 0.999, 0.991, 0.984, 0.981, 0.979, 0.978, 0.979, 0.981, 0.983, 0.986, 0.989, 0.992, 0.994, 1);
+    /* stiffness 180 · damping 9 — 过冲 33%，仅用于品牌时刻 */
+    --ok-spring-wobbly: linear(0, 0.044, 0.162, 0.329, 0.522, 0.72, 0.904, 1.063, 1.186, 1.271, 1.316, 1.326, 1.307, 1.264, 1.208, 1.144, 1.079, 1.02, 0.971, 0.933, 0.908, 0.895, 0.894, 0.902, 0.917, 0.936, 0.957, 0.978, 0.997, 1.012, 1.024, 1.031, 1.035, 1.034, 1.031, 1.026, 1.02, 1.013, 1.006, 1, 0.995, 0.992, 0.989, 0.989, 0.989, 0.99, 0.992, 0.994, 1);
+  }
+}
+
+/* —— 深色 —— */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ok-bg: var(--ok-bg-dark);
+  --ok-surface: #232220;
+  --ok-card: #2A2927;
+  --ok-raised: #3E3C38;
+  --ok-well: #181716;
+  --ok-well-2: #383632;
+  --ok-well-hi: #2E2D2A;
+  --ok-fill: #33322E;
+  --ok-fill-hover: #413F3A;
+  --ok-hover: rgb(255 255 255 / .055);
+  --ok-pop: #312F2C;
+  --ok-thumb: #EEEEF0;
+  --ok-line: rgb(255 255 255 / .07);
+  --ok-line-2: rgb(255 255 255 / .15);
+  --ok-hi: rgb(255 255 255 / .05);
+  --ok-scrim: rgb(0 0 0 / .56);
+  --ok-text: #F4F4F6;
+  --ok-text-2: #AEACA8;
+  --ok-text-3: #7A7875;
+  --ok-inverse: #EEEEF0;
+  --ok-inverse-hover: #F9F9F9;
+  --ok-on-inverse: #1B1C22;
+  --ok-success-text: #5FD99A;
+  --ok-warning-text: #FFC35C;
+  --ok-danger-text: #FF7C87;
+  --ok-info-text: #7FB0FF;
+}
+
+/* —— 强调色主题 —— */
+[data-accent="pink"]   { --ok-accent: #FF6B8E; --ok-accent-deep: #D42E62; --ok-on-accent: #1B1C22; }
+[data-accent="orange"] { --ok-accent: #FF7A2F; --ok-accent-deep: #C2470A; --ok-on-accent: #1B1C22; }
+[data-accent="amber"]  { --ok-accent: #FFBE3B; --ok-accent-deep: #96600A; --ok-on-accent: #1B1C22; }
+[data-accent="blue"]   { --ok-accent: #2E7BFF; --ok-accent-deep: #1D5FD1; --ok-on-accent: #FFFFFF; }
+[data-accent="violet"] { --ok-accent: #C77DFF; --ok-accent-deep: #8B36D6; --ok-on-accent: #1B1C22; }
+
+/* 由强调色派生（在声明 accent 的同一元素上求值，支持局部换色） */
+:root,
+[data-accent] {
+  --ok-accent-hover: color-mix(in srgb, var(--ok-accent) 88%, #1B1C22);
+  /* 柔和底：不透明的固有色，状态色按原来的比例混纯白；深色模式混卡片色 #2A2927（固定值，不跟页面底色走） */
+  --ok-accent-soft: color-mix(in srgb, var(--ok-accent) 16%, #FFFFFF);
+  --ok-accent-ring: color-mix(in srgb, var(--ok-accent) 36%, #FFFFFF);
+  --ok-accent-text: var(--ok-accent-deep);
+  /* 更浓的不透明柔色（tint）：用在凹槽、灰底上 */
+  --ok-accent-tint: color-mix(in srgb, var(--ok-accent) 26%, #FFFFFF);
+  --ok-accent-tint-2: color-mix(in srgb, var(--ok-accent) 40%, #FFFFFF);
+  /* 大面积填充（强调按钮）用提亮的强调色，悬停时加深一档（深色模式下提亮一档） */
+  --ok-accent-fill: color-mix(in srgb, var(--ok-accent) 70%, #FFFFFF);
+  --ok-accent-fill-hover: color-mix(in srgb, var(--ok-accent) 86%, #FFFFFF);
+  --ok-success-soft: color-mix(in srgb, var(--ok-success) 16%, #FFFFFF);
+  --ok-warning-soft: color-mix(in srgb, var(--ok-warning) 18%, #FFFFFF);
+  --ok-danger-soft: color-mix(in srgb, var(--ok-danger) 14%, #FFFFFF);
+  --ok-info-soft: color-mix(in srgb, var(--ok-info) 14%, #FFFFFF);
+  --ok-danger-soft-2: color-mix(in srgb, var(--ok-danger) 24%, #FFFFFF);   /* 危险按钮悬停 */
+}
+:root[data-theme="dark"],
+:root[data-theme="dark"] [data-accent] {
+  --ok-accent-hover: color-mix(in srgb, var(--ok-accent) 86%, #FFFFFF);
+  --ok-accent-text: color-mix(in srgb, var(--ok-accent) 78%, #FFFFFF);
+  --ok-accent-tint: color-mix(in srgb, var(--ok-accent) 34%, #2A2927);
+  --ok-accent-tint-2: color-mix(in srgb, var(--ok-accent) 48%, #2A2927);
+  --ok-accent-fill-hover: color-mix(in srgb, var(--ok-accent) 56%, #FFFFFF);
+  --ok-accent-soft: color-mix(in srgb, var(--ok-accent) 16%, #2A2927);
+  --ok-accent-ring: color-mix(in srgb, var(--ok-accent) 36%, #2A2927);
+  --ok-success-soft: color-mix(in srgb, var(--ok-success) 16%, #2A2927);
+  --ok-warning-soft: color-mix(in srgb, var(--ok-warning) 18%, #2A2927);
+  --ok-danger-soft: color-mix(in srgb, var(--ok-danger) 14%, #2A2927);
+  --ok-info-soft: color-mix(in srgb, var(--ok-info) 14%, #2A2927);
+  --ok-danger-soft-2: color-mix(in srgb, var(--ok-danger) 24%, #2A2927);
+}
+/* 自定义强调色（data-accent="custom"）：--ok-accent、--ok-on-accent、--ok-accent-deep / -light 由 OinkProvider 按颜色算好，
+   写在 <html> 的行内样式上（见 core/color.ts 的 accentVars）。深色主题下的文字色用算好的亮色变体，保证对深色卡片的对比度 */
+:root[data-theme="dark"][data-accent="custom"],
+:root[data-theme="dark"] [data-accent="custom"] { --ok-accent-text: var(--ok-accent-light, color-mix(in srgb, var(--ok-accent) 78%, #FFFFFF)); }
+/* 标志的猪鼻子：预设色都和方块分得开，直接用强调色；自定义颜色用算好的值（对比度不够时浅色主题换白、深色主题换墨） */
+[data-accent] { --ok-logo-snout: var(--ok-accent); }
+:root[data-accent="custom"], [data-accent="custom"] { --ok-logo-snout: var(--ok-logo-snout-light, var(--ok-accent)); }
+:root[data-theme="dark"][data-accent="custom"],
+:root[data-theme="dark"] [data-accent="custom"] { --ok-logo-snout: var(--ok-logo-snout-dark, var(--ok-accent)); }
+
+/* 蓝色上是白字，提亮会掉对比度，保持原色 */
+[data-accent="blue"] { --ok-accent-fill: var(--ok-accent); --ok-accent-fill-hover: var(--ok-accent-hover); }
+:root[data-theme="dark"][data-accent="blue"],
+:root[data-theme="dark"] [data-accent="blue"] { --ok-accent-fill-hover: var(--ok-accent-hover); }
+
+/* —— 减弱动效：位移归零，仅保留状态切换 —— */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) { --ok-ms: 0 !important; }
+}
+:root[data-motion="reduced"] { --ok-ms: 0 !important; }
+

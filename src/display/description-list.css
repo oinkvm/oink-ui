@@ -1,0 +1,17 @@
+/* 键值对：窄屏纵向堆叠，宽一点左右两列 */
+.ok-dl { --_term: minmax(96px, 30%); display: grid; gap: var(--ok-s-3); min-width: 0; margin: 0; font: 450 15px/1.5 var(--ok-font); }
+.ok-dl__item { display: grid; gap: 2px; min-width: 0; }
+.ok-dl__term { font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); }
+.ok-dl__desc { margin: 0; min-width: 0; color: var(--ok-text); overflow-wrap: anywhere; }
+.ok-dl[data-divided] { gap: 0; }
+.ok-dl[data-divided] > .ok-dl__item { padding-block: var(--ok-s-3); }
+.ok-dl[data-divided] > .ok-dl__item + .ok-dl__item { border-top: 1px solid var(--ok-line); }
+/* 首尾条目不带外侧留白：放进卡片时，内容到四边的距离才相等 */
+.ok-dl[data-divided] > .ok-dl__item:first-child { padding-top: 0; }
+.ok-dl[data-divided] > .ok-dl__item:last-child { padding-bottom: 0; }
+.ok-dl[data-layout="inline"] > .ok-dl__item { grid-template-columns: var(--_term) minmax(0, 1fr); gap: var(--ok-s-4); align-items: baseline; }
+.ok-dl[data-layout="inline"] .ok-dl__term { font-size: 15px; line-height: 1.5; }
+@media (min-width: 520px) {
+  .ok-dl[data-layout="auto"] > .ok-dl__item { grid-template-columns: var(--_term) minmax(0, 1fr); gap: var(--ok-s-4); align-items: baseline; }
+  .ok-dl[data-layout="auto"] .ok-dl__term { font-size: 15px; line-height: 1.5; }
+}

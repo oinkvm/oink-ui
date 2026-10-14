@@ -1,0 +1,26 @@
+/* Tag：原型里没有，按 Badge 的配色做成小方角，和全圆的徽标 / Chip 区分开 */
+.ok-tag {
+  --_c: var(--ok-text-2); --_s: var(--ok-fill);
+  display: inline-flex; align-items: center; gap: 6px; height: 28px; max-width: 100%; padding: 0 10px;
+  border-radius: var(--ok-r-1); corner-shape: var(--ok-corner); background: var(--_s); color: var(--_c);
+  font: 600 13px/1 var(--ok-font); white-space: nowrap; vertical-align: middle;
+}
+.ok-tag--sm { height: 24px; padding: 0 8px; gap: 4px; font-size: 12px; }
+.ok-tag[data-tone="accent"] { --_c: var(--ok-accent-text); --_s: var(--ok-accent-soft); }
+.ok-tag[data-tone="success"] { --_c: var(--ok-success-text); --_s: var(--ok-success-soft); }
+.ok-tag[data-tone="warning"] { --_c: var(--ok-warning-text); --_s: var(--ok-warning-soft); }
+.ok-tag[data-tone="danger"] { --_c: var(--ok-danger-text); --_s: var(--ok-danger-soft); }
+.ok-tag[data-tone="info"] { --_c: var(--ok-info-text); --_s: var(--ok-info-soft); }
+.ok-tag__icon { display: grid; place-items: center; flex: none; }
+.ok-tag__icon .ok-icon { width: 14px; height: 14px; }
+.ok-tag__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ok-tag__remove {
+  position: relative; display: grid; place-items: center; flex: none; width: 18px; height: 18px; margin: 0 -4px 0 0; padding: 0; border: 0;
+  border-radius: 50%; corner-shape: round; background: none; color: inherit; cursor: pointer;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+/* 看起来 18px，点按区域向外扩到 44px（触屏） */
+@media (pointer: coarse) { .ok-tag__remove::before { content: ""; position: absolute; inset: -13px; } }
+.ok-tag__remove .ok-icon { width: 12px; height: 12px; stroke-width: 2.4; }
+@media (hover: hover) { .ok-tag__remove:hover { background: var(--ok-line-2); } }
+.ok-tag__remove:active { transform: scale(.84); transition-duration: var(--ok-dur-2), var(--ok-dur-1); }

@@ -1,0 +1,37 @@
+/* 步骤条。基础是纵向（窄屏）；horizontal 在 520px 以上排成一行 */
+.ok-steps { --_m: 28px; display: grid; min-width: 0; margin: 0; padding: 0; list-style: none; font: 450 14px/1.4 var(--ok-font); color: var(--ok-text-2); }
+.ok-steps__item { position: relative; display: flex; align-items: flex-start; gap: var(--ok-s-3); min-width: 0; padding-bottom: var(--ok-s-5); }
+.ok-steps__item:last-child { padding-bottom: 0; }
+/* 连接线：从本步的圆圈伸向下一步 */
+.ok-steps__item:not(:last-child)::after {
+  content: ""; position: absolute; left: calc(var(--_m) / 2 - 1px); top: calc(var(--_m) + 4px); bottom: 4px; width: 2px; border-radius: 2px;
+  background: var(--ok-well-2); transition: background-color var(--ok-dur-3) var(--ok-ease-out);
+}
+.ok-steps__item[data-state="complete"]:not(:last-child)::after { background: var(--ok-accent); }
+.ok-steps__marker {
+  display: grid; place-items: center; flex: none; width: var(--_m); height: var(--_m); border-radius: 50%; corner-shape: round;
+  background: var(--ok-fill); color: var(--ok-text-2); font: 700 13px/1 var(--ok-font); font-variant-numeric: tabular-nums;
+  transition: background-color var(--ok-dur-3) var(--ok-ease-out), color var(--ok-dur-3) var(--ok-ease-out), box-shadow var(--ok-dur-3) var(--ok-ease-out);
+}
+.ok-steps__marker .ok-icon { width: 16px; height: 16px; stroke-width: 2.4; }
+.ok-steps__item[data-state="complete"] .ok-steps__marker { background: var(--ok-accent-soft); color: var(--ok-accent-text); }
+.ok-steps__item[data-state="current"] .ok-steps__marker { background: var(--ok-accent); color: var(--ok-on-accent); box-shadow: 0 0 0 4px var(--ok-accent-soft); }
+.ok-steps__item[data-error] .ok-steps__marker { background: var(--ok-danger); color: #fff; box-shadow: 0 0 0 4px var(--ok-danger-soft); }
+.ok-steps__text { display: grid; gap: 2px; min-width: 0; padding-top: calc((var(--_m) - 1.4em) / 2); overflow-wrap: anywhere; }
+.ok-steps__title { font-weight: 600; color: var(--ok-text-2); }
+.ok-steps__item[data-state="complete"] .ok-steps__title,
+.ok-steps__item[data-state="current"] .ok-steps__title { color: var(--ok-text); }
+.ok-steps__item[data-error] .ok-steps__title { color: var(--ok-danger-text); }
+.ok-steps__desc { font-size: 13px; color: var(--ok-text-2); }
+
+@media (min-width: 520px) {
+  .ok-steps[data-orientation="horizontal"] { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  /* 各步均分宽度，圆圈和文字在自己那一格里居中，整条从头到尾占满容器；
+     连接线画在相邻两个圆圈之间：从本格中心出发，长度正好是一格的宽度（减去两头的圆圈和 8px 间隙） */
+  .ok-steps[data-orientation="horizontal"] .ok-steps__item { flex-direction: column; align-items: center; gap: var(--ok-s-2); padding: 0 var(--ok-s-2); text-align: center; }
+  .ok-steps[data-orientation="horizontal"] .ok-steps__item:not(:last-child)::after {
+    left: calc(50% + var(--_m) / 2 + 8px); right: auto; top: calc(var(--_m) / 2 - 1px); bottom: auto;
+    width: calc(100% - var(--_m) - 16px); height: 2px;
+  }
+  .ok-steps[data-orientation="horizontal"] .ok-steps__text { padding-top: 0; justify-items: center; }
+}

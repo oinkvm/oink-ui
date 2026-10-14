@@ -1,0 +1,41 @@
+/* ==========================================================================
+   Select / MultiSelect：触发框（列表样式见 menu.css）
+   ========================================================================== */
+/* 宽度：默认随内容，至少 168px，但从不超出父容器，放进窄的 flex 行里也能继续收缩。
+   168px 的“起步宽度”由一个零高的占位（::after）撑出来，而不是写死在触发框的 min-width 上——
+   min-width 会顶破 max-width，窄容器里就溢出了；占位自己带 max-width: 100%，容器多窄它就多窄。
+   占位放在触发框后面，根节点的基线仍然取触发框里的文字。 */
+.ok-select {
+  --ok-select-min: 168px;
+  position: relative; display: inline-flex; flex-direction: column; min-width: 0; max-width: 100%;
+}
+.ok-select::after { content: ""; flex: none; width: var(--ok-select-min); max-width: 100%; height: 0; }
+/* block：撑满容器（Field 里默认如此，和 Input 一致） */
+.ok-select--block { display: flex; width: 100%; }
+.ok-select__trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: none;
+  min-width: 0; max-width: 100%; height: var(--ok-h-md); padding: 0 12px 0 16px; margin: 0; border: 0;
+  border-radius: var(--ok-r-full); corner-shape: round;
+  background: var(--ok-fill); color: var(--ok-text); font: 600 14px/1 var(--ok-font); cursor: pointer;
+  transition: background-color var(--ok-dur-2), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+@media (hover: hover) { .ok-select__trigger:hover:not(:disabled) { background: var(--ok-fill-hover); } }
+.ok-select__trigger:active:not(:disabled) { transform: scale(.97); transition-duration: var(--ok-dur-2), var(--ok-dur-1); }
+.ok-select__trigger > .ok-icon { flex: none; width: 16px; height: 16px; color: var(--ok-text-3); }
+.ok-select__trigger:disabled { color: var(--ok-text-3); cursor: not-allowed; }
+.ok-select__trigger[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+.ok-select__value { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+.ok-select__value[data-placeholder] { color: var(--ok-text-3); font-weight: 500; }
+
+.ok-select[data-size="sm"] { --ok-select-min: 128px; }
+.ok-select[data-size="sm"] .ok-select__trigger { height: var(--ok-h-sm); padding: 0 10px 0 12px; gap: 8px; font-size: 13px; }
+.ok-select[data-size="lg"] .ok-select__trigger { height: var(--ok-h-lg); padding: 0 16px 0 20px; font-size: 15px; }
+
+/* 多选：触发框里的小标签（不是按钮，只做展示） */
+.ok-select__chips { display: flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; }
+.ok-select__chip {
+  flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding: 3px 8px; border-radius: var(--ok-r-full); corner-shape: round;
+  background: var(--ok-raised); font: 600 12px/1.3 var(--ok-font); color: var(--ok-text);
+}
+.ok-select__chip--more { flex: none; color: var(--ok-text-2); }

@@ -1,0 +1,132 @@
+/* Button · 搬自 oink.css 第 4 节，类名与变体保持一致（其它组会直接写这些类名） */
+.ok-btn {
+  --_h: var(--ok-h-md);
+  --_bg: var(--ok-fill);
+  --_bg-hover: var(--ok-fill-hover);
+  --_fg: var(--ok-text);
+  position: relative; isolation: isolate; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: var(--_h); min-width: var(--_h); padding: 0 calc(var(--_h) * .48);
+  border: 0; border-radius: var(--ok-r-full); corner-shape: round; margin: 0;
+  background: var(--_bg); color: var(--_fg);
+  font: 600 15px/1 var(--ok-font); letter-spacing: -.005em; white-space: nowrap; text-decoration: none;
+  cursor: pointer; user-select: none;
+  transition:
+    transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy),
+    background-color var(--ok-dur-2) var(--ok-ease-out),
+    color var(--ok-dur-2) var(--ok-ease-out),
+    outline-offset var(--ok-dur-3) var(--ok-ease-out);
+}
+@media (hover: hover) { .ok-btn:hover { background: var(--_bg-hover); } }
+.ok-btn:active {
+  transform: scale(.955);
+  transition: transform var(--ok-dur-1) var(--ok-ease-out), background-color var(--ok-dur-2) var(--ok-ease-out);
+}
+.ok-btn .ok-icon { width: 18px; height: 18px; }
+
+.ok-btn--primary {
+  --_bg: var(--ok-inverse); --_bg-hover: var(--ok-inverse-hover); --_fg: var(--ok-on-inverse);
+}
+.ok-btn--accent {
+  --_bg: var(--ok-accent-fill); --_bg-hover: var(--ok-accent-fill-hover); --_fg: var(--ok-on-accent);
+}
+.ok-btn--ghost { --_bg: transparent; --_bg-hover: var(--ok-fill); }
+/* 描边按钮是按钮里唯一带描边的：描边就是它的形状 */
+.ok-btn--outline { --_bg: transparent; --_bg-hover: var(--ok-fill); box-shadow: inset 0 0 0 1.5px var(--ok-line-2); }
+.ok-btn--danger {
+  --_bg: var(--ok-danger-soft); --_fg: var(--ok-danger-text);
+  --_bg-hover: var(--ok-danger-soft-2);
+}
+.ok-btn--sm { --_h: var(--ok-h-sm); font-size: 13px; gap: 6px; }
+.ok-btn--sm .ok-icon { width: 16px; height: 16px; }
+.ok-btn--lg { --_h: var(--ok-h-lg); font-size: 16px; }
+.ok-btn--icon { padding: 0; width: var(--_h); }
+.ok-btn--block { display: flex; width: 100%; }
+/* 禁用：指针显示禁止符号；底色和按压都不再响应（aria-disabled 的点击由 Button 组件拦下） */
+.ok-btn:disabled,
+.ok-btn[aria-disabled="true"] { opacity: .42; cursor: not-allowed; background: var(--_bg); transform: none; }
+
+/* 加载 / 成功态：文字上滑让位，状态从下方弹入 */
+.ok-btn__label {
+  display: inline-flex; align-items: center; gap: inherit;
+  transition: transform var(--ok-dur-3) var(--ok-ease-out), opacity var(--ok-dur-2) var(--ok-ease-out);
+}
+.ok-btn__status { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.ok-btn__status > * {
+  grid-area: 1 / 1; opacity: 0; transform: translateY(14px) scale(.5);
+  transition: transform var(--ok-dur-2) var(--ok-ease-in), opacity var(--ok-dur-2) var(--ok-ease-in);
+}
+.ok-btn__status .ok-tail { width: 20px; height: 20px; color: currentColor; }
+.ok-btn__check { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ok-btn__check path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.ok-btn__cross { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.ok-btn__cross path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.ok-btn[data-state="loading"],
+.ok-btn[data-state="success"] { pointer-events: none; }
+.ok-btn[data-state="loading"] .ok-btn__label,
+.ok-btn[data-state="success"] .ok-btn__label { opacity: 0; transform: translateY(-14px) scale(.9); }
+.ok-btn[data-state="loading"] .ok-tail,
+.ok-btn[data-state="success"] .ok-btn__check {
+  opacity: 1; transform: none;
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), opacity var(--ok-dur-2) var(--ok-ease-out);
+}
+.ok-btn[data-state="success"] .ok-btn__check path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--ok-dur-4) var(--ok-ease-out) calc(80ms * var(--ok-ms));
+}
+
+/* 失败态（组件库补充）：文字让位、描出叉号、整体横向抖一次。
+   不拦点击，可以直接重试；颜色之外有叉号和抖动两种提示，读屏另有 aria-live 播报 */
+.ok-btn[data-state="error"] { animation: ok-shake var(--ok-dur-5) var(--ok-ease-out); }
+.ok-btn[data-state="error"] .ok-btn__label { opacity: 0; transform: translateY(-14px) scale(.9); }
+.ok-btn[data-state="error"] .ok-btn__cross {
+  opacity: 1; transform: none;
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), opacity var(--ok-dur-2) var(--ok-ease-out);
+}
+.ok-btn[data-state="error"] .ok-btn__cross path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--ok-dur-3) var(--ok-ease-out) calc(60ms * var(--ok-ms));
+}
+/* 中性底的按钮上叉号用危险色；墨色、强调色、危险色按钮保持自己的前景色（对比度已经有保证） */
+.ok-btn[data-state="error"]:not(.ok-btn--primary, .ok-btn--accent, .ok-btn--danger) .ok-btn__cross { color: var(--ok-danger-text); }
+
+/* —— 以下为组件库补充 —— */
+/* 加载尾巴：.ok-tail 的完整定义在反馈类样式里，这里按钮自带一份，单独引入也能转 */
+.ok-btn__status .ok-tail { overflow: visible; flex: none; transform-origin: 20% 20%; animation: ok-tail-wag 1.5s var(--ok-ease-in-out) infinite; }
+/* 图案可被 TailProvider 替换：没写 fill / stroke 属性的图形默认描线；带 pathLength="1" 的才描线动画 */
+.ok-btn__status .ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect):not([fill]) { fill: none; }
+.ok-btn__status .ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect):not([stroke]) { stroke: currentColor; }
+.ok-btn__status .ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect):not([stroke-width]) { stroke-width: 5.5; }
+.ok-btn__status .ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect) { stroke-linecap: round; stroke-linejoin: round; }
+.ok-btn__status .ok-tail [pathLength="1"] { stroke-dasharray: 1 1.2; animation: ok-tail-draw 1.5s var(--ok-ease-in-out) infinite; }
+/* 加载循环的时长是固定值（乘 --ok-ms 会在减弱动效时变成 0 秒的死循环），所以单独处理减弱动效：
+   和 Spinner 一样，尾巴不甩，只保留描线，仍看得出在加载。按钮单独引入时也要生效，所以这里自带一份 */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) .ok-btn__status .ok-tail { animation: none; }
+}
+:root[data-motion="reduced"] .ok-btn__status .ok-tail { animation: none; }
+/* 禁用时悬停不换底色（原型用 background 锁住；这里把悬停变量也锁住，避免媒体查询顺序影响） */
+.ok-btn:disabled,
+.ok-btn[aria-disabled="true"] { --_bg-hover: var(--_bg); }
+.ok-btn { max-width: 100%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+/* 默认变体 soft 就是不带修饰类的 .ok-btn，没有 .ok-btn--soft 这个类 */
+
+/* ToggleButton：按下用中性色加深一档，不用强调色 */
+.ok-btn[aria-pressed="true"] { --_bg: var(--ok-well-2); --_bg-hover: var(--ok-well-2); --_fg: var(--ok-text); }
+.ok-btn--primary[aria-pressed="true"] { --_bg: var(--ok-inverse); --_bg-hover: var(--ok-inverse-hover); --_fg: var(--ok-on-inverse); }
+
+/* ButtonGroup */
+.ok-btn-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--ok-s-2); min-width: 0; }
+.ok-btn-group--vertical { flex-direction: column; align-items: stretch; }
+.ok-btn-group--block { display: flex; }
+.ok-btn-group--block > .ok-btn { flex: 1; }
+.ok-btn-group--attached { flex-wrap: nowrap; gap: 2px; }
+.ok-btn-group--attached:not(.ok-btn-group--vertical) > .ok-btn:not(:first-child) { border-start-start-radius: calc(6px * var(--ok-rk)); border-end-start-radius: calc(6px * var(--ok-rk)); }
+.ok-btn-group--attached:not(.ok-btn-group--vertical) > .ok-btn:not(:last-child) { border-start-end-radius: calc(6px * var(--ok-rk)); border-end-end-radius: calc(6px * var(--ok-rk)); }
+.ok-btn-group--attached.ok-btn-group--vertical > .ok-btn { border-radius: calc(6px * var(--ok-rk)); }
+.ok-btn-group--attached.ok-btn-group--vertical > .ok-btn:first-child { border-start-start-radius: calc(20px * var(--ok-rk)); border-start-end-radius: calc(20px * var(--ok-rk)); }
+.ok-btn-group--attached.ok-btn-group--vertical > .ok-btn:last-child { border-end-start-radius: calc(20px * var(--ok-rk)); border-end-end-radius: calc(20px * var(--ok-rk)); }
+
+/* 焦点环：组件自带 .ok-focusable；直接写原生标记又漏了这个类时，这里兜底（:where 不加权重，和原型的写法一致） */
+:where(.ok-btn) { outline: 2px solid transparent; outline-offset: 5px; }
+:where(.ok-btn):focus-visible { outline-color: var(--ok-accent); outline-offset: 2px; }

@@ -1,0 +1,105 @@
+/* ==========================================================================
+   布局原语：Box / Stack / Inline / Grid / Container / Center / Spacer /
+   Divider / AspectRatio / Sticky / ScrollArea
+   默认 min-width: 0、不写死宽度；间距一律走 --ok-s-* 档位。
+   ========================================================================== */
+
+/* —— Box —— */
+.ok-box[data-radius] { border-radius: var(--ok-box-r); corner-shape: var(--ok-corner); }
+.ok-box[data-radius="full"] { corner-shape: round; }
+.ok-box[data-surface] { background: var(--ok-box-bg); color: var(--ok-text); }
+.ok-box:is([data-border], [data-highlight]) {
+  --_box-line: transparent; --_box-hi: transparent;
+  box-shadow: inset 0 0 0 1px var(--_box-line), inset 0 1.5px 0 var(--_box-hi);
+}
+.ok-box[data-border="line"] { --_box-line: var(--ok-line); }
+.ok-box[data-border="strong"] { --_box-line: var(--ok-line-2); }
+.ok-box[data-highlight] { --_box-hi: var(--ok-hi); }
+
+/* —— Stack —— */
+.ok-stack {
+  display: flex; flex-direction: column;
+  gap: var(--_l-gap, var(--ok-s-4));
+  align-items: var(--_l-align, stretch); justify-content: var(--_l-justify, flex-start);
+}
+.ok-stack > * { min-width: 0; }
+.ok-stack > .ok-divider { flex: none; align-self: stretch; }
+
+/* —— Inline / Cluster —— */
+.ok-inline {
+  display: flex; flex-wrap: wrap;
+  gap: var(--_l-rgap, var(--_l-gap, var(--ok-s-2))) var(--_l-gap, var(--ok-s-2));
+  align-items: var(--_l-align, center); justify-content: var(--_l-justify, flex-start);
+}
+.ok-inline[data-nowrap] { flex-wrap: nowrap; }
+.ok-inline > * { min-width: 0; }
+
+/* —— Grid —— */
+.ok-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--_l-cols, 1), minmax(0, 1fr));
+  gap: var(--_l-rgap, var(--_l-gap, var(--ok-s-4))) var(--_l-gap, var(--ok-s-4));
+  align-items: var(--_l-align, stretch); justify-items: var(--_l-justify, stretch);
+}
+/* 自动填充：每项至少 --ok-grid-min 宽，容器比它还窄时退成一列 */
+.ok-grid[data-auto] { grid-template-columns: repeat(auto-fill, minmax(min(var(--ok-grid-min), 100%), 1fr)); }
+.ok-grid > * { min-width: 0; }
+.ok-grid__item { grid-column: var(--_l-span, auto); }
+
+/* —— Container —— */
+.ok-container {
+  --_gutter: var(--ok-s-4); --_max: 960px;
+  box-sizing: border-box; width: 100%; min-width: 0;
+  max-width: calc(var(--_max) + 2 * var(--_gutter)); margin-inline: auto;
+  padding-left: max(var(--_gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--_gutter), env(safe-area-inset-right, 0px));
+}
+@media (min-width: 520px) { .ok-container { --_gutter: var(--ok-s-5); } }
+@media (min-width: 768px) { .ok-container { --_gutter: var(--ok-s-6); } }
+@media (min-width: 1024px) { .ok-container { --_gutter: var(--ok-s-8); } }
+.ok-container[data-size="sm"] { --_max: 560px; }
+.ok-container[data-size="md"] { --_max: 720px; }
+.ok-container[data-size="lg"] { --_max: 960px; }
+.ok-container[data-size="xl"] { --_max: 1200px; }
+.ok-container[data-size="full"] { max-width: none; }
+.ok-container[data-gutter="false"] { --_gutter: 0px; padding-left: 0; padding-right: 0; }
+.ok-container[data-center="false"] { margin-inline: 0; }
+
+/* —— Center —— */
+.ok-center { display: grid; place-items: center; }
+.ok-center[data-inline] { display: inline-grid; }
+.ok-center[data-axis="horizontal"] { place-items: start center; }
+.ok-center[data-axis="vertical"] { place-items: center start; }
+.ok-center > * { min-width: 0; max-width: 100%; }
+
+/* —— Spacer —— */
+.ok-spacer { flex: 1 1 0%; align-self: stretch; min-width: 0; min-height: 0; pointer-events: none; }
+
+/* —— Divider —— */
+.ok-divider { flex: none; height: 1px; min-width: 0; border: 0; margin: 0; background: var(--ok-line); }
+.ok-divider[data-orientation="vertical"] { width: 1px; height: auto; min-height: 1em; align-self: stretch; }
+.ok-divider--label {
+  display: flex; align-items: center; gap: var(--ok-s-3); height: auto; background: none;
+  font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2);
+}
+.ok-divider--label::before,
+.ok-divider--label::after { content: ""; flex: 1 1 0%; min-width: var(--ok-s-4); height: 1px; background: var(--ok-line); }
+.ok-divider--label[data-label-align="start"]::before,
+.ok-divider--label[data-label-align="end"]::after { display: none; }
+.ok-divider__label { flex: 0 1 auto; min-width: 0; overflow-wrap: anywhere; }
+
+/* —— AspectRatio —— */
+.ok-aspect { position: relative; min-width: 0; overflow: hidden; }
+.ok-aspect > :where(img, video, iframe, picture, canvas, embed, object) { display: block; width: 100%; height: 100%; border: 0; object-fit: cover; }
+.ok-aspect > picture > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* —— Sticky —— */
+.ok-sticky { position: sticky; z-index: 2; min-width: 0; }
+
+/* —— ScrollArea：滚动是原生的，外观来自 .ok-scroll —— */
+.ok-scroll-area { box-sizing: border-box; min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; }
+.ok-scroll-area[data-direction="vertical"] { overflow-x: hidden; overflow-y: auto; }
+.ok-scroll-area[data-direction="horizontal"] { overflow-x: auto; overflow-y: hidden; }
+.ok-scroll-area[data-direction="both"] { overflow: auto; }
+/* 描边画在里面，免得被外层的 overflow 裁掉 */
+.ok-scroll-area:focus-visible { outline-offset: -2px; }

@@ -1,0 +1,85 @@
+/* ==========================================================================
+   Menu：菜单与选项列表（DropdownMenu / ContextMenu / Select / Combobox 共用）
+   ========================================================================== */
+.ok-popup--menu { --ok-popup-cap-h: 560px; width: max-content; }
+
+.ok-menu {
+  position: relative; flex: 1 1 auto; min-width: 0; min-height: 0;
+  padding: 6px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  outline: none;
+}
+.ok-menu[hidden] { display: none; }
+/* 不在浮层里、直接摆在页面上的菜单：自己带表面 */
+.ok-menu--static {
+  width: max-content; max-width: 100%;
+  border-radius: calc(18px * var(--ok-rk)); corner-shape: var(--ok-corner); background: var(--ok-pop);
+  box-shadow: inset 0 0 0 1px var(--ok-line-2), inset 0 1.5px 0 var(--ok-hi);
+}
+
+.ok-menu__hl {
+  position: absolute; left: 6px; right: 6px; top: 0; height: var(--ok-h-item);
+  border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-hover); opacity: 0; pointer-events: none;
+  transform: translateY(var(--y, 0));
+  /* 跟手：90ms 减速到位，不回弹 */
+  transition: transform var(--ok-dur-1) var(--ok-ease-out), opacity var(--ok-dur-1) var(--ok-ease-out), height var(--ok-dur-1) var(--ok-ease-out),
+    background-color var(--ok-dur-1) var(--ok-ease-out);
+}
+.ok-menu[data-hl] > .ok-menu__hl { opacity: 1; }
+/* 带状态色的项：高亮换成对应颜色的柔和底 */
+.ok-menu__hl[data-tone="success"] { background: var(--ok-success-soft); }
+.ok-menu__hl[data-tone="warning"] { background: var(--ok-warning-soft); }
+.ok-menu__hl[data-tone="danger"] { background: var(--ok-danger-soft); }
+.ok-menu__hl[data-tone="info"] { background: var(--ok-info-soft); }
+
+.ok-menu__item {
+  position: relative; display: flex; align-items: center; gap: 10px; width: 100%;
+  /* 点按热区：桌面 36，触屏 / 手机宽度下 44（--ok-h-item） */
+  min-height: var(--ok-h-item); padding: 0 10px; margin: 0; border: 0;
+  border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner); background: none;
+  font: 500 14px/1 var(--ok-font); color: var(--ok-text); text-align: left; white-space: nowrap; cursor: pointer;
+  outline: 2px solid transparent; outline-offset: -2px;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+/* 键盘焦点：高亮块之外再加一圈焦点环，画在项的里面，不会被滚动容器裁掉 */
+.ok-menu__item:focus-visible { outline-color: var(--ok-accent); }
+.ok-menu__item[aria-disabled="true"] { color: var(--ok-text-3); cursor: not-allowed; }
+.ok-menu__item[aria-disabled="true"] .ok-icon { color: var(--ok-text-3); }
+.ok-menu__label { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
+/* 选中项加粗，和触发按钮同字重；打开前按“全部加粗”量一次宽度，切换选中时菜单不变宽 */
+.ok-menu__item[aria-selected="true"],
+.ok-menu[data-measuring] .ok-menu__item { font-weight: 600; }
+.ok-menu__item .ok-icon { width: 17px; height: 17px; color: var(--ok-text-2); }
+.ok-menu__item--success,
+.ok-menu__item--success .ok-icon { color: var(--ok-success-text); }
+.ok-menu__item--warning,
+.ok-menu__item--warning .ok-icon { color: var(--ok-warning-text); }
+.ok-menu__item--danger,
+.ok-menu__item--danger .ok-icon { color: var(--ok-danger-text); }
+.ok-menu__item--info,
+.ok-menu__item--info .ok-icon { color: var(--ok-info-text); }
+.ok-menu__meta { margin-left: auto; padding-left: 20px; font: 500 12px/1 var(--ok-font); color: var(--ok-text-3); }
+.ok-menu__check {
+  flex: none; width: 16px; height: 16px; margin-left: auto; fill: none; stroke: var(--ok-text); stroke-width: 2.4;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.ok-menu__meta + .ok-menu__check { margin-left: 10px; }
+.ok-menu__check path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.ok-menu__item[aria-selected="true"] .ok-menu__check path,
+.ok-menu__item[aria-checked="true"] .ok-menu__check path { stroke-dashoffset: 0; transition: stroke-dashoffset var(--ok-dur-3) var(--ok-ease-out); }
+/* 单选列表点下就收起，描线永远看不到：对勾直接出现 */
+.ok-menu[data-check="instant"] .ok-menu__item .ok-menu__check path { transition: none; }
+.ok-menu__item .ok-menu__chevron { width: 14px; height: 14px; margin-left: auto; color: var(--ok-text-3); }
+.ok-menu__meta + .ok-menu__chevron { margin-left: 10px; }
+.ok-menu__sep { height: 1px; margin: 6px 10px; background: var(--ok-line); }
+.ok-menu__heading { padding: 8px 10px 4px; font: 600 12px/1.3 var(--ok-font); color: var(--ok-text-3); white-space: nowrap; }
+/* 空状态 / 加载中 */
+.ok-menu__empty { padding: 14px 16px; font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); text-align: center; }
+.ok-menu__empty + .ok-menu:not([hidden]) { padding-top: 0; }
+
+/* 右键 / 长按区域：长按时不弹系统的选字和链接预览 */
+.ok-context-area { -webkit-touch-callout: none; }
+
+/* 图标列：同一个菜单（或选项列表）里只要有一项带图标，其余不带图标的项也留出图标的位置（17px 图标 + 10px 间距），文字左边对齐。
+   子菜单在自己的浮层里，各算各的 */
+.ok-menu:has(.ok-menu__item[data-icon]) .ok-menu__item:not([data-icon]) { padding-left: 37px; }

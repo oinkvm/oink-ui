@@ -1,0 +1,40 @@
+/* Field · 搬自 oink.css 第 5 节 */
+.ok-field { display: grid; gap: 6px; }
+.ok-field__label { font: 600 13px/1.3 var(--ok-font); color: var(--ok-text-2); }
+.ok-field__msg {
+  display: grid; grid-template-rows: 0fr;
+  font: 500 13px/1.4 var(--ok-font); color: var(--ok-danger-text);
+  transition: grid-template-rows var(--ok-dur-3) var(--ok-ease-out);
+}
+.ok-field__msg > span {
+  min-height: 0; overflow: hidden; opacity: 0; transform: translateY(-6px);
+  transition: opacity var(--ok-dur-2), transform var(--ok-dur-3) var(--ok-ease-out);
+}
+.ok-field.is-error .ok-input { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+.ok-field.is-error .ok-field__msg { grid-template-rows: 1fr; }
+.ok-field.is-error .ok-field__msg > span { opacity: 1; transform: none; }
+.ok-field.is-valid .ok-input { box-shadow: inset 0 0 0 1.5px var(--ok-success); }
+.ok-field.is-valid .ok-input__icon { color: var(--ok-success-text); }
+.is-shaking { animation: ok-shake var(--ok-dur-5) var(--ok-ease-out); }
+
+/* —— 以下为组件库补充 —— */
+.ok-field { min-width: 0; }
+.ok-field__label { display: inline-flex; align-items: center; gap: 4px; justify-self: start; }
+.ok-field__required { color: var(--ok-danger-text); }
+.ok-field__control { display: grid; min-width: 0; }
+/* 自带宽度的控件不跟着表单项拉伸：步进器被拉宽后加号离开右端，开关的点击区会铺满整行，分段控件的轨道会比选项长 */
+.ok-field__control > :where(.ok-stepper, .ok-switch, .ok-rating, .ok-seg:not(.ok-seg--block), .ok-select:not(.ok-select--block)) { justify-self: start; }
+.ok-field__hint { font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); }
+.ok-field__msg > span { display: flex; align-items: flex-start; gap: 4px; }
+.ok-field__msg .ok-icon { width: 16px; height: 16px; margin-top: 1px; }
+.ok-field[data-invalid] .ok-input { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+.ok-field[data-invalid] .ok-field__msg { grid-template-rows: 1fr; }
+.ok-field[data-invalid] .ok-field__msg > span { opacity: 1; transform: none; }
+.ok-field:not(.is-error):not([data-invalid]) .ok-field__msg { margin-top: -6px; }   /* 收起时不占间距 */
+.ok-field[data-disabled] .ok-field__label { color: var(--ok-text-3); }
+.ok-field--horizontal { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 520px) {
+  .ok-field--horizontal { grid-template-columns: minmax(96px, 30%) minmax(0, 1fr); column-gap: var(--ok-s-4); align-items: start; }
+  .ok-field--horizontal > .ok-field__label { min-height: var(--ok-h-md); }
+  .ok-field--horizontal > :not(.ok-field__label) { grid-column: 2; }
+}

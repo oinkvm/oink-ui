@@ -1,0 +1,18 @@
+/* 只读的分段电平。类名用 .ok-level，避开原型里可拖动的 .ok-meter（那是输入控件） */
+.ok-level { --_c: var(--ok-accent); --_h: 16px; --_w: 6px; display: flex; align-items: stretch; gap: 3px; height: var(--_h); min-width: 0; }
+.ok-level--sm { --_h: 8px; --_w: 4px; gap: 2px; }
+.ok-level--lg { --_h: 24px; --_w: 8px; gap: 4px; }
+.ok-level[data-tone="neutral"] { --_c: var(--ok-inverse); }
+.ok-level[data-tone="success"] { --_c: var(--ok-success); }
+.ok-level[data-tone="warning"] { --_c: var(--ok-warning); }
+.ok-level[data-tone="danger"] { --_c: var(--ok-danger); }
+.ok-level[data-tone="info"] { --_c: var(--ok-info); }
+.ok-level__seg {
+  /* 基准宽度 --_w：容器按内容收缩（行内、flex-start）时每段也有正常的宽度，不会塌成 2px；有空间时仍然长到 12px */
+  flex: 1 1 auto; width: var(--_w); min-width: 2px; max-width: 12px; border-radius: 3px; background: var(--ok-well-2);
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+  transform: scaleY(.7);
+}
+.ok-level__seg[data-on] { background: var(--_c); transform: none; }
+.ok-level:not([data-tone]) .ok-level__seg[data-on][data-zone="warning"] { background: var(--ok-warning); }
+.ok-level:not([data-tone]) .ok-level__seg[data-on][data-zone="danger"] { background: var(--ok-danger); }

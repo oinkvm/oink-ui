@@ -1,0 +1,12 @@
+/* Form · 新增组件：纵向表单布局 */
+.ok-form { --_gap: var(--ok-s-5); display: grid; gap: var(--_gap); min-width: 0; margin: 0; }
+.ok-form--sm { --_gap: var(--ok-s-3); }
+.ok-form--lg { --_gap: var(--ok-s-8); }
+.ok-form__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ok-s-2); }
+.ok-form__actions--end { justify-content: flex-end; }
+.ok-form__actions--between { justify-content: space-between; }
+/* 窄屏：操作按钮撑满一行，主按钮在上 */
+@media (max-width: 519.98px) {
+  .ok-form__actions--stack { flex-direction: column-reverse; align-items: stretch; }
+  .ok-form__actions--stack > .ok-btn { width: 100%; }
+}

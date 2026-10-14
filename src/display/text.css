@@ -1,0 +1,20 @@
+/* 排版：字体样式本身（.ok-t-*）在 base.css，这里只补颜色、省略和窄屏缩放 */
+.ok-text { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.ok-heading { color: var(--ok-text); text-wrap: balance; }
+.ok-t-h4 { font: 600 var(--ok-fs-h4)/1.4 var(--ok-font); letter-spacing: -.005em; }
+/* 标题字号由令牌 --ok-fs-* 决定，窄屏收小的规则在 base.css */
+
+.ok-text[data-tone="neutral"] { color: var(--ok-text-2); }
+.ok-text[data-tone="subtle"] { color: var(--ok-text-3); }
+.ok-text[data-tone="accent"] { color: var(--ok-accent-text); }
+.ok-text[data-tone="success"] { color: var(--ok-success-text); }
+.ok-text[data-tone="warning"] { color: var(--ok-warning-text); }
+.ok-text[data-tone="danger"] { color: var(--ok-danger-text); }
+.ok-text[data-tone="info"] { color: var(--ok-info-text); }
+
+.ok-text[data-align="start"] { text-align: start; }
+.ok-text[data-align="center"] { text-align: center; }
+.ok-text[data-align="end"] { text-align: end; }
+
+.ok-text[data-truncate] { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ok-text[data-clamp] { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--ok-clamp, 2); line-clamp: var(--ok-clamp, 2); overflow: hidden; }

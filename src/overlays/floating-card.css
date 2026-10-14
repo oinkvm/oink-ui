@@ -1,0 +1,161 @@
+/* ==========================================================================
+   FloatingCard 悬浮卡片
+   Dialog / Drawer / Sheet / Panel 的共同基座：一张圆角卡片，四周留缝，从停靠的一侧滑入。
+   没有阴影：模态时靠遮罩压暗背景，非模态时靠 --ok-line-2 描边和页面分开。
+   ========================================================================== */
+.ok-float {
+  --_gap: var(--ok-float-gap, 12px);
+  position: fixed; inset: 0; z-index: 80; display: grid;
+  padding: max(var(--_gap), env(safe-area-inset-top, 0px)) max(var(--_gap), env(safe-area-inset-right, 0px))
+    max(var(--_gap), env(safe-area-inset-bottom, 0px)) max(var(--_gap), env(safe-area-inset-left, 0px));
+  pointer-events: none; overflow: hidden;
+}
+.ok-float--contained { position: absolute; z-index: 5; }
+@media (max-width: 519px) { .ok-float { --_gap: var(--ok-float-gap, 8px); } }
+
+.ok-float__scrim {
+  position: absolute; inset: 0; pointer-events: auto;
+  background: transparent; -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0);
+  /* 退场：和卡片同一条退场曲线、同一个时长，一起走完（卡片的 transitionend 一到就卸载，遮罩不能还没淡完） */
+  transition: background-color var(--ok-float-out-dur) var(--ok-float-out-ease), opacity var(--ok-float-out-dur) var(--ok-float-out-ease),
+    backdrop-filter var(--ok-float-out-dur) var(--ok-float-out-ease), -webkit-backdrop-filter var(--ok-float-out-dur) var(--ok-float-out-ease);
+}
+.ok-float[data-state="open"] > .ok-float__scrim {
+  background: var(--ok-scrim); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  /* 进场：颜色和模糊不用弹簧（会过冲），减速压暗；时长取退场那一档（160ms），进退对称 */
+  transition: background-color var(--ok-float-out-dur) var(--ok-ease-out), opacity var(--ok-float-out-dur) var(--ok-ease-out),
+    backdrop-filter var(--ok-float-out-dur) var(--ok-ease-out), -webkit-backdrop-filter var(--ok-float-out-dur) var(--ok-ease-out);
+}
+
+.ok-float__card {
+  position: relative; pointer-events: auto; display: flex; flex-direction: column;
+  min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; overflow: auto; overscroll-behavior: contain;
+  border-radius: var(--_fr); corner-shape: var(--ok-corner);
+  background: var(--ok-surface); color: var(--ok-text);
+  box-shadow: inset 0 0 0 1px var(--ok-line-2), inset 0 1.5px 0 var(--ok-hi);
+  outline: none;
+  opacity: 0; transform: var(--_from);
+  /* 进退场只有这两条：不分停靠位置、不分屏宽、放大进场和滑入也一样，都读 --ok-float-* 这组令牌（见 tokens.css）。
+     退场：比进场快，位移和透明度一起加速走开 */
+  transition: opacity var(--ok-float-out-dur) var(--ok-float-out-ease), transform var(--ok-float-out-dur) var(--ok-float-out-ease);
+}
+.ok-float[data-state="open"] > .ok-float__card {
+  opacity: 1; transform: none;
+  /* 进场：位移用 soft 弹簧曲线落位（不过冲），透明度很快淡入。拖拽松手后的回弹也走这一条 */
+  transition: opacity var(--ok-float-fade-dur) var(--ok-ease-out), transform var(--ok-float-in-dur) var(--ok-float-in-ease);
+}
+
+/* 居中：对话框。从 .92 放大到位（实际上居中的卡片总是从触发点放大，见下面的 data-zoom） */
+.ok-float[data-placement="center"] { place-items: center; }
+.ok-float[data-placement="center"] > .ok-float__card { --_from: scale(.92); width: min(var(--ok-float-size, 400px), 100%); }
+
+/* 左右：抽屉 / 侧面板 */
+.ok-float[data-placement="left"] { justify-items: start; }
+.ok-float[data-placement="right"] { justify-items: end; }
+.ok-float:is([data-placement="left"], [data-placement="right"]) > .ok-float__card { width: min(var(--ok-float-size, 360px), 100%); }
+.ok-float:is([data-placement="left"], [data-placement="right"]):not([data-stretch]) { align-items: center; }
+.ok-float:is([data-placement="left"], [data-placement="right"]):not([data-stretch])[data-align="start"] { align-items: start; }
+.ok-float:is([data-placement="left"], [data-placement="right"]):not([data-stretch])[data-align="end"] { align-items: end; }
+.ok-float[data-placement="left"] > .ok-float__card { --_from: translateX(calc(-100% - var(--_gap))); }
+.ok-float[data-placement="right"] > .ok-float__card { --_from: translateX(calc(100% + var(--_gap))); }
+
+/* 上下：顶部面板 / 底部弹层 */
+.ok-float[data-placement="top"] { align-items: start; }
+.ok-float[data-placement="bottom"] { align-items: end; }
+.ok-float:is([data-placement="top"], [data-placement="bottom"]) > .ok-float__card { height: var(--ok-float-size, auto); width: 100%; }
+.ok-float:is([data-placement="top"], [data-placement="bottom"]):not([data-stretch]) { justify-items: center; }
+.ok-float:is([data-placement="top"], [data-placement="bottom"]):not([data-stretch]) > .ok-float__card { width: min(560px, 100%); }
+.ok-float:is([data-placement="top"], [data-placement="bottom"]):not([data-stretch])[data-align="start"] { justify-items: start; }
+.ok-float:is([data-placement="top"], [data-placement="bottom"]):not([data-stretch])[data-align="end"] { justify-items: end; }
+/* size="auto"：主轴按内容（上下贴边时高度本来就默认 auto） */
+.ok-float[data-size="auto"]:is([data-placement="center"], [data-placement="left"], [data-placement="right"]) > .ok-float__card { width: auto; }
+.ok-float[data-size="auto"]:is([data-placement="top"], [data-placement="bottom"]) > .ok-float__card { height: auto; }
+.ok-float[data-placement="top"] > .ok-float__card { --_from: translateY(calc(-100% - var(--_gap))); }
+.ok-float[data-placement="bottom"] > .ok-float__card { --_from: translateY(calc(100% + var(--_gap))); }
+
+/* 从触发点放大进场（居中的 Dialog / confirm()、命令面板）：transform-origin 落在触发点上，
+   从 .6 放大并淡入——看起来是从点按的按钮里长出来、朝屏幕中心落位；退场缩回同一点。
+   触发点由脚本换算成卡片自己坐标系里的 --_ox / --_oy；没算出来时退回卡片中心。写在各停靠方式的 --_from 之后 */
+.ok-float[data-zoom] > .ok-float__card { --_from: scale(.6); transform-origin: var(--_ox, 50%) var(--_oy, 50%); }
+
+/* 手机宽度：不管停在哪一侧、指定了多宽，卡片一律水平居中、撑满（四周仍留 --_gap 那圈缝）。
+   进场方向不变：左右停靠的仍从原来那一侧滑入（--_from 没动）。
+   选择器的特指度不低于上面对应的规则，并且写在它们后面 */
+@media (max-width: 519.98px) {
+  .ok-float[data-placement],
+  .ok-float[data-placement]:not([data-stretch])[data-align] { justify-items: center; }
+  .ok-float[data-placement] > .ok-float__card,
+  .ok-float[data-placement]:not([data-stretch]) > .ok-float__card,
+  .ok-float[data-placement][data-size="auto"] > .ok-float__card { width: 100%; }
+  /* 窄屏上卡片铺满整宽，整段滑过一屏会显得拖：只从停靠侧滑进三分之一的距离、同时淡入。
+     只改距离，曲线和时长不变，仍是上面那条共用的进退场 */
+  .ok-float[data-placement="left"]:not([data-zoom]) > .ok-float__card { --_from: translateX(-32%); }
+  .ok-float[data-placement="right"]:not([data-zoom]) > .ok-float__card { --_from: translateX(32%); }
+  .ok-float[data-placement="top"]:not([data-zoom]) > .ok-float__card { --_from: translateY(-32%); }
+  .ok-float[data-placement="bottom"]:not([data-zoom]) > .ok-float__card { --_from: translateY(32%); }
+}
+
+/* --------------------------------------------------------------------------
+   拖拽关闭：把手区域交给脚本（其余内容照常原生滚动）
+   -------------------------------------------------------------------------- */
+.ok-float__card[data-draggable] [data-ok-drag-handle] { touch-action: none; -webkit-user-select: none; user-select: none; }
+.ok-float__card[data-dragging] { -webkit-user-select: none; user-select: none; }
+.ok-float__grip { flex: none; display: grid; place-items: center; height: 24px; padding-top: 3px; }
+.ok-float__grip > span { width: 36px; height: 5px; border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-line-2); transition: background-color var(--ok-dur-2) var(--ok-ease-out), width var(--ok-spring-dur) var(--ok-spring); }
+.ok-float__card[data-draggable] .ok-float__grip { cursor: grab; }
+.ok-float__card[data-dragging] .ok-float__grip { cursor: grabbing; }
+.ok-float__card[data-dragging] .ok-float__grip > span { width: 44px; background: var(--ok-text-3); }
+@media (hover: hover) { .ok-float__card[data-draggable] .ok-float__grip:hover > span { background: var(--ok-text-3); } }
+
+/* --------------------------------------------------------------------------
+   结构件：Header / Body / Footer
+   内边距四边相等：卡片圆角 R32 → 24。头、身、尾之间 12 / 24，和原型对话框一致。
+   -------------------------------------------------------------------------- */
+.ok-float__card { --_pad: var(--ok-float-pad, var(--ok-s-6)); }
+/* 同心圆角：卡片圆角 --_fr 减去内边距 × rk（不小于 4 × rk），放在 --ok-r-nested 里往下传，
+   内容区里的 Card / Group / Table / CodeBlock / Image / Alert 自动取这个圆角（R32 − 24 → 8） */
+.ok-float__card { --_fr: var(--ok-r-5); --ok-r-nested: max(calc(4px * var(--ok-rk)), calc(var(--_fr) - var(--_pad) * var(--ok-rk))); }
+.ok-float__header { flex: none; display: flex; align-items: flex-start; gap: var(--ok-s-3); min-width: 0; padding: var(--_pad) var(--_pad) 0; }
+.ok-float__header:last-child { padding-bottom: var(--_pad); }
+.ok-float__heading { flex: 1; display: grid; gap: var(--ok-s-1); min-width: 0; align-self: center; }
+.ok-float__title { margin: 0; font: 700 var(--ok-fs-h3)/1.3 var(--ok-font-display); letter-spacing: -.01em; overflow-wrap: anywhere; }
+.ok-float__desc { margin: 0; font: 450 14px/1.5 var(--ok-font); color: var(--ok-text-2); overflow-wrap: anywhere; }
+.ok-float__icon {
+  display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-accent-soft); color: var(--ok-accent-text);
+}
+/* 关闭按钮比标题行高一点，往外收一收，视觉上仍然落在 24 的内边距里 */
+.ok-float__close { flex: none; margin: -3px -6px -3px 0; color: var(--ok-text-2); }
+
+/* 有内容区时由内容区滚动，头和脚不动；没有内容区时仍然整卡可滚 */
+.ok-float__card:has(> .ok-float__body) { overflow: hidden; }
+.ok-float__body { flex: 1 1 auto; min-width: 0; min-height: 0; padding: var(--ok-s-3) var(--_pad); overflow: auto; overscroll-behavior: contain; }
+.ok-float__body:first-child { padding-top: var(--_pad); }
+.ok-float__body:last-child { padding-bottom: var(--_pad); }
+.ok-float__body--flush,
+.ok-float__body--flush:first-child,
+.ok-float__body--flush:last-child { padding: 0; }
+.ok-float__header + .ok-float__body--flush { margin-top: var(--ok-s-3); }
+
+/* margin-top: auto：前面没有内容区（撑满的抽屉里只有头和脚）时，页脚仍然贴底 */
+.ok-float__footer { flex: none; margin-top: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; min-width: 0; padding: var(--ok-s-3) var(--_pad) var(--_pad); }
+.ok-float__footer:first-child { padding-top: var(--_pad); }
+.ok-float__footer[data-align="start"] { justify-content: flex-start; }
+.ok-float__footer[data-align="between"] { justify-content: space-between; }
+.ok-float__footer[data-align="stretch"] > * { flex: 1; }
+
+/* 抓手已经占了顶上的 24，后面那一块不用再留整份内边距 */
+.ok-float__grip + .ok-float__header,
+.ok-float__grip + .ok-float__body,
+.ok-float__grip + .ok-float__footer { padding-top: var(--ok-s-2); }
+
+/* 非模态的侧面板：内容区和页面之间只有描边，标题小一号 */
+.ok-panel-float .ok-float__title { font: 600 17px/1.35 var(--ok-font); }
+
+/* --------------------------------------------------------------------------
+   手机宽度：任意位置滑动关闭 + 右上角自动关闭按钮
+   -------------------------------------------------------------------------- */
+/* 横向手势交给脚本判断方向，竖向滚动仍由浏览器处理 */
+.ok-float__card[data-swipe] { touch-action: pan-y; }
+/* 卡片自带的关闭按钮：贴右上角，到上、右两边的距离相等（12），和 32 的卡片圆角同心；浮在内容上方 */
+.ok-float__close--auto { position: absolute; z-index: 2; top: var(--ok-s-3); right: var(--ok-s-3); margin: 0; }

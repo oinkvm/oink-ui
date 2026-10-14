@@ -1,0 +1,64 @@
+/* OptionCard · 搬自 oink.css 第 8 节 */
+.ok-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 16px; }
+.ok-option {
+  position: relative; display: grid; gap: 8px; padding: 8px; margin: 0; border: 0; text-align: left;
+  border-radius: calc(20px * var(--ok-rk)); corner-shape: var(--ok-corner); background: var(--ok-raised); color: var(--ok-text);
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+  font: 600 15px/1 var(--ok-font); cursor: pointer;
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), box-shadow var(--ok-dur-2) var(--ok-ease-out);
+}
+.ok-option::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; corner-shape: inherit; pointer-events: none;
+  box-shadow: 0 0 0 4px var(--ok-well), 0 0 0 5px var(--ok-line-2);
+  opacity: 0; transform: scale(.94);
+  transition: opacity var(--ok-dur-2) var(--ok-ease-in), transform var(--ok-dur-2) var(--ok-ease-in);
+}
+@media (hover: hover) { .ok-option:hover { box-shadow: inset 0 0 0 1px var(--ok-line-2); } }
+.ok-option:active { transform: scale(.97); transition-duration: var(--ok-dur-1), var(--ok-dur-2); transition-timing-function: var(--ok-ease-out); }
+.ok-option[aria-checked="true"] { box-shadow: inset 0 0 0 1px var(--ok-line); }
+.ok-option[aria-checked="true"]::after {
+  opacity: 1; transform: none;
+  transition: opacity var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-option__art {
+  position: relative; display: block; height: 68px; border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner); overflow: hidden;
+  background: var(--ok-well); box-shadow: inset 0 0 0 1px var(--ok-line);
+}
+.ok-option__art i {
+  position: absolute; height: 4px; border-radius: 4px; background: var(--ok-line-2);
+  transform-origin: 0 50%; transition: transform var(--ok-spring-dur) var(--ok-spring);
+}
+.ok-option__art b { position: absolute; background: var(--ok-raised); }
+.ok-option:not([aria-checked="true"]) .ok-option__art i { transform: scaleX(.72); }
+.ok-option__art i:nth-of-type(2) { transition-delay: calc(30ms * var(--ok-ms)); }
+.ok-option__art i:nth-of-type(3) { transition-delay: calc(60ms * var(--ok-ms)); }
+.ok-option__art i:nth-of-type(4) { transition-delay: calc(90ms * var(--ok-ms)); }
+.ok-option__art i:nth-of-type(5) { transition-delay: calc(120ms * var(--ok-ms)); }
+.ok-option__foot { display: flex; align-items: center; justify-content: space-between; height: 24px; padding: 0 4px 0 6px; }
+.ok-option__check {
+  display: grid; place-items: center; width: 22px; height: 22px; border-radius: calc(7px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-accent); transform: scale(0) rotate(-30deg);
+  transition: transform var(--ok-dur-2) var(--ok-ease-in);
+}
+.ok-option__check svg { width: 16px; height: 16px; fill: none; stroke: var(--ok-on-accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ok-option__check path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset var(--ok-dur-1); }
+.ok-option[aria-checked="true"] .ok-option__check { transform: none; transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy); }
+.ok-option[aria-checked="true"] .ok-option__check path { stroke-dashoffset: 0; transition: stroke-dashoffset var(--ok-dur-3) var(--ok-ease-out) calc(120ms * var(--ok-ms)); }
+
+/* —— 以下为组件库补充 —— */
+.ok-options { min-width: 0; }
+.ok-option { min-width: 0; align-content: start; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.ok-option__foot { gap: 8px; min-width: 0; }
+.ok-option__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ok-option__desc { padding: 0 6px 4px; font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); }
+.ok-option:disabled { opacity: .42; cursor: not-allowed; transform: none; }
+@media (hover: hover) { .ok-option:disabled:hover { box-shadow: inset 0 0 0 1px var(--ok-line); } }
+/* 示意图插槽：默认高 68px、圆角 12px（同心：卡片圆角 20 − 内边距 8）、溢出裁切。
+   原型里定位示意图内部线条的类（art-default 之类）属于演示页，库里不带；这里只保证放什么进来都不破版：
+   插槽不被内容撑宽（min-width: 0），直接放进来的 svg / img / video / canvas 铺满插槽，其它元素超出的部分被裁掉。
+   高度可以用 --ok-option-art-h 调 */
+/* 同心圆角：(卡片圆角 20 − 内边距 8) × rk。超椭圆转角下内边距也要乘 rk，四角的间距才均匀
+   （直接用 20 × rk − 8，转角斜向的间距会比直边宽出一成多） */
+.ok-option__art { height: var(--ok-option-art-h, 68px); min-width: 0; isolation: isolate; border-radius: max(calc(4px * var(--ok-rk)), calc(20px * var(--ok-rk) - 8px * var(--ok-rk))); }
+.ok-option__art > :where(svg, img, video, canvas) { display: block; width: 100%; height: 100%; }
+.ok-option__art > :where(img, video) { object-fit: cover; }

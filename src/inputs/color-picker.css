@@ -1,0 +1,99 @@
+/* ColorPicker · 组件库新增：内联取色面板（饱和度 × 亮度区、色相条、十六进制输入、预设色板） */
+.ok-color-picker {
+  --h: 0; --c: #ff6b8e;
+  /* 圆钮的白圈和外侧发丝线：画在颜色上而不是页面上，不跟主题走 */
+  --_ring: #fff;
+  --_ring-line: rgb(27 28 34 / .22);
+  display: flex; flex-direction: column; gap: 12px;
+  width: 240px; max-width: 100%; min-width: 0;
+}
+
+/* —— 饱和度 × 亮度：横向饱和度、纵向亮度。放进 Popover / Card 时按同心圆角收小（--ok-r-nested） —— */
+.ok-color-picker__area {
+  --s: 1; --v: 1;
+  position: relative; flex: none; width: 100%; aspect-ratio: 3 / 2;
+  border-radius: var(--ok-r-nested, var(--ok-r-2)); corner-shape: var(--ok-corner);
+  background:
+    linear-gradient(to top, #000, rgb(0 0 0 / 0)),
+    linear-gradient(to right, #fff, hsl(var(--h) 100% 50%));
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+  cursor: crosshair; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.ok-color-picker__thumb {
+  position: absolute; left: calc(var(--s) * 100%); top: calc((1 - var(--v)) * 100%);
+  width: 22px; height: 22px; margin: -11px 0 0 -11px;
+  border: 3px solid var(--_ring); border-radius: 50%; corner-shape: round;
+  background: var(--c);
+  box-shadow: 0 0 0 1px var(--_ring-line), inset 0 0 0 1px var(--_ring-line);
+  pointer-events: none;
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-color-picker__area[data-active] .ok-color-picker__thumb { transform: scale(1.18); }
+
+/* —— 色相：原生 <input type="range"> 只换外观（和 Slider 一样的圆钮手感：悬停 1.05、按住放大、bouncy 回弹） —— */
+.ok-color-picker__hue {
+  --tw: 22px; --tk: 12px;
+  -webkit-appearance: none; appearance: none;
+  display: block; flex: none; width: 100%; height: var(--tw); margin: 0; padding: 0;
+  border-radius: var(--ok-r-full); corner-shape: round;
+  background: transparent; cursor: pointer;
+}
+/* 色带只铺在圆钮中心能到的范围里（两端各让出半个圆钮），两端都是红色，用底色补齐 */
+.ok-color-picker__hue::-webkit-slider-runnable-track {
+  height: var(--tk); border-radius: var(--ok-r-full); corner-shape: round;
+  background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00) center / calc(100% - var(--tw)) 100% no-repeat, #f00;
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+}
+.ok-color-picker__hue::-moz-range-track {
+  height: var(--tk); border-radius: var(--ok-r-full);
+  background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00) center / calc(100% - var(--tw)) 100% no-repeat, #f00;
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+}
+.ok-color-picker__hue::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; box-sizing: border-box;
+  width: var(--tw); height: var(--tw); margin-top: calc((var(--tk) - var(--tw)) / 2);
+  border: 3px solid var(--_ring); border-radius: 50%;
+  background: hsl(var(--h) 100% 50%);
+  box-shadow: 0 0 0 1px var(--_ring-line), inset 0 0 0 1px var(--_ring-line);
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-color-picker__hue::-moz-range-thumb {
+  box-sizing: border-box; width: var(--tw); height: var(--tw);
+  border: 3px solid var(--_ring); border-radius: 50%;
+  background: hsl(var(--h) 100% 50%);
+  box-shadow: 0 0 0 1px var(--_ring-line), inset 0 0 0 1px var(--_ring-line);
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-color-picker__hue:active::-webkit-slider-thumb { transform: scale(1.18); }
+.ok-color-picker__hue:active::-moz-range-thumb { transform: scale(1.18); }
+
+/* 触屏（触屏设备自动生效，或祖先带 data-touch）：色带和圆钮不变，可按的高度扩到 44px，负外边距抵掉多出的部分 */
+@media (pointer: coarse) {
+  .ok-color-picker__hue { height: 44px; margin-block: -11px; }
+}
+[data-touch] .ok-color-picker__hue { height: 44px; margin-block: -11px; }
+
+/* —— 十六进制输入 + 屏幕取色 —— */
+.ok-color-picker__row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ok-color-picker__hex { flex: 1 1 auto; }
+.ok-color-picker__hex input { font-family: var(--ok-font-mono); font-variant-numeric: tabular-nums; }
+/* 预览色点：和输入框的左端同心（上下左边距相等），--_ih / --_ipx 由 .ok-input 按尺寸给出 */
+.ok-color-picker__chip {
+  display: block; flex: none; width: 16px; height: 16px;
+  margin-left: calc((var(--_ih) - 16px) / 2 - var(--_ipx));
+  border-radius: 50%; corner-shape: round;
+  background: var(--c); box-shadow: inset 0 0 0 1px var(--ok-line-2);
+}
+
+/* —— 禁用：整块降一次透明度，零件自己的禁用透明度不再叠加 —— */
+.ok-color-picker[data-disabled] { opacity: .5; }
+.ok-color-picker[data-disabled] :is(.ok-input, .ok-swatch, .ok-btn) { opacity: 1; }
+.ok-color-picker[data-disabled] .ok-color-picker__area,
+.ok-color-picker__hue:disabled { cursor: not-allowed; }
+
+/* 悬停：圆钮微微放大（图形，不涉及文字） */
+@media (hover: hover) {
+  .ok-color-picker__area:not([data-active]):not([aria-disabled="true"]):hover .ok-color-picker__thumb { transform: scale(1.05); }
+  .ok-color-picker__hue:not(:disabled):not(:active):hover::-webkit-slider-thumb { transform: scale(1.05); }
+  .ok-color-picker__hue:not(:disabled):not(:active):hover::-moz-range-thumb { transform: scale(1.05); }
+}

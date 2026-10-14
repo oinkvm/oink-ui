@@ -1,0 +1,27 @@
+.ok-pagination { --_h: var(--ok-h-md); position: relative; min-width: 0; font: 600 14px/1 var(--ok-font); color: var(--ok-text-2); }
+.ok-pagination--sm { --_h: var(--ok-h-sm); font-size: 13px; }
+.ok-pagination__list { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.ok-pagination__btn {
+  display: grid; place-items: center; min-width: var(--_h); height: var(--_h); padding: 0 8px; margin: 0; border: 0;
+  border-radius: var(--ok-r-full); corner-shape: round; background: none;
+  font: inherit; font-variant-numeric: tabular-nums; color: inherit; cursor: pointer;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-pagination__btn .ok-icon { width: 18px; height: 18px; }
+@media (hover: hover) { .ok-pagination__btn:not(:disabled):hover { background: var(--ok-fill); color: var(--ok-text); } }
+.ok-pagination__btn:not(:disabled):active { transform: scale(.93); transition-duration: var(--ok-dur-2), var(--ok-dur-2), var(--ok-dur-1); }
+/* 当前页：中性的反色底，强调色留给主操作 */
+.ok-pagination__btn[aria-current="page"] { background: var(--ok-inverse); color: var(--ok-on-inverse); }
+@media (hover: hover) { .ok-pagination__btn[aria-current="page"]:not(:disabled):hover { background: var(--ok-inverse-hover); color: var(--ok-on-inverse); } }
+.ok-pagination__btn:disabled { cursor: not-allowed; opacity: .4; }
+.ok-pagination__gap { display: grid; place-items: center; min-width: 24px; height: var(--_h); color: var(--ok-text-3); user-select: none; }
+.ok-pagination__status { min-width: 64px; padding: 0 8px; text-align: center; font-variant-numeric: tabular-nums; color: var(--ok-text); }
+/* 窄屏：上一页 · 3 / 10 · 下一页 */
+.ok-pagination__page, .ok-pagination__gap { display: none; }
+.ok-pagination__list { justify-content: space-between; }
+@media (min-width: 520px) {
+  .ok-pagination__page { display: block; }
+  .ok-pagination__gap { display: grid; }
+  .ok-pagination__status { display: none; }
+  .ok-pagination__list { justify-content: flex-start; }
+}

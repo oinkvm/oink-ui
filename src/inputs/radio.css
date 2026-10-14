@@ -1,0 +1,48 @@
+/* Radio · 搬自 oink.css 第 6 节（原型里与 Checkbox 合写，这里拆开） */
+.ok-radio {
+  position: relative; display: inline-flex; align-items: center; gap: 10px;
+  font: 500 15px/1.4 var(--ok-font); color: var(--ok-text); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ok-radio input { position: absolute; left: 0; top: 50%; width: 22px; height: 22px; margin: -11px 0 0; opacity: 0; cursor: pointer; }
+.ok-radio__dot {
+  position: relative; display: grid; place-items: center; flex: none;
+  width: 22px; height: 22px;
+  background: var(--ok-raised);
+  box-shadow: inset 0 0 0 1.5px var(--ok-line-2);
+  outline: 2px solid transparent; outline-offset: 5px;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), box-shadow var(--ok-dur-2) var(--ok-ease-out),
+    transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), outline-offset var(--ok-dur-3) var(--ok-ease-out);
+}
+.ok-radio__dot { border-radius: 50%; corner-shape: round; }
+@media (hover: hover) {
+.ok-radio:hover .ok-radio__dot { box-shadow: inset 0 0 0 1.5px var(--ok-accent); }
+}
+.ok-radio:active .ok-radio__dot { transform: scale(.84); transition-duration: var(--ok-dur-2), var(--ok-dur-2), var(--ok-dur-1), var(--ok-dur-3); transition-timing-function: var(--ok-ease-out); }
+.ok-radio input:checked + .ok-radio__dot { background: var(--ok-accent); box-shadow: inset 0 0 0 1.5px transparent; }
+.ok-radio__dot::after {
+  content: ""; width: 8px; height: 8px; border-radius: 50%; corner-shape: round; background: var(--ok-on-accent);
+  transform: scale(0); transition: transform var(--ok-dur-1) var(--ok-ease-in);
+}
+.ok-radio input:checked + .ok-radio__dot::after { transform: scale(1); transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy); }
+.ok-radio input:focus-visible + .ok-radio__dot { outline-color: var(--ok-accent); outline-offset: 2px; }
+
+/* —— 以下为组件库补充 —— */
+.ok-radio { min-width: 0; touch-action: manipulation; }
+.ok-radio__text { display: grid; gap: 2px; min-width: 0; }
+.ok-radio__desc { font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); }
+.ok-radio:has(input:disabled) { cursor: not-allowed; color: var(--ok-text-3); }
+.ok-radio input:disabled { cursor: not-allowed; }
+/* 禁用且未选中：不整体变淡（浅色下描边会淡到看不见），改成“凹槽底 + 原样的描边”；禁用且选中：保留强调色填充，整体变淡 */
+.ok-radio input:disabled + .ok-radio__dot { transform: none; background: var(--ok-well); box-shadow: inset 0 0 0 1.5px var(--ok-line-2); }
+.ok-radio input:disabled:checked + .ok-radio__dot { opacity: .5; background: var(--ok-accent); box-shadow: inset 0 0 0 1.5px transparent; }
+/* 带说明文字：圆点对齐第一行文字，不再和两行文字整体垂直居中 */
+.ok-radio[data-described] { align-items: flex-start; }
+.ok-radio[data-described] input { top: 0; margin-top: 0; }
+.ok-radio-group[data-invalid] .ok-radio__dot { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+@media (pointer: coarse) { .ok-radio { min-height: 44px; } .ok-radio input { width: 100%; height: 100%; top: 0; margin: 0; } }
+[data-touch] .ok-radio { min-height: 44px; }
+[data-touch] .ok-radio input { width: 100%; height: 100%; top: 0; margin: 0; }
+
+.ok-radio-group { display: flex; flex-direction: column; gap: var(--ok-s-3); min-width: 0; }
+.ok-radio-group--horizontal { flex-direction: row; flex-wrap: wrap; gap: var(--ok-s-3) var(--ok-s-5); }

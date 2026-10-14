@@ -1,0 +1,24 @@
+.ok-loader { --size: 28px; position: relative; display: inline-grid; place-items: center; flex: none; vertical-align: middle; }
+.ok-tail { width: var(--size, 28px); height: var(--size, 28px); overflow: visible; color: var(--ok-accent); flex: none; animation: ok-tail-wag 1.5s var(--ok-ease-in-out) infinite; transform-origin: 20% 20%; }
+/* 尾巴图案可被 TailProvider 换掉：图形默认描线（自己写了 fill / stroke 属性的保留）；带 pathLength="1" 的才做描线动画，其余只跟着整体摆动 */
+.ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect):not([fill]) { fill: none; }
+.ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect):not([stroke]) { stroke: currentColor; }
+.ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect):not([stroke-width]) { stroke-width: 5.5; }
+.ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect) { stroke-linecap: round; stroke-linejoin: round; }
+.ok-tail [pathLength="1"] { stroke-dasharray: 1 1.2; animation: ok-tail-draw 1.5s var(--ok-ease-in-out) infinite; }
+.ok-spinner { display: block; width: calc(var(--size, 28px) * .8); height: calc(var(--size, 28px) * .8); border-radius: 50%; corner-shape: round; border: 2.5px solid var(--ok-well-2); border-top-color: var(--ok-accent); animation: ok-spin .8s linear infinite; flex: none; }
+.ok-dots { position: relative; display: inline-flex; align-items: center; gap: 5px; color: var(--ok-accent); vertical-align: middle; }
+.ok-dots i { width: 8px; height: 8px; border-radius: 50%; corner-shape: round; background: currentColor; animation: ok-dot-bounce 1s var(--ok-ease-in-out) infinite; }
+.ok-dots i:nth-child(2) { animation-delay: .12s; }
+.ok-dots i:nth-child(3) { animation-delay: .24s; }
+/* 减弱动效：尾巴不甩、圆点不跳，只保留描线 / 透明度的变化，仍然看得出在加载 */
+/* 转圈（ring）不转，改成整体明暗呼吸 */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) .ok-tail { animation: none; }
+  :root:not([data-motion="full"]) .ok-dots i { animation-name: ok-dots-fade; }
+  :root:not([data-motion="full"]) .ok-spinner { animation: ok-dots-fade 1.2s var(--ok-ease-in-out) infinite; }
+}
+:root[data-motion="reduced"] .ok-tail { animation: none; }
+:root[data-motion="reduced"] .ok-dots i { animation-name: ok-dots-fade; }
+:root[data-motion="reduced"] .ok-spinner { animation: ok-dots-fade 1.2s var(--ok-ease-in-out) infinite; }
+@keyframes ok-dots-fade { 0%, 60%, 100% { opacity: .45; } 30% { opacity: 1; } }

@@ -1,0 +1,8 @@
+.ok-count {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-accent); color: var(--ok-on-accent);
+  font: 700 12px/1 var(--ok-font); font-variant-numeric: tabular-nums; vertical-align: middle;
+}
+.ok-count[data-tone="danger"] { background: var(--ok-danger); color: #1B1C22; }
+.ok-count[data-tone="neutral"] { background: var(--ok-inverse); color: var(--ok-on-inverse); }
+.ok-count.is-bump { animation: ok-bump var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy); }

@@ -1,0 +1,61 @@
+/* ==========================================================================
+   CommandPalette 命令面板
+   外壳是 FloatingCard（placement="top"、不撑满）：离顶边再让出一段，像是从上面落下来的搜索框。
+   ========================================================================== */
+.ok-float[data-placement="top"]:not([data-stretch]) > .ok-float__card.ok-cmdk {
+  --_drop: clamp(0px, 10vh, 96px);
+  width: min(var(--ok-cmdk-width, 560px), 100%);
+  margin-top: var(--_drop); max-height: min(calc(100% - var(--_drop)), 520px);
+  overflow: hidden; --_fr: var(--ok-r-4); border-radius: var(--_fr);
+  /* 套圆角：外 R24 − 列表项 R12 = 列表区内边距 12；搜索行和页脚按 R24 → 20 */
+  --_pad: var(--ok-s-3);
+}
+@media (max-width: 519px) { .ok-float[data-placement="top"]:not([data-stretch]) > .ok-float__card.ok-cmdk { --_drop: 0px; } }
+
+.ok-cmdk__search { flex: none; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 var(--ok-s-5); box-shadow: inset 0 -1px 0 var(--ok-line); }
+.ok-cmdk__search-icon { color: var(--ok-text-3); transition: color var(--ok-dur-2) var(--ok-ease-out); }
+.ok-cmdk__search:focus-within .ok-cmdk__search-icon { color: var(--ok-accent-text); }
+.ok-cmdk__input {
+  flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: none; color: var(--ok-text);
+  font: 500 16px/1.4 var(--ok-font); caret-color: var(--ok-accent);
+}
+.ok-cmdk__input::placeholder { color: var(--ok-text-3); }
+.ok-cmdk__esc { flex: none; color: var(--ok-text-2); }
+@media (pointer: coarse) { .ok-cmdk__esc { display: none; } }
+
+.ok-cmdk__list { position: relative; flex: 1 1 auto; min-height: 0; padding: var(--_pad); overscroll-behavior: contain; scroll-padding: var(--_pad); }
+.ok-cmdk__list[hidden] { display: none; }
+/* 共享高亮块：和 Menu 同一套（跟手 90ms 减速到位、不回弹、没有高亮项时淡出）。位置和高度由脚本写到 --y / height */
+.ok-cmdk__hl {
+  position: absolute; left: var(--_pad); right: var(--_pad); top: 0; height: max(var(--ok-h-md), var(--ok-h-item));
+  border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-hover); opacity: 0; pointer-events: none;
+  transform: translateY(var(--y, 0));
+  transition: transform var(--ok-dur-1) var(--ok-ease-out), opacity var(--ok-dur-1) var(--ok-ease-out), height var(--ok-dur-1) var(--ok-ease-out);
+}
+.ok-cmdk__list[data-hl] > .ok-cmdk__hl { opacity: 1; }
+.ok-cmdk__group + .ok-cmdk__group { margin-top: var(--ok-s-2); }
+.ok-cmdk__group-label { padding: 8px 10px 6px; font: 600 12px/1.3 var(--ok-font); color: var(--ok-text-3); }
+.ok-cmdk__item {
+  /* 高度：桌面保持 40，触屏 / 手机宽度下按列表项热区令牌不小于 44 */
+  position: relative; display: flex; align-items: center; gap: 10px; min-width: 0; min-height: max(var(--ok-h-md), var(--ok-h-item)); padding: 6px 10px;
+  border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  font: 500 14px/1.3 var(--ok-font); color: var(--ok-text); cursor: pointer; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+/* 高亮跟着键盘和指针走（同一个状态），由上面的共享高亮块画出来；高亮时不改字重字号，文字不跳 */
+.ok-cmdk__item[aria-disabled="true"] { color: var(--ok-text-3); cursor: not-allowed; }
+.ok-cmdk__item-icon { display: grid; place-items: center; flex: none; width: 20px; height: 20px; color: var(--ok-text-2); }
+.ok-cmdk__item-icon .ok-icon { width: 18px; height: 18px; }
+.ok-cmdk__item[aria-disabled="true"] .ok-cmdk__item-icon { color: inherit; }
+.ok-cmdk__item-text { flex: 1; display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.ok-cmdk__item-label { flex: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ok-cmdk__item-desc { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--ok-text-2); }
+.ok-cmdk__item-keys { flex: none; display: inline-flex; gap: 4px; margin-left: auto; }
+
+.ok-cmdk__empty:not([data-empty]) { display: contents; }
+.ok-cmdk__empty[data-empty] { padding: var(--ok-s-8) var(--ok-s-5); text-align: center; font: 450 14px/1.5 var(--ok-font); color: var(--ok-text-2); }
+.ok-cmdk__footer {
+  flex: none; display: flex; align-items: center; gap: var(--ok-s-4); min-width: 0; padding: var(--ok-s-3) var(--ok-s-5);
+  box-shadow: inset 0 1px 0 var(--ok-line); font: 500 12px/1.3 var(--ok-font); color: var(--ok-text-2);
+}

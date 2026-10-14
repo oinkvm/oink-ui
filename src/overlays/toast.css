@@ -1,0 +1,58 @@
+/* ==========================================================================
+   Toast 通知（原型第 12 节）
+   ========================================================================== */
+.ok-toasts {
+  --_off: var(--ok-toast-offset, 20px);
+  position: fixed; z-index: 500; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+  top: max(var(--ok-toast-top, var(--_off)), env(safe-area-inset-top, 0px)); right: max(var(--_off), env(safe-area-inset-right, 0px)); align-items: flex-end;
+}
+.ok-toasts:empty { display: none; }
+.ok-toasts[data-position$="left"] { right: auto; left: max(var(--_off), env(safe-area-inset-left, 0px)); align-items: flex-start; }
+.ok-toasts[data-position$="center"] { right: 0; left: 0; align-items: center; }
+/* 靠下：最新的一条贴着底边，旧的往上让 */
+.ok-toasts[data-position^="bottom"] { top: auto; bottom: max(var(--ok-toast-bottom, var(--_off)), env(safe-area-inset-bottom, 0px)); flex-direction: column-reverse; }
+@media (max-width: 519.98px) {
+  .ok-toasts,
+  .ok-toasts[data-position] {
+    --_off: var(--ok-toast-offset, 12px);
+    left: max(var(--_off), env(safe-area-inset-left, 0px)); right: max(var(--_off), env(safe-area-inset-right, 0px)); align-items: stretch;
+  }
+  .ok-toasts:not([data-position^="bottom"]) { top: max(var(--ok-toast-top, var(--_off)), calc(env(safe-area-inset-top, 0px) + 8px)); }
+  /* 窄屏默认停在底部：--ok-toast-bottom 用来把它抬到底部标签栏之上 */
+  .ok-toasts[data-position^="bottom"] { bottom: max(var(--ok-toast-bottom, var(--_off)), calc(env(safe-area-inset-bottom, 0px) + 8px)); }
+  .ok-toasts .ok-toast { width: auto; }
+}
+.ok-toast {
+  position: relative; overflow: hidden; pointer-events: auto;
+  display: flex; align-items: center; gap: 12px;
+  width: min(360px, calc(100vw - 32px)); padding: var(--ok-s-4);
+  border-radius: calc(20px * var(--ok-rk)); corner-shape: var(--ok-corner); background: var(--ok-pop); color: var(--ok-text);
+  box-shadow: inset 0 0 0 1px var(--ok-line-2), inset 0 1.5px 0 var(--ok-hi);
+  cursor: pointer; touch-action: manipulation;
+}
+.ok-toast[data-leaving] { pointer-events: none; }
+.ok-toast__icon {
+  --_c: var(--ok-accent-text); --_s: var(--ok-accent-soft);
+  display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 50%; corner-shape: round;
+  background: var(--_s); color: var(--_c);
+  animation: ok-pop var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy) calc(120ms * var(--ok-ms)) both;
+}
+.ok-toast__icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.ok-toast__glyph path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: ok-draw var(--ok-dur-4) var(--ok-ease-out) calc(260ms * var(--ok-ms)) forwards; }
+.ok-toast__glyph path + path { animation-delay: calc(360ms * var(--ok-ms)); }
+.ok-toast--success .ok-toast__icon { --_c: var(--ok-success-text); --_s: var(--ok-success-soft); }
+.ok-toast--warning .ok-toast__icon { --_c: var(--ok-warning-text); --_s: var(--ok-warning-soft); }
+.ok-toast--danger .ok-toast__icon { --_c: var(--ok-danger-text); --_s: var(--ok-danger-soft); }
+.ok-toast--info .ok-toast__icon { --_c: var(--ok-info-text); --_s: var(--ok-info-soft); }
+.ok-toast__body { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.ok-toast__title { font: 600 14px/1.45 var(--ok-font); overflow-wrap: anywhere; }
+.ok-toast__desc { font: 450 13px/1.5 var(--ok-font); color: var(--ok-text-2); overflow-wrap: anywhere; }
+.ok-toast__desc:empty { display: none; }
+.ok-toast__action { flex: none; }
+.ok-toast__close { flex: none; margin-right: -4px; color: var(--ok-text-2); }
+.ok-toast__action + .ok-toast__close { margin-left: -6px; }
+
+/* 触屏 / 手机宽度：操作按钮和关闭按钮的点按热区不小于 44px（--ok-h-item）。桌面保持小号按钮 */
+@media (pointer: coarse) { .ok-toast .ok-toast__action, .ok-toast .ok-toast__close { --_h: var(--ok-h-item); } }
+@media (max-width: 519.98px) { .ok-toast .ok-toast__action, .ok-toast .ok-toast__close { --_h: var(--ok-h-item); } }
+[data-touch] .ok-toast .ok-toast__action, [data-touch] .ok-toast .ok-toast__close { --_h: var(--ok-h-item); }

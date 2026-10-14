@@ -1,0 +1,16 @@
+/* 容器内边距的规矩（Card / Group / Table / Alert 都照这个来）：
+   · 四边相等；取圆角的四分之三左右，落在 4pt 栅格上 —— 圆角 20 配 16，24 配 20，32 配 24
+   · 里面套另一个圆角容器时改用同心：内边距 = 外圆角 − 内圆角（面板 44 套分组 28，内边距 16）
+   面板把“圆角 − 内边距 × rk”（不小于 4 × rk）放在 --ok-r-nested 里往下传，
+   里面的 Group / Card / Table / CodeBlock / Image / Alert 自动取这个圆角，和面板同心 */
+.ok-panel {
+  --_r: var(--ok-r-6); --_p: var(--ok-s-4);   /* 面板圆角与内边距，内层分组据此取同心圆角 */
+  display: flex; flex-direction: column; gap: var(--_p); min-width: 0;
+  padding: var(--_p);
+  border-radius: var(--_r); corner-shape: var(--ok-corner);
+  --ok-r-nested: max(calc(4px * var(--ok-rk)), calc(var(--_r) - var(--_p) * var(--ok-rk)));
+  background: var(--ok-surface);
+  box-shadow: inset 0 0 0 1px var(--ok-line), inset 0 1.5px 0 var(--ok-hi);
+}
+.ok-panel--sm { --_r: var(--ok-r-5); --_p: var(--ok-s-3); }
+.ok-panel--lg { --_p: var(--ok-s-5); }

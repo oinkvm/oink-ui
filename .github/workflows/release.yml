@@ -1,0 +1,47 @@
+name: Release
+
+# main 上有改动代码的提交就发一个补丁版本：1.0.0 → 1.0.1 → 1.0.2 …
+# 测试、类型检查、构建在 npm publish 的 prepublishOnly 里跑，没通过就不发布、不提交版本号。
+# 发布用 npm 的 Trusted Publishing（GitHub OIDC，见 npm trust），不存 npm token，自带来源证明（provenance）。
+# 版本号的提交和标签由 GITHUB_TOKEN 推回 main：它推的提交不会再触发工作流，不会循环。
+# 想跳过发布的提交，在提交信息里写 [skip ci]。
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'LICENSE', '.github/assets/**']
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 只演练：升版本号、打包检查，不发布、不推送
+        type: boolean
+        default: true
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - run: npm ci
+      - name: Bump patch version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          npm version patch -m "release: v%s [skip ci]"
+      - name: Publish to npm
+        run: npm publish --provenance --access public ${{ inputs.dry-run && '--dry-run' || '' }}
+      - name: Push version commit and tag
+        if: ${{ !inputs.dry-run }}
+        run: git push --follow-tags

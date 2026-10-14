@@ -1,0 +1,22 @@
+name: CI
+
+# 合并请求上跑测试、类型检查、构建和打包检查。main 上的提交由 release.yml 测试并发布
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Check package contents
+        run: npm pack --dry-run

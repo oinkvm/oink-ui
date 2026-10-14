@@ -1,0 +1,32 @@
+.ok-progress { --v: 0; --_c: var(--ok-accent); position: relative; height: 8px; min-width: 0; border-radius: 8px; background: var(--ok-well-2); overflow: hidden; }
+.ok-progress--sm { height: 4px; }
+.ok-progress--lg { height: 12px; border-radius: 12px; }
+.ok-progress[data-tone="success"] { --_c: var(--ok-success); }
+.ok-progress[data-tone="warning"] { --_c: var(--ok-warning); }
+.ok-progress[data-tone="danger"] { --_c: var(--ok-danger); }
+.ok-progress[data-tone="info"] { --_c: var(--ok-info); }
+.ok-progress__bar {
+  position: absolute; inset: 0; border-radius: inherit; corner-shape: inherit; background: var(--_c);
+  transform: translateX(calc((var(--v) - 1) * 100%));
+  transition: transform var(--ok-spring-soft-dur) var(--ok-spring-soft), background-color var(--ok-dur-3);
+}
+.ok-progress.is-done .ok-progress__bar,
+.ok-progress[data-done] .ok-progress__bar { background: var(--ok-success); }
+.ok-progress--indeterminate .ok-progress__bar { width: 38%; transform: none; animation: ok-indeterminate 1.5s var(--ok-ease-in-out) infinite; }
+/* 减弱动效：不确定进度不再来回滑，整条铺满、明暗呼吸，仍看得出在进行（循环时长是固定值，所以单独处理） */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) .ok-progress--indeterminate .ok-progress__bar { left: 0; width: 100%; animation: ok-progress-pulse 1.6s var(--ok-ease-in-out) infinite; }
+}
+:root[data-motion="reduced"] .ok-progress--indeterminate .ok-progress__bar { left: 0; width: 100%; animation: ok-progress-pulse 1.6s var(--ok-ease-in-out) infinite; }
+@keyframes ok-progress-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+.ok-ring { --v: 0; --size: 64px; position: relative; display: inline-grid; place-items: center; width: var(--size); height: var(--size); flex: none; }
+.ok-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); fill: none; stroke-width: 6; stroke-linecap: round; }
+.ok-ring__track { stroke: var(--ok-well-2); }
+.ok-ring__bar {
+  stroke: var(--ok-accent); stroke-dasharray: 100; stroke-dashoffset: calc(100 - var(--v) * 100);
+  transition: stroke-dashoffset var(--ok-spring-soft-dur) var(--ok-spring-soft), stroke var(--ok-dur-3);
+}
+.ok-ring.is-done .ok-ring__bar,
+.ok-ring[data-done] .ok-ring__bar { stroke: var(--ok-success); }
+.ok-ring__label { font: 700 14px/1 var(--ok-font); font-variant-numeric: tabular-nums; color: var(--ok-text); }

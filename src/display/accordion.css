@@ -1,0 +1,35 @@
+.ok-accordion { min-width: 0; }
+.ok-accordion__item + .ok-accordion__item { border-top: 1px solid var(--ok-line); }
+.ok-accordion__heading { margin: 0; font: inherit; }
+.ok-accordion__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;
+  min-height: 48px; padding: var(--ok-s-2) var(--_inset, var(--ok-s-5)); margin: 0; border: 0; border-radius: calc(20px * var(--ok-rk)); corner-shape: var(--ok-corner); background: none;
+  font: 600 15px/1.3 var(--ok-font); color: var(--ok-text); text-align: left; cursor: pointer;
+}
+.ok-accordion__head.ok-focusable:focus-visible { outline-offset: -3px; }
+.ok-accordion__title { min-width: 0; overflow-wrap: anywhere; }
+/* plain：嵌在别的容器里，左右内缩归零，标题和内容跟容器的内容边对齐（不然嵌进 Card 时文字离卡片边 20 + 20）。
+   焦点环画在按钮里面（上面的负 outline-offset），贴着容器边也不会被裁；圆角相应收小 */
+.ok-accordion--plain { --_inset: 0px; }
+.ok-accordion--plain .ok-accordion__head { border-radius: calc(8px * var(--ok-rk)); }
+.ok-accordion--plain .ok-accordion__head.ok-focusable:focus-visible { outline-offset: -2px; }
+.ok-accordion__head .ok-icon { width: 18px; height: 18px; color: var(--ok-text-3); transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), color var(--ok-dur-2); }
+@media (hover: hover) { .ok-accordion__head:not(:disabled):hover .ok-icon { color: var(--ok-text); } }
+.ok-accordion__head:disabled { cursor: not-allowed; opacity: .5; }
+/* 展开 / 收起的节奏：spring-soft 的曲线，时长是它的 2/3（587 → 391ms，提速 50%）；内容的淡入、下移和延迟同比缩短 */
+.ok-accordion { --_dur: calc(391ms * var(--ok-ms)); }
+.ok-accordion__body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--_dur) var(--ok-spring-soft); }
+/* 收起后 visibility: hidden，里面的内容不再能被 Tab 到、也不会被读屏读到；等高度收完再隐藏 */
+.ok-accordion__body > div {
+  min-height: 0; overflow: hidden; opacity: 0; transform: translateY(-8px); visibility: hidden;
+  transition: opacity calc(100ms * var(--ok-ms)) var(--ok-ease-in), transform calc(160ms * var(--ok-ms)) var(--ok-ease-out), visibility 0s linear var(--_dur);
+}
+.ok-accordion__content { padding: 0 var(--_inset, var(--ok-s-5)) var(--_row, var(--ok-s-3)); font: 450 14px/1.65 var(--ok-font); color: var(--ok-text-2); overflow-wrap: anywhere; }
+.ok-accordion__content > :first-child { margin-top: 0; }
+.ok-accordion__content > :last-child { margin-bottom: 0; }
+.ok-accordion__item[data-state="open"] .ok-accordion__head .ok-icon { transform: rotate(90deg); color: var(--ok-text); }
+.ok-accordion__item[data-state="open"] .ok-accordion__body { grid-template-rows: 1fr; }
+.ok-accordion__item[data-state="open"] .ok-accordion__body > div {
+  opacity: 1; transform: none; visibility: visible;
+  transition: opacity calc(160ms * var(--ok-ms)) var(--ok-ease-out) calc(53ms * var(--ok-ms)), transform calc(240ms * var(--ok-ms)) var(--ok-ease-out) calc(40ms * var(--ok-ms)), visibility 0s;
+}

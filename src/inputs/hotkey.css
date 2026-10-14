@@ -1,0 +1,35 @@
+/* Hotkey · 搬自 oink.css 第 10 节 */
+.ok-hotkey {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  min-width: 180px; height: var(--ok-h-md); padding: 0 14px; border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-raised); color: var(--ok-text);
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+  font: 600 14px/1 var(--ok-font); cursor: pointer; user-select: none;
+  transition: box-shadow var(--ok-dur-3) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-hotkey:active { transform: scale(.97); transition-duration: var(--ok-dur-3), var(--ok-dur-1); }
+.ok-hotkey__hint { color: var(--ok-text-3); font-weight: 500; }
+.ok-hotkey.is-recording {
+  box-shadow: inset 0 0 0 1.5px var(--ok-accent), 0 0 0 4px var(--ok-accent-soft);
+  animation: ok-breathe 1.6s var(--ok-ease-in-out) infinite;
+}
+/* 录制中的描边本身就是焦点指示，不再叠加键盘焦点环；用指针点开的录制，结束后也不补画 */
+.ok-hotkey.is-recording, .ok-hotkey.is-pointer { outline-color: transparent; }
+.ok-hotkey.is-recording .ok-hotkey__hint { color: var(--ok-accent-text); }
+
+/* —— 以下为组件库补充：状态改用 data-* —— */
+.ok-hotkey { max-width: 100%; }
+.ok-hotkey[data-recording] {
+  box-shadow: inset 0 0 0 1.5px var(--ok-accent), 0 0 0 4px var(--ok-accent-soft);
+  animation: ok-breathe 1.6s var(--ok-ease-in-out) infinite;
+}
+.ok-hotkey[data-recording], .ok-hotkey[data-pointer] { outline-color: transparent; }
+/* 减弱动效：录制中的描边不再呼吸（循环时长是固定值，所以单独处理），静态的强调色描边照样表示「正在录」 */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) :is(.ok-hotkey.is-recording, .ok-hotkey[data-recording]) { animation: none; }
+}
+:root[data-motion="reduced"] :is(.ok-hotkey.is-recording, .ok-hotkey[data-recording]) { animation: none; }
+.ok-hotkey[data-recording] .ok-hotkey__hint { color: var(--ok-accent-text); }
+.ok-hotkey[aria-disabled="true"] { opacity: .5; cursor: not-allowed; transform: none; }
+.ok-hotkey--sm { height: var(--ok-h-sm); min-width: 140px; font-size: 13px; }
+.ok-hotkey--lg { height: var(--ok-h-lg); }

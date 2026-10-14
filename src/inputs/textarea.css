@@ -1,0 +1,26 @@
+/* Textarea · 新增组件，外观与 .ok-input 同源：凹槽 → 聚焦浮成白色 + 强调色描边 */
+.ok-textarea {
+  --_min-rows: 3; --_max-rows: 999; --_lh: 1.5em; --_pad: 10px;
+  display: block; width: 100%; min-width: 0; margin: 0; border: 0;
+  padding: var(--_pad) 14px;
+  min-height: calc(var(--_min-rows) * var(--_lh) + var(--_pad) * 2);
+  max-height: calc(var(--_max-rows) * var(--_lh) + var(--_pad) * 2);
+  border-radius: calc(14px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-well); color: var(--ok-text);
+  box-shadow: inset 0 0 0 1.5px transparent;
+  font: 500 15px/1.5 var(--ok-font);
+  outline: 0; resize: none;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), box-shadow var(--ok-dur-3) var(--ok-ease-out);
+}
+.ok-textarea[data-autogrow] { field-sizing: content; }
+.ok-textarea[data-resize="vertical"] { resize: vertical; }
+.ok-textarea::placeholder { color: var(--ok-text-3); }
+@media (hover: hover) { .ok-textarea:hover:not(:focus):not(:disabled) { background: color-mix(in srgb, var(--ok-well) 70%, var(--ok-well-2)); } }
+@media (hover: hover) { :root[data-theme="dark"] .ok-textarea:hover:not(:focus):not(:disabled) { background: color-mix(in srgb, var(--ok-well) 88%, var(--ok-well-2)); } }
+.ok-textarea:focus { background: var(--ok-raised); box-shadow: inset 0 0 0 1.5px var(--ok-accent); }
+.ok-textarea[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+.ok-textarea:disabled { opacity: .5; cursor: not-allowed; }
+@media (pointer: coarse) { .ok-textarea { font-size: 16px; } }
+[data-touch] .ok-textarea { font-size: 16px; }
+/* 描边就是焦点指示；带了 .ok-scroll（滚动条换肤）也不再叠加它的焦点外框 */
+.ok-textarea:focus-visible { outline: 0; }

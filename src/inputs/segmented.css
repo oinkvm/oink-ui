@@ -1,0 +1,46 @@
+/* Segmented · 搬自 oink.css 第 7 节 */
+.ok-seg {
+  position: relative; isolation: isolate; display: inline-flex; padding: 3px;
+  border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-well);
+}
+.ok-seg__thumb {
+  position: absolute; z-index: -1; top: 3px; bottom: 3px; left: 0; width: var(--w, 0);
+  transform: translateX(var(--x, 0));
+  border-radius: inherit; corner-shape: inherit; background: var(--ok-raised);
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+  transition: transform var(--ok-spring-dur) var(--ok-spring), width var(--ok-spring-dur) var(--ok-spring);
+}
+.ok-seg:not(.is-ready):not([data-ready]) .ok-seg__thumb { transition: none; }
+.ok-seg__item {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 1;
+  height: calc(var(--ok-h-md) - 6px); padding: 0 16px; margin: 0; border: 0; border-radius: inherit; corner-shape: inherit; background: none;
+  font: 600 14px/1 var(--ok-font); color: var(--ok-text-2); white-space: nowrap; cursor: pointer;
+  transition: color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+@media (hover: hover) { .ok-seg__item:hover { color: var(--ok-text); } }
+.ok-seg__item:active { transform: scale(.93); transition-duration: var(--ok-dur-2), var(--ok-dur-1); }
+.ok-seg__item[aria-checked="true"] { color: var(--ok-text); }
+.ok-seg__item .ok-icon { width: 16px; height: 16px; }
+.ok-seg--sm .ok-seg__item { height: calc(var(--ok-h-sm) - 6px); padding: 0 12px; font-size: 13px; }
+.ok-seg--block { display: flex; }
+
+/* —— 以下为组件库补充 —— */
+.ok-seg { max-width: 100%; min-width: 0; }
+.ok-seg--block .ok-seg__item { min-width: 0; }
+.ok-seg__item { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.ok-seg__item > span { overflow: hidden; text-overflow: ellipsis; }
+.ok-seg__item:disabled,
+.ok-seg__item[aria-disabled="true"] { opacity: .42; cursor: not-allowed; transform: none; color: var(--ok-text-2); }
+.ok-seg--lg .ok-seg__item { height: calc(var(--ok-h-lg) - 6px); padding: 0 20px; font-size: 15px; }
+/* 选项多、容器窄：不收缩文字，整条横向滚动。原生滚动，只把滚动条藏起来；选中项由组件滚进可视区。
+   滑块绝对定位在滚动容器里，属于滚动内容，位置随滚动保持正确。block 形态各项等宽并省略，不滚动 */
+.ok-seg { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.ok-seg::-webkit-scrollbar { display: none; }
+/* 放得下时各项照旧均分；每项不窄于自己的内容，所以总宽超过容器时是溢出（滚动）而不是把文字挤没 */
+.ok-seg:not(.ok-seg--block) .ok-seg__item { min-width: max-content; }
+/* 首次摆放直接到位，之后切换选中项时平滑滚过去 */
+/* 平滑滚动只在没有减弱动效时开：系统设置和 OinkProvider 的 motion（data-motion）都要认 */
+@media (prefers-reduced-motion: no-preference) { :root:not([data-motion="reduced"]) .ok-seg[data-ready] { scroll-behavior: smooth; } }
+:root[data-motion="full"] .ok-seg[data-ready] { scroll-behavior: smooth; }
+/* 滚动容器会裁掉画在外面的焦点环：收进 3px 的轨道内边距里 */
+.ok-seg__item.ok-focusable:focus-visible { outline-offset: 1px; }

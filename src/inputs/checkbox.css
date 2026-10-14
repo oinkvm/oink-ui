@@ -1,0 +1,62 @@
+/* Checkbox · 搬自 oink.css 第 6 节（原型里与 Radio 合写，这里拆开） */
+.ok-check {
+  position: relative; display: inline-flex; align-items: center; gap: 10px;
+  font: 500 15px/1.4 var(--ok-font); color: var(--ok-text); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ok-check input { position: absolute; left: 0; top: 50%; width: 22px; height: 22px; margin: -11px 0 0; opacity: 0; cursor: pointer; }
+.ok-check__box {
+  position: relative; display: grid; place-items: center; flex: none;
+  width: 22px; height: 22px;
+  background: var(--ok-raised);
+  box-shadow: inset 0 0 0 1.5px var(--ok-line-2);
+  outline: 2px solid transparent; outline-offset: 5px;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), box-shadow var(--ok-dur-2) var(--ok-ease-out),
+    transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), outline-offset var(--ok-dur-3) var(--ok-ease-out);
+}
+.ok-check__box { border-radius: calc(7px * var(--ok-rk)); corner-shape: var(--ok-corner); }
+@media (hover: hover) {
+.ok-check:hover .ok-check__box { box-shadow: inset 0 0 0 1.5px var(--ok-accent); }
+}
+.ok-check:active .ok-check__box { transform: scale(.84); transition-duration: var(--ok-dur-2), var(--ok-dur-2), var(--ok-dur-1), var(--ok-dur-3); transition-timing-function: var(--ok-ease-out); }
+.ok-check__box svg { width: 16px; height: 16px; fill: none; stroke: var(--ok-on-accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ok-check__box path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset var(--ok-dur-1) var(--ok-ease-in); }
+.ok-check input:checked + .ok-check__box { background: var(--ok-accent); box-shadow: inset 0 0 0 1.5px transparent; }
+.ok-check input:checked + .ok-check__box path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--ok-dur-3) var(--ok-ease-out) calc(50ms * var(--ok-ms));
+}
+.ok-check input:focus-visible + .ok-check__box { outline-color: var(--ok-accent); outline-offset: 2px; }
+
+/* —— 以下为组件库补充 —— */
+.ok-check { min-width: 0; touch-action: manipulation; }
+.ok-check__box svg { grid-area: 1 / 1; }
+/* 半选：一条横线；此时对勾收起 */
+.ok-check input:checked + .ok-check__box path.ok-check__dash { stroke-dashoffset: 1; }
+.ok-check input:indeterminate + .ok-check__box { background: var(--ok-accent); box-shadow: inset 0 0 0 1.5px transparent; }
+.ok-check input:indeterminate + .ok-check__box path.ok-check__tick { stroke-dashoffset: 1; }
+.ok-check input:indeterminate + .ok-check__box path.ok-check__dash {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--ok-dur-3) var(--ok-ease-out) calc(50ms * var(--ok-ms));
+}
+.ok-check[data-invalid] .ok-check__box { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+.ok-check__text { display: grid; gap: 2px; min-width: 0; }
+.ok-check__desc { font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); }
+/* 禁用：指针换成禁止符号，不再响应悬停和按压 */
+.ok-check:has(input:disabled) { cursor: not-allowed; color: var(--ok-text-3); }
+.ok-check input:disabled { cursor: not-allowed; }
+/* 禁用且未选中：不整体变淡（1.5px 的线再乘 .5 的透明度，浅色下几乎看不见），改成“凹槽底 + 原样的描边”，一眼能看出这里有个框、但按不动。
+   禁用且选中：保留强调色填充，整体变淡 */
+.ok-check input:disabled + .ok-check__box { transform: none; background: var(--ok-well); box-shadow: inset 0 0 0 1.5px var(--ok-line-2); }
+.ok-check input:disabled:checked + .ok-check__box,
+.ok-check input:disabled:indeterminate + .ok-check__box { opacity: .5; background: var(--ok-accent); box-shadow: inset 0 0 0 1.5px transparent; }
+/* 带说明文字：方框对齐第一行文字（行高 21px、方框 22px，顶对齐即居中），不再和两行文字整体垂直居中 */
+.ok-check[data-described] { align-items: flex-start; }
+.ok-check[data-described] input { top: 0; margin-top: 0; }
+/* 触屏：方框不变大，点按区域扩到整行 44px */
+@media (pointer: coarse) { .ok-check { min-height: 44px; } .ok-check input { width: 100%; height: 100%; top: 0; margin: 0; } }
+[data-touch] .ok-check { min-height: 44px; }
+[data-touch] .ok-check input { width: 100%; height: 100%; top: 0; margin: 0; }
+
+.ok-check-group { display: flex; flex-direction: column; gap: var(--ok-s-3); min-width: 0; }
+.ok-check-group--horizontal { flex-direction: row; flex-wrap: wrap; gap: var(--ok-s-3) var(--ok-s-5); }

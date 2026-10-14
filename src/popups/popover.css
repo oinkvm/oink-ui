@@ -1,0 +1,9 @@
+/* ==========================================================================
+   Popover：点击触发的非模态浮层
+   内边距 = 圆角的四分之三落在 4pt 栅格：R18 → 12
+   ========================================================================== */
+.ok-popover { min-width: 0; width: max-content; }
+.ok-popover__body { --_bp: 12px; flex: 1 1 auto; min-height: 0; padding: var(--_bp); overflow: auto; }
+.ok-popover--calendar .ok-popover__body { --_bp: 8px; }
+/* 同心圆角：浮层圆角 18 − 内边距（× rk，不小于 4 × rk）往下传，里面放的 Image / Card / Group… 自动取 */
+.ok-popover__body { --ok-r-nested: max(calc(4px * var(--ok-rk)), calc(18px * var(--ok-rk) - var(--_bp) * var(--ok-rk))); }

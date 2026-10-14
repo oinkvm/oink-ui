@@ -1,0 +1,35 @@
+/* OinkLogo：墨色圆角方块 + 右下角强调色的猪鼻子。方块跟着 --ok-text 走，深色主题下自动变成纸色。
+   三个颜色变量：--ok-logo-ink（方块、字标）、--ok-logo-accent（鼻子）、--ok-logo-nostril（鼻孔，默认跟随 ink）。
+   鼻子默认跟着强调色；自定义强调色和方块对比度不够时，主题给出的 --ok-logo-snout 会换成白色（浅色主题）或墨色（深色主题） */
+.ok-logo {
+  --ok-logo-size: 28px;
+  display: inline-flex; align-items: center; gap: calc(var(--ok-logo-size) * .32);
+  flex: none; vertical-align: middle; line-height: 1;
+  color: var(--ok-text);
+}
+.ok-logo__mark { display: block; width: var(--ok-logo-size); height: var(--ok-logo-size); flex: none; overflow: visible; }
+.ok-logo__ink { fill: var(--ok-logo-ink, currentColor); }
+.ok-logo__accent { fill: var(--ok-logo-accent, var(--ok-logo-snout, var(--ok-accent))); }
+.ok-logo__nostril { fill: var(--ok-logo-nostril, var(--ok-logo-ink, currentColor)); }
+.ok-logo__word {
+  font: 700 calc(var(--ok-logo-size) * .62) / 1 var(--ok-font-display);
+  letter-spacing: -.01em; white-space: nowrap; color: var(--ok-logo-ink, currentColor);
+}
+
+/* 单色版：只用 currentColor。方块在鼻子周围让出空隙、鼻孔镂空（见组件里的 mask），不读三个颜色变量 */
+.ok-logo--mono .ok-logo__ink,
+.ok-logo--mono .ok-logo__accent { fill: currentColor; }
+.ok-logo--mono .ok-logo__word { color: currentColor; }
+
+/* 出现时的小动效：猪鼻子拱一下（以鼻子左上角为支点，先缩再弹回） */
+.ok-logo[data-animated] .ok-logo__snout {
+  transform-box: fill-box; transform-origin: 30% 30%;
+  animation: ok-logo-oink var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy) calc(160ms * var(--ok-ms)) both;
+}
+@keyframes ok-logo-oink { from { transform: scale(.5) rotate(-10deg); } to { transform: none; } }
+
+/* 减弱动效：直接显示终态 */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) .ok-logo[data-animated] .ok-logo__snout { animation: none; }
+}
+:root[data-motion="reduced"] .ok-logo[data-animated] .ok-logo__snout { animation: none; }

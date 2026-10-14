@@ -1,0 +1,51 @@
+/* Image：图片容器。底色用凹槽色，不描边、不加阴影；加载中扫一道骨架微光，加载完淡入，失败回退成中性色块 + 图标 */
+.ok-image {
+  --_ir: var(--ok-r-nested, var(--ok-r-3));   /* 默认（radius 不传或为 3）：放进容器取外层给的同心圆角 */
+  position: relative; display: block; min-width: 0; max-width: 100%;
+  overflow: hidden; isolation: isolate;
+  border-radius: var(--_ir); corner-shape: var(--ok-corner);
+  background: var(--ok-well); color: var(--ok-text-3);
+}
+.ok-image[data-radius="0"] { --_ir: 0px; }
+.ok-image[data-radius="1"] { --_ir: var(--ok-r-1); }
+.ok-image[data-radius="2"] { --_ir: var(--ok-r-2); }
+.ok-image[data-radius="4"] { --_ir: var(--ok-r-4); }
+.ok-image[data-radius="5"] { --_ir: var(--ok-r-5); }
+.ok-image[data-radius="6"] { --_ir: var(--ok-r-6); }
+.ok-image[data-radius="full"] { --_ir: var(--ok-r-full); corner-shape: round; }
+
+/* 没给比例时按图片本身的比例；还没有尺寸可用（加载中 / 回退）时先撑出一块，免得塌成 0 高 */
+.ok-image:not([data-ratio]):is([data-status="loading"], [data-status="error"], [data-status="empty"]) { min-height: 96px; }
+
+.ok-image__img {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0;
+  transition: opacity var(--ok-dur-3) var(--ok-ease-out);
+}
+.ok-image[data-fit="contain"] .ok-image__img { object-fit: contain; }
+.ok-image[data-status="loaded"] .ok-image__img { opacity: 1; }
+.ok-image[data-ratio] > :is(.ok-image__img, .ok-image__content) { position: absolute; inset: 0; }
+
+/* 加载中：骨架微光（与 Skeleton 同一套） */
+.ok-image[data-status="loading"][data-placeholder="skeleton"] {
+  background: linear-gradient(100deg, var(--ok-well) 30%, var(--ok-well-hi) 50%, var(--ok-well) 70%) 0 0 / 300% 100%;
+  animation: ok-shimmer 1.6s linear infinite;
+}
+
+/* 回退：中性色块 + 图片图标 */
+.ok-image__fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ok-text-3); }
+.ok-image__icon { width: clamp(20px, 18%, 40px); height: auto; aspect-ratio: 1; }
+
+/* children 当图：铺满外框，svg / img 跟着铺满 */
+.ok-image__content { display: block; width: 100%; height: 100%; }
+.ok-image__content > :is(svg, img, canvas, video) { display: block; width: 100%; height: 100%; }
+.ok-image[data-fit="cover"] .ok-image__content > :is(img, video) { object-fit: cover; }
+.ok-image[data-fit="contain"] .ok-image__content > :is(img, video) { object-fit: contain; }
+
+/* 有 src 时 children 叠在图上面（角标之类） */
+.ok-image__overlay { position: absolute; inset: 0; z-index: 1; display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) .ok-image[data-status="loading"] { animation: none; }
+}
+:root[data-motion="reduced"] .ok-image[data-status="loading"] { animation: none; }

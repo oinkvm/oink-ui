@@ -1,0 +1,13 @@
+/* 主题切换的圆形揭开（脚本见 core/theme.tsx）
+   · 新画面的 clip-path 由脚本逐帧写进单独的样式规则；旧画面不动，用 ok-vt-hold 撑住过渡直到圆铺满
+   · 过渡期间暂停页面上所有 CSS 过渡：快照之后颜色不再慢慢变，揭开一次到位 */
+:root.ok-theming::view-transition-old(root),
+:root.ok-theming::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+:root.ok-theming::view-transition-old(root) { z-index: 0; animation: ok-vt-hold 600ms linear both; }
+:root.ok-theming::view-transition-new(root) { z-index: 1; clip-path: circle(0px at 50% 0%); }
+@keyframes ok-vt-hold { from { opacity: 1; } to { opacity: 1; } }
+:root.ok-theming *,
+:root.ok-theming *::before,
+:root.ok-theming *::after { transition: none !important; }
+/* 过渡期间整页是一张快照盖在上面：让它不拦指针，紧接着的点按照常落到页面上 */
+:root.ok-theming::view-transition { pointer-events: none; }

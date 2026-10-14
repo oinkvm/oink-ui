@@ -1,0 +1,20 @@
+/* ==========================================================================
+   Toolbar：一排控件。放不下时沿主轴原生滚动（滚动条隐藏，触控板 / 触屏 / Shift+滚轮照常，
+   键盘聚焦的控件由浏览器自动滚进视野）
+   ========================================================================== */
+.ok-toolbar {
+  --_bleed: 4px;   /* 给子项的焦点环留位置，不然会被 overflow 裁掉 */
+  display: flex; align-items: center; gap: var(--_l-gap, var(--ok-s-2));
+  max-width: calc(100% + 2 * var(--_bleed)); padding: var(--_bleed); margin: calc(-1 * var(--_bleed));
+  overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
+  scrollbar-width: none; scroll-padding: var(--_bleed);
+}
+.ok-toolbar::-webkit-scrollbar { display: none; }
+.ok-toolbar > * { flex: none; }
+.ok-toolbar > .ok-spacer { flex: 1 1 0%; }
+/* wrap：放不下时换行，不再横向滚动 */
+.ok-toolbar[data-wrap] { flex-wrap: wrap; overflow: visible; }
+.ok-toolbar[data-orientation="vertical"] {
+  flex-direction: column; align-items: stretch; max-width: none; max-height: calc(100% + 2 * var(--_bleed));
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: auto contain;
+}

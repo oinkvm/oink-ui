@@ -1,0 +1,81 @@
+/* Input · 搬自 oink.css 第 5 节 */
+.ok-input {
+  display: flex; align-items: center; gap: 8px;
+  height: var(--ok-h-md); padding: 0 14px;
+  border-radius: calc(14px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-well); color: var(--ok-text-3);
+  box-shadow: inset 0 0 0 1.5px transparent;
+  cursor: text;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out),
+    box-shadow var(--ok-dur-3) var(--ok-ease-out), color var(--ok-dur-2);
+}
+@media (hover: hover) { .ok-input:hover { background: color-mix(in srgb, var(--ok-well) 70%, var(--ok-well-2)); } }
+/* 深色下凹槽提亮后和卡片底色太接近，悬停只提亮一点点 */
+@media (hover: hover) { :root[data-theme="dark"] .ok-input:hover:not(:focus-within) { background: color-mix(in srgb, var(--ok-well) 88%, var(--ok-well-2)); } }
+.ok-input:focus-within {
+  background: var(--ok-raised); color: var(--ok-text-2);
+  box-shadow: inset 0 0 0 1.5px var(--ok-accent);
+}
+.ok-input input {
+  all: unset; flex: 1; min-width: 0; height: 100%;
+  font: 500 15px/1 var(--ok-font); color: var(--ok-text);
+}
+.ok-input input::placeholder { color: var(--ok-text-3); }
+.ok-input input::-webkit-search-cancel-button { display: none; }
+.ok-input--pill { border-radius: var(--ok-r-full); corner-shape: round; padding: 0 16px; }
+.ok-input--lg { height: var(--ok-h-lg); padding: 0 18px; gap: 10px; }
+.ok-input--lg input { font-size: 16px; }
+.ok-input__icon {
+  width: 18px; height: 18px; flex: none;
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), color var(--ok-dur-2);
+}
+.ok-input:focus-within .ok-input__icon { color: var(--ok-accent-text); transform: scale(1.1); }
+.ok-input__clear {
+  display: grid; place-items: center; flex: none;
+  width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; corner-shape: round;
+  background: var(--ok-text-3); color: var(--ok-raised); cursor: pointer;
+  opacity: 0; transform: scale(0) rotate(-90deg);
+  transition: transform var(--ok-dur-2) var(--ok-ease-in), opacity var(--ok-dur-2), background-color var(--ok-dur-2);
+}
+.ok-input__clear .ok-icon { width: 12px; height: 12px; stroke-width: 2.4; }
+@media (hover: hover) { .ok-input__clear:hover { background: var(--ok-text-2); } }
+.ok-input.has-value .ok-input__clear {
+  opacity: 1; transform: none;
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), opacity var(--ok-dur-2), background-color var(--ok-dur-2);
+}
+
+/* —— 以下为组件库补充 —— */
+.ok-input { min-width: 0; }
+.ok-input[data-has-value] .ok-input__clear {
+  opacity: 1; transform: none;
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), opacity var(--ok-dur-2), background-color var(--ok-dur-2);
+}
+.ok-input__clear:disabled { pointer-events: none; }
+.ok-input--sm { height: var(--ok-h-sm); padding: 0 12px; gap: 6px; border-radius: calc(11px * var(--ok-rk)); }
+.ok-input--sm input { font-size: 13px; }
+.ok-input--sm.ok-input--pill { border-radius: var(--ok-r-full); }
+.ok-input--inline { display: inline-flex; vertical-align: middle; }
+.ok-input__affix { display: inline-flex; align-items: center; flex: none; gap: 6px; font: 500 14px/1 var(--ok-font); color: inherit; white-space: nowrap; }
+.ok-input__affix .ok-icon { width: 18px; height: 18px; }
+.ok-input__toggle {
+  display: grid; place-items: center; flex: none; width: 28px; height: 28px; margin-right: -6px; padding: 0; border: 0;
+  border-radius: 50%; corner-shape: round; background: transparent; color: var(--ok-text-2); cursor: pointer;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), color var(--ok-dur-2) var(--ok-ease-out);
+}
+.ok-input__toggle .ok-icon { width: 18px; height: 18px; }
+/* 末尾的圆形按钮（清除 20、显示密码 28）：右边距和上下边距相等，圆和输入框右端的弧线间距均匀（同心）。
+   --_ih / --_ipx 跟着尺寸和 pill 走，和上面各自的 height / padding 一一对应 */
+.ok-input { --_ih: var(--ok-h-md); --_ipx: 14px; }
+.ok-input--pill { --_ipx: 16px; }
+.ok-input--lg { --_ih: var(--ok-h-lg); --_ipx: 18px; }
+.ok-input--sm { --_ih: var(--ok-h-sm); --_ipx: 12px; }
+.ok-input > .ok-input__clear:last-child { margin-right: calc((var(--_ih) - 20px) / 2 - var(--_ipx)); }
+.ok-input > .ok-input__toggle:last-child { margin-right: calc((var(--_ih) - 28px) / 2 - var(--_ipx)); }
+@media (hover: hover) { .ok-input__toggle:hover { background: var(--ok-hover); color: var(--ok-text); } }
+/* 校验结果：1.5px 状态色；颜色之外由 Field 的错误文字 / 图标补充 */
+.ok-input[data-invalid] { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+.ok-input[data-disabled] { opacity: .5; cursor: not-allowed; }
+.ok-input[data-disabled] input { cursor: not-allowed; }
+@media (hover: hover) { .ok-input[data-disabled]:hover { background: var(--ok-well); } }
+@media (pointer: coarse) { .ok-input--sm input { font-size: 16px; } }
+[data-touch] .ok-input--sm input { font-size: 16px; }

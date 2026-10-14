@@ -1,0 +1,53 @@
+/* ==========================================================================
+   Nav（原型 13 节 .ok-nav）+ 图标、徽标位、分组、折叠
+   ========================================================================== */
+.ok-nav { position: relative; isolation: isolate; display: grid; gap: 2px; min-width: 0; }
+.ok-nav__pill {
+  position: absolute; z-index: -1; left: 0; right: 0; top: 0; height: var(--h, var(--ok-h-item));
+  transform: translateY(var(--y, 0)); border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner); background: var(--ok-raised);
+  box-shadow: inset 0 0 0 1px var(--ok-line); opacity: 0; pointer-events: none;
+  transition: transform var(--ok-spring-dur) var(--ok-spring), height var(--ok-spring-dur) var(--ok-spring), opacity var(--ok-dur-2);
+}
+.ok-nav:not([data-ready]) .ok-nav__pill { transition: none; }
+.ok-nav[data-ready] .ok-nav__pill { opacity: 1; }
+
+.ok-nav__item {
+  box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; height: var(--ok-h-item); padding: 0 12px; margin: 0;
+  border: 0; border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner); background: none;
+  font: 500 14px/1 var(--ok-font); color: var(--ok-text-2); text-align: left; text-decoration: none; cursor: pointer;
+  transition: color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-dur) var(--ok-spring);
+}
+@media (hover: hover) { .ok-nav__item:hover { color: var(--ok-text); } }
+.ok-nav__item[aria-current]:not([aria-current="false"]) { color: var(--ok-text); font-weight: 600; }
+.ok-nav__item--sub { height: var(--ok-h-item-sub); padding-left: 26px; font-size: 13px; }
+.ok-nav__item[aria-disabled="true"] { color: var(--ok-text-3); cursor: not-allowed; transform: none; }
+
+.ok-nav__icon { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; }
+.ok-nav__icon .ok-icon { width: 18px; height: 18px; }
+.ok-nav__label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
+.ok-nav__badge { display: inline-flex; align-items: center; flex: none; margin-left: auto; font-weight: 600; font-size: 12px; color: var(--ok-text-3); }
+
+.ok-nav__group { display: grid; gap: 2px; min-width: 0; }
+.ok-nav__group + .ok-nav__group,
+.ok-nav__item + .ok-nav__group { margin-top: var(--ok-s-3); }
+.ok-nav__group-label {
+  display: flex; align-items: center; height: 28px; padding: 0 12px; min-width: 0;
+  font: 600 12px/1.3 var(--ok-font); color: var(--ok-text-3);
+}
+.ok-nav__group-label > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* —— 折叠：只剩图标 —— */
+.ok-nav[data-collapsed] .ok-nav__item { position: relative; justify-content: center; gap: 0; padding: 0; }
+.ok-nav[data-collapsed] .ok-nav__label { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); }
+/* 没给图标的项：折叠后显示文字的第一个字，至少认得出来 */
+.ok-nav[data-collapsed] .ok-nav__item:not(:has(.ok-nav__icon)) .ok-nav__label {
+  position: static; width: 1.2em; height: auto; margin: 0; clip-path: none; text-overflow: clip; text-align: center;
+}
+.ok-nav[data-collapsed] .ok-nav__badge { display: none; }
+.ok-nav[data-collapsed] .ok-nav__item[data-has-badge]::after {
+  content: ""; position: absolute; top: 7px; right: 7px; width: 7px; height: 7px;
+  border-radius: 50%; corner-shape: round; background: var(--ok-accent);
+}
+.ok-nav[data-collapsed] .ok-nav__group-label { height: 13px; padding: 0 8px; }
+.ok-nav[data-collapsed] .ok-nav__group-label::before { content: ""; flex: 1; height: 1px; background: var(--ok-line); }
+.ok-nav[data-collapsed] .ok-nav__group-label > span { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); }

@@ -1,0 +1,21 @@
+.ok-alert {
+  --_c: var(--ok-accent-text); --_s: var(--ok-accent-soft);
+  display: flex; align-items: flex-start; gap: 12px; min-width: 0; padding: var(--ok-s-4); border-radius: var(--ok-r-nested, calc(18px * var(--ok-rk))); corner-shape: var(--ok-corner);
+  background: var(--_s); color: var(--ok-text); font: 450 14px/1.55 var(--ok-font);
+}
+.ok-alert > .ok-icon { color: var(--_c); margin-top: 1px; }
+.ok-alert b { font-weight: 600; }
+.ok-alert__body { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ok-alert__title { margin-right: .35em; }
+.ok-alert__action { display: flex; align-items: center; gap: var(--ok-s-2); flex: none; margin: -5px 0; }
+.ok-alert > .ok-btn { flex: none; margin: -5px -6px -5px 0; }
+.ok-alert--neutral { --_c: var(--ok-text-2); --_s: var(--ok-fill); }
+.ok-alert--info { --_c: var(--ok-info-text); --_s: var(--ok-info-soft); }
+.ok-alert--success { --_c: var(--ok-success-text); --_s: var(--ok-success-soft); }
+.ok-alert--warning { --_c: var(--ok-warning-text); --_s: var(--ok-warning-soft); }
+.ok-alert--danger { --_c: var(--ok-danger-text); --_s: var(--ok-danger-soft); }
+/* 窄屏：操作换到正文下面一行 */
+@media (max-width: 519.98px) {
+  .ok-alert:has(.ok-alert__action) { flex-wrap: wrap; }
+  .ok-alert__action { order: 3; flex-basis: 100%; margin: 0; padding-left: 32px; }
+}

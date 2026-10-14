@@ -1,0 +1,67 @@
+/* ==========================================================================
+   SplitPane 可拖拽分栏
+   第一栏占 --ok-split-size（百分比，无单位），中间一条分隔条。分隔条本身透明，
+   中间一枚小把手；指向 / 拖动 / 聚焦时把手加深。没有阴影。
+   自身变窄时改成上下堆叠：用 @container 判断（按自己的宽度，不是视口）。
+   ========================================================================== */
+.ok-split { --_sep: 12px; box-sizing: border-box; min-width: 0; min-height: 0; width: 100%; height: 100%; container-type: inline-size; }
+@media (pointer: coarse) { .ok-split { --_sep: 20px; } }
+.ok-split__track { display: flex; width: 100%; height: 100%; min-width: 0; min-height: 0; }
+.ok-split[data-orientation="vertical"] > .ok-split__track { flex-direction: column; }
+.ok-split__pane { box-sizing: border-box; min-width: 0; min-height: 0; overflow: auto; }
+.ok-split__pane--first { flex: 0 0 calc(var(--ok-split-size, 50) * 1% - var(--_sep) / 2); }
+.ok-split__pane--second { flex: 1 1 0%; }
+
+.ok-split__sep {
+  position: relative; flex: 0 0 var(--_sep); align-self: stretch; display: grid; place-items: center;
+  border-radius: var(--ok-r-full); corner-shape: round; cursor: col-resize; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.ok-split[data-orientation="vertical"] > .ok-split__track > .ok-split__sep { cursor: row-resize; }
+.ok-split__sep::after {
+  content: ""; width: 4px; height: 32px; max-height: 60%; border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-line-2);
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-dur) var(--ok-spring);
+}
+.ok-split[data-orientation="vertical"] > .ok-split__track > .ok-split__sep::after { width: 32px; max-width: 60%; height: 4px; max-height: none; }
+@media (hover: hover) { .ok-split__sep:hover::after { background: var(--ok-text-3); } }
+.ok-split__sep:focus-visible { outline-offset: -2px; }
+.ok-split__sep:focus-visible::after,
+.ok-split[data-dragging] .ok-split__sep::after { background: var(--ok-text-2); transform: scaleY(1.25); }
+.ok-split[data-orientation="vertical"] .ok-split__sep:focus-visible::after,
+.ok-split[data-orientation="vertical"][data-dragging] .ok-split__sep::after { transform: scaleX(1.25); }
+/* 拖动时别选中两栏里的文字，也别让里面的 iframe 之类把指针吃掉 */
+.ok-split[data-dragging] .ok-split__pane { user-select: none; -webkit-user-select: none; pointer-events: none; }
+
+/* —— 堆叠：第一栏按内容高度，第二栏占剩下的；分隔条退成一条普通的线 —— */
+.ok-split[data-stacked="true"] > .ok-split__track { flex-direction: column; }
+.ok-split[data-stacked="true"] > .ok-split__track > .ok-split__pane { flex: 0 0 auto; width: auto; height: auto; }
+.ok-split[data-stacked="true"] > .ok-split__track > .ok-split__pane--second { flex: 1 1 auto; }
+.ok-split[data-stacked="true"] > .ok-split__track > .ok-split__sep { flex-basis: 1px; width: auto; height: 1px; margin: var(--ok-s-3) 0; background: var(--ok-line); cursor: auto; pointer-events: none; touch-action: auto; }
+.ok-split[data-stacked="true"] > .ok-split__track > .ok-split__sep::after { display: none; }
+@container (max-width: 519.98px) {
+  .ok-split[data-stack-below="sm"] > .ok-split__track { flex-direction: column; }
+  .ok-split[data-stack-below="sm"] > .ok-split__track > .ok-split__pane { flex: 0 0 auto; width: auto; height: auto; }
+  .ok-split[data-stack-below="sm"] > .ok-split__track > .ok-split__pane--second { flex: 1 1 auto; }
+  .ok-split[data-stack-below="sm"] > .ok-split__track > .ok-split__sep { flex-basis: 1px; width: auto; height: 1px; margin: var(--ok-s-3) 0; background: var(--ok-line); cursor: auto; pointer-events: none; touch-action: auto; }
+  .ok-split[data-stack-below="sm"] > .ok-split__track > .ok-split__sep::after { display: none; }
+}
+@container (max-width: 767.98px) {
+  .ok-split[data-stack-below="md"] > .ok-split__track { flex-direction: column; }
+  .ok-split[data-stack-below="md"] > .ok-split__track > .ok-split__pane { flex: 0 0 auto; width: auto; height: auto; }
+  .ok-split[data-stack-below="md"] > .ok-split__track > .ok-split__pane--second { flex: 1 1 auto; }
+  .ok-split[data-stack-below="md"] > .ok-split__track > .ok-split__sep { flex-basis: 1px; width: auto; height: 1px; margin: var(--ok-s-3) 0; background: var(--ok-line); cursor: auto; pointer-events: none; touch-action: auto; }
+  .ok-split[data-stack-below="md"] > .ok-split__track > .ok-split__sep::after { display: none; }
+}
+@container (max-width: 1023.98px) {
+  .ok-split[data-stack-below="lg"] > .ok-split__track { flex-direction: column; }
+  .ok-split[data-stack-below="lg"] > .ok-split__track > .ok-split__pane { flex: 0 0 auto; width: auto; height: auto; }
+  .ok-split[data-stack-below="lg"] > .ok-split__track > .ok-split__pane--second { flex: 1 1 auto; }
+  .ok-split[data-stack-below="lg"] > .ok-split__track > .ok-split__sep { flex-basis: 1px; width: auto; height: 1px; margin: var(--ok-s-3) 0; background: var(--ok-line); cursor: auto; pointer-events: none; touch-action: auto; }
+  .ok-split[data-stack-below="lg"] > .ok-split__track > .ok-split__sep::after { display: none; }
+}
+@container (max-width: 1279.98px) {
+  .ok-split[data-stack-below="xl"] > .ok-split__track { flex-direction: column; }
+  .ok-split[data-stack-below="xl"] > .ok-split__track > .ok-split__pane { flex: 0 0 auto; width: auto; height: auto; }
+  .ok-split[data-stack-below="xl"] > .ok-split__track > .ok-split__pane--second { flex: 1 1 auto; }
+  .ok-split[data-stack-below="xl"] > .ok-split__track > .ok-split__sep { flex-basis: 1px; width: auto; height: 1px; margin: var(--ok-s-3) 0; background: var(--ok-line); cursor: auto; pointer-events: none; touch-action: auto; }
+  .ok-split[data-stack-below="xl"] > .ok-split__track > .ok-split__sep::after { display: none; }
+}

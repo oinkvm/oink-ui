@@ -1,0 +1,121 @@
+/* ==========================================================================
+   AppShell 应用骨架
+   侧栏、辅助栏和抽屉、面板是同一张“悬浮卡片”：圆角 --ok-r-5、表面 --ok-surface、
+   1px 内描边 + 顶部高光，四周和页面边缘留缝。没有阴影。
+   · 宽屏：卡片停靠在两侧，占据布局空间（贴在画布上，描边用浅的 --ok-line）
+   · 窄屏：同一份内容由 FloatingCard 从对应一侧滑入（盖在内容上，描边是它自带的 --ok-line-2）
+   整体占满一屏（100dvh），顶栏 / 侧栏 / 主区 / 辅助栏各自滚动。
+   ========================================================================== */
+.ok-shell {
+  --_gap: var(--ok-shell-gap, 12px);
+  position: relative; box-sizing: border-box; display: grid; min-width: 0;
+  grid-template:
+    "header header header" auto
+    "sidebar main aside" minmax(0, 1fr)
+    "footer footer footer" auto
+    / auto minmax(0, 1fr) auto;
+  height: 100vh; height: 100dvh;
+  /* clip 而不是 hidden：hidden 仍然是可以被脚本滚动的容器，里面有东西 scrollIntoView 时整个骨架会被顶上去、顶栏消失 */
+  overflow: hidden; overflow: clip;
+  padding: max(var(--_gap), env(safe-area-inset-top, 0px)) max(var(--_gap), env(safe-area-inset-right, 0px))
+    max(var(--_gap), env(safe-area-inset-bottom, 0px)) max(var(--_gap), env(safe-area-inset-left, 0px));
+  background: var(--ok-bg); color: var(--ok-text); font-family: var(--ok-font);
+}
+@media (max-width: 519.98px) { .ok-shell:not([data-contained]) { --_gap: var(--ok-shell-gap, 8px); } }
+/* 嵌在容器里：高度跟容器走，窄屏判断按自己的宽度 */
+.ok-shell[data-contained] { height: 100%; padding: var(--_gap); container: ok-shell / inline-size; }
+
+/* —— 跳转链接：平时藏在上面，Tab 聚焦时滑下来 —— */
+.ok-skip-link {
+  position: absolute; z-index: 90; top: var(--_gap, 12px); left: var(--_gap, 12px);
+  display: inline-flex; align-items: center; height: var(--ok-h-md); padding: 0 var(--ok-s-4);
+  border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-inverse); color: var(--ok-on-inverse);
+  font: 600 14px/1 var(--ok-font); text-decoration: none; white-space: nowrap;
+  opacity: 0; transform: translateY(calc(-100% - 2 * var(--_gap, 12px))); pointer-events: none;
+  transition: opacity var(--ok-dur-2) var(--ok-ease-in), transform var(--ok-dur-3) var(--ok-ease-in);
+}
+.ok-skip-link:focus, .ok-skip-link:focus-visible {
+  opacity: 1; transform: none; pointer-events: auto;
+  transition: opacity var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-soft-dur) var(--ok-spring-soft);
+}
+
+/* —— 卡片：停靠的侧栏 / 辅助栏，以及抽屉里的那一张 —— */
+.ok-shell-card {
+  box-sizing: border-box; display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  padding: var(--ok-shell-card-pad, var(--ok-s-5));   /* 20 = 外圆角 32 − 导航项圆角 12，同心 */
+  border-radius: var(--ok-r-5); corner-shape: var(--ok-corner);
+  background: var(--ok-surface); color: var(--ok-text);
+  box-shadow: inset 0 0 0 1px var(--ok-line), inset 0 1.5px 0 var(--ok-hi);
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  /* 定位容器：里面 position: absolute 的东西（比如读屏专用的 .ok-sr）跟着这张卡片滚动，不会跑去撑大外面的骨架 */
+  position: relative;
+}
+/* 同心圆角：卡片圆角 − 内边距 × rk（不小于 4 × rk）往下传，里面的 Card / Group / Image… 自动取（R32 − 20 → 12，和导航项一致）。
+   抽屉形态同时是 .ok-float__card，这里的选择器更具体，内边距以本卡片为准 */
+.ok-shell-card,
+.ok-float__card.ok-shell-card { --ok-r-nested: max(calc(4px * var(--ok-rk)), calc(var(--ok-r-5) - var(--ok-shell-card-pad, var(--ok-s-5)) * var(--ok-rk))); }
+/* 抽屉：圆角、底色、描边（--ok-line-2）、进退场都来自 .ok-float__card，这里只补内边距 */
+.ok-float__card.ok-shell__drawer { box-shadow: inset 0 0 0 1px var(--ok-line-2), inset 0 1.5px 0 var(--ok-hi); }
+.ok-shell__drawer-body { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; min-height: 0; }
+
+.ok-shell__sidebar {
+  grid-area: sidebar; margin-inline-end: var(--_gap);
+  width: var(--ok-shell-sidebar-w, 260px); max-width: 45vw;
+  transition: width var(--ok-spring-soft-dur) var(--ok-spring-soft);
+}
+/* 图标窄条：一个导航项（36）加两侧内边距 */
+.ok-shell__sidebar[data-rail] { width: calc(36px + 2 * var(--ok-shell-card-pad, var(--ok-s-5))); }
+@media (pointer: coarse) { .ok-shell__sidebar[data-rail] { width: calc(44px + 2 * var(--ok-shell-card-pad, var(--ok-s-5))); } }
+.ok-shell__aside { grid-area: aside; margin-inline-start: var(--_gap); width: var(--ok-shell-aside-w, 320px); max-width: 45vw; }
+
+/* —— 主区 —— */
+/* position: relative 的原因同上：Table、Pagination、Stat 里都有 .ok-sr，没有它就会以整个 .ok-shell 为参照 */
+.ok-shell__main { position: relative; grid-area: main; box-sizing: border-box; min-width: 0; min-height: 0; overflow: auto; }
+.ok-shell__main:focus-visible { outline-offset: -2px; border-radius: var(--ok-r-3); }
+
+/* —— 顶栏 / 底栏 —— */
+.ok-shell__header,
+.ok-shell__footer { box-sizing: border-box; display: flex; align-items: center; gap: var(--ok-s-3); min-width: 0; }
+.ok-shell__header { grid-area: header; min-height: var(--ok-h-lg); margin-bottom: var(--_gap); padding: 0 var(--ok-s-2); }
+.ok-shell__footer { grid-area: footer; min-height: var(--ok-h-md); margin-top: var(--_gap); padding: 0 var(--ok-s-2); font: 450 13px/1.4 var(--ok-font); color: var(--ok-text-2); }
+.ok-shell__header > *, .ok-shell__footer > * { min-width: 0; }
+:is(.ok-shell__header, .ok-shell__footer)[data-variant="card"] {
+  padding: var(--ok-s-2) var(--ok-s-4);
+  border-radius: var(--ok-r-4); corner-shape: var(--ok-corner); background: var(--ok-surface);
+  box-shadow: inset 0 0 0 1px var(--ok-line), inset 0 1.5px 0 var(--ok-hi);
+}
+
+/* —— 首屏不闪：脚本接管之前（服务端渲染出来的那一帧），窄屏下先用 CSS 把停靠的卡片藏起来。
+   脚本跑起来以后，抽屉形态下停靠的卡片根本不渲染，这几条就不再起作用 —— */
+@media (max-width: 519.98px) {
+  .ok-shell:not([data-contained])[data-collapsed="auto"][data-collapse-below="sm"] > .ok-shell__sidebar,
+  .ok-shell:not([data-contained])[data-collapsed="auto"][data-aside-collapse-below="sm"] > .ok-shell__aside { display: none; }
+}
+@container ok-shell (max-width: 519.98px) {
+  .ok-shell[data-contained][data-collapsed="auto"][data-collapse-below="sm"] > .ok-shell__sidebar,
+  .ok-shell[data-contained][data-collapsed="auto"][data-aside-collapse-below="sm"] > .ok-shell__aside { display: none; }
+}
+@media (max-width: 767.98px) {
+  .ok-shell:not([data-contained])[data-collapsed="auto"][data-collapse-below="md"] > .ok-shell__sidebar,
+  .ok-shell:not([data-contained])[data-collapsed="auto"][data-aside-collapse-below="md"] > .ok-shell__aside { display: none; }
+}
+@container ok-shell (max-width: 767.98px) {
+  .ok-shell[data-contained][data-collapsed="auto"][data-collapse-below="md"] > .ok-shell__sidebar,
+  .ok-shell[data-contained][data-collapsed="auto"][data-aside-collapse-below="md"] > .ok-shell__aside { display: none; }
+}
+@media (max-width: 1023.98px) {
+  .ok-shell:not([data-contained])[data-collapsed="auto"][data-collapse-below="lg"] > .ok-shell__sidebar,
+  .ok-shell:not([data-contained])[data-collapsed="auto"][data-aside-collapse-below="lg"] > .ok-shell__aside { display: none; }
+}
+@container ok-shell (max-width: 1023.98px) {
+  .ok-shell[data-contained][data-collapsed="auto"][data-collapse-below="lg"] > .ok-shell__sidebar,
+  .ok-shell[data-contained][data-collapsed="auto"][data-aside-collapse-below="lg"] > .ok-shell__aside { display: none; }
+}
+@media (max-width: 1279.98px) {
+  .ok-shell:not([data-contained])[data-collapsed="auto"][data-collapse-below="xl"] > .ok-shell__sidebar,
+  .ok-shell:not([data-contained])[data-collapsed="auto"][data-aside-collapse-below="xl"] > .ok-shell__aside { display: none; }
+}
+@container ok-shell (max-width: 1279.98px) {
+  .ok-shell[data-contained][data-collapsed="auto"][data-collapse-below="xl"] > .ok-shell__sidebar,
+  .ok-shell[data-contained][data-collapsed="auto"][data-aside-collapse-below="xl"] > .ok-shell__aside { display: none; }
+}

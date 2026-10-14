@@ -1,0 +1,74 @@
+/* Slider · 搬自 oink.css 第 9 节 */
+.ok-slider {
+  --v: .5; --tw: 42px; --th: 28px;
+  /* 原型写的是 flex: 1（flex-basis: 0），放进纵向 flex 容器时主轴是高度，高度被基准值 0 盖掉、整条塌没并和上一行重叠。
+     改成 flex-basis: auto：横向容器里照旧吃掉剩余宽度；纵向容器和 grid 里按 32px 的固有高度排，min / max-height 保证既不被压扁也不被拉高 */
+  position: relative; display: flex; align-items: center; flex: 1 1 auto;
+  height: 32px; min-height: 32px; max-height: 32px; min-width: 120px; cursor: pointer; touch-action: none; user-select: none;
+  border-radius: var(--ok-r-full); corner-shape: round;
+}
+.ok-slider__track { position: absolute; left: 0; right: 0; height: 6px; border-radius: 6px; background: var(--ok-well-2); overflow: hidden; }
+.ok-slider__fill {
+  position: absolute; inset: 0 auto 0 0; border-radius: inherit; corner-shape: inherit; background: var(--ok-accent);
+  width: calc(var(--v) * (100% - var(--tw)) + var(--tw) / 2);
+  transition: width var(--ok-spring-dur) var(--ok-spring);
+}
+.ok-slider__ticks { position: absolute; left: calc(var(--tw) / 2); right: calc(var(--tw) / 2); height: 6px; pointer-events: none; }
+.ok-slider__ticks i { position: absolute; top: 1.5px; width: 3px; height: 3px; margin-left: -1.5px; border-radius: 50%; corner-shape: round; background: color-mix(in srgb, var(--ok-text-3) 55%, var(--ok-well-2)); }
+.ok-slider__thumb {
+  position: absolute; left: calc(var(--v) * (100% - var(--tw)));
+  width: var(--tw); height: var(--th); border-radius: var(--ok-r-full); corner-shape: round;
+  background: var(--ok-thumb);
+  box-shadow: inset 0 0 0 1px var(--ok-line-2);
+  transition: left var(--ok-spring-dur) var(--ok-spring), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-slider.is-active .ok-slider__thumb { transform: scale(1.12, 1.06); }
+.ok-slider.is-tracking .ok-slider__thumb { transition-property: transform; }
+.ok-slider.is-tracking .ok-slider__fill { transition: none; }
+.ok-slider__bubble {
+  position: absolute; left: 50%; bottom: calc(100% + 10px);
+  padding: 5px 9px; border-radius: calc(10px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  background: var(--ok-inverse); color: var(--ok-on-inverse);
+  font: 600 12px/1 var(--ok-font); font-variant-numeric: tabular-nums; white-space: nowrap;
+  pointer-events: none; opacity: 0; transform-origin: 50% 130%;
+  transform: translateX(-50%) scale(.4);
+  transition: transform var(--ok-dur-2) var(--ok-ease-in), opacity var(--ok-dur-2) var(--ok-ease-in);
+}
+.ok-slider[data-ticks] .ok-slider__bubble { display: none; }
+.ok-slider.is-active .ok-slider__bubble,
+.ok-slider:focus-visible .ok-slider__bubble {
+  opacity: 1; transform: translateX(-50%) scale(1);
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), opacity var(--ok-dur-2) var(--ok-ease-out);
+}
+
+/* —— 以下为组件库补充：状态改用 data-*，另加禁用态与双滑块 —— */
+/* 根节点的 data-active =「正在按住拖动」，也给使用者写样式用；双滑块的根节点同样有，放大只作用于被按住的那一个（见下方 --range） */
+.ok-slider:not(.ok-slider--range)[data-active] .ok-slider__thumb { transform: scale(1.12, 1.06); }
+.ok-slider[data-tracking] .ok-slider__thumb { transition-property: transform; }
+.ok-slider[data-tracking] .ok-slider__fill { transition: none; }
+.ok-slider:not(.ok-slider--range)[data-active] .ok-slider__bubble {
+  opacity: 1; transform: translateX(-50%) scale(1);
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), opacity var(--ok-dur-2) var(--ok-ease-out);
+}
+.ok-slider[aria-disabled="true"] { cursor: not-allowed; opacity: .5; }
+.ok-slider[aria-disabled="true"] .ok-slider__thumb { transform: none; }
+
+.ok-slider--range { --a: 0; --b: 1; }
+.ok-slider--range .ok-slider__fill {
+  inset: 0 auto 0 calc(var(--a) * (100% - var(--tw)) + var(--tw) / 2);
+  width: calc((var(--b) - var(--a)) * (100% - var(--tw)));
+  transition: width var(--ok-spring-dur) var(--ok-spring), left var(--ok-spring-dur) var(--ok-spring);
+}
+.ok-slider--range .ok-slider__thumb[data-index="0"] { left: calc(var(--a) * (100% - var(--tw))); }
+.ok-slider--range .ok-slider__thumb[data-index="1"] { left: calc(var(--b) * (100% - var(--tw))); }
+.ok-slider--range .ok-slider__thumb[data-active] { transform: scale(1.12, 1.06); z-index: 1; }
+.ok-slider--range .ok-slider__thumb:focus-visible { z-index: 1; }
+.ok-slider--range .ok-slider__thumb[data-active] .ok-slider__bubble,
+.ok-slider--range .ok-slider__thumb:focus-visible .ok-slider__bubble {
+  opacity: 1; transform: translateX(-50%) scale(1);
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), opacity var(--ok-dur-2) var(--ok-ease-out);
+}
+.ok-slider--range[data-disabled] { cursor: not-allowed; opacity: .5; }
+
+/* 悬停：圆钮微微放大（图形，不涉及文字） */
+@media (hover: hover) { .ok-slider:not([data-active]):hover .ok-slider__thumb:not([data-active]) { transform: scale(1.05); } }

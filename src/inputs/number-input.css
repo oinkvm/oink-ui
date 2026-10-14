@@ -1,0 +1,43 @@
+/* NumberInput（Stepper）· 搬自 oink.css 第 9 节 */
+.ok-stepper { display: inline-flex; align-items: center; gap: 2px; height: var(--ok-h-md); padding: 3px; border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-well); }
+.ok-stepper__btn {
+  display: grid; place-items: center; width: calc(var(--ok-h-md) - 6px); height: calc(var(--ok-h-md) - 6px); padding: 0; margin: 0; border: 0; border-radius: 50%; corner-shape: round;
+  background: var(--ok-raised); color: var(--ok-text); cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), opacity var(--ok-dur-2);
+}
+.ok-stepper__btn:active { transform: scale(.84); transition-duration: var(--ok-dur-1); transition-timing-function: var(--ok-ease-out); }
+.ok-stepper__btn[aria-disabled="true"] { opacity: .4; }
+.ok-stepper__btn .ok-icon { width: 16px; height: 16px; stroke-width: 2.2; }
+.ok-stepper__value {
+  position: relative; display: grid; place-items: center; min-width: 46px; height: calc(var(--ok-h-md) - 6px); overflow: hidden;
+  font: 600 15px/1 var(--ok-font); font-variant-numeric: tabular-nums; color: var(--ok-text);
+}
+.ok-stepper__value > span { grid-area: 1 / 1; }
+.ok-roll { position: relative; display: inline-grid; overflow: hidden; vertical-align: bottom; }
+.ok-roll > span { grid-area: 1 / 1; }
+
+/* —— 以下为组件库补充：数值是一个真的输入框（role="spinbutton"） —— */
+.ok-stepper { box-shadow: inset 0 0 0 1.5px transparent; transition: box-shadow var(--ok-dur-3) var(--ok-ease-out), background-color var(--ok-dur-2) var(--ok-ease-out); }
+.ok-stepper:focus-within { box-shadow: inset 0 0 0 1.5px var(--ok-accent); }
+.ok-stepper[data-invalid] { box-shadow: inset 0 0 0 1.5px var(--ok-danger); }
+.ok-stepper__btn { flex: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
+.ok-stepper__btn[aria-disabled="true"] { cursor: not-allowed; }
+.ok-stepper__btn[aria-disabled="true"]:active { transform: none; }
+input.ok-stepper__value {
+  display: block; width: 46px; min-width: 46px; padding: 0; margin: 0; border: 0; outline: 0; background: none;
+  text-align: center; appearance: none; cursor: text;
+}
+/* 位数多时跟着内容变宽；不支持的浏览器保持固定宽度 */
+@supports (field-sizing: content) { input.ok-stepper__value { field-sizing: content; width: auto; max-width: 12ch; padding: 0 4px; } }
+.ok-stepper--sm { height: var(--ok-h-sm); }
+.ok-stepper--sm .ok-stepper__btn { width: calc(var(--ok-h-sm) - 6px); height: calc(var(--ok-h-sm) - 6px); }
+.ok-stepper--sm .ok-stepper__value { height: calc(var(--ok-h-sm) - 6px); font-size: 13px; }
+.ok-stepper--lg { height: var(--ok-h-lg); }
+.ok-stepper--lg .ok-stepper__btn { width: calc(var(--ok-h-lg) - 6px); height: calc(var(--ok-h-lg) - 6px); }
+.ok-stepper--lg .ok-stepper__value { height: calc(var(--ok-h-lg) - 6px); font-size: 16px; }
+.ok-stepper[data-disabled] { opacity: .5; cursor: not-allowed; }
+.ok-stepper[data-disabled] .ok-stepper__btn,
+.ok-stepper[data-disabled] input { cursor: not-allowed; }
+@media (pointer: coarse) { input.ok-stepper__value { font-size: 16px; } }
+[data-touch] input.ok-stepper__value { font-size: 16px; }

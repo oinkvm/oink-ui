@@ -1,0 +1,69 @@
+{
+  "name": "oink-ui",
+  "version": "1.0.0",
+  "description": "A soft, flat, quiet React component library — responsive, accessible, with light and dark themes.",
+  "keywords": [
+    "react",
+    "react-components",
+    "ui",
+    "component-library",
+    "design-system",
+    "accessibility"
+  ],
+  "license": "MIT",
+  "author": "Hachiwii <coder@hachiwii.com>",
+  "homepage": "https://oink-ui.hachiwii.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oinkvm/oink-ui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oinkvm/oink-ui/issues"
+  },
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/oink-ui.cjs",
+  "module": "./dist/oink-ui.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/oink-ui.js",
+      "require": "./dist/oink-ui.cjs"
+    },
+    "./styles.css": "./dist/oink-ui.css",
+    "./styles/*": "./dist/styles/*"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "jsdom": "^25.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
+  }
+}

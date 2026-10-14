@@ -1,0 +1,7 @@
+/* Fieldset · 新增组件：一组相关控件，带图例 */
+.ok-fieldset { display: grid; gap: var(--ok-s-3); min-width: 0; margin: 0; padding: 0; border: 0; }
+.ok-fieldset__legend { float: left; width: 100%; padding: 0; font: 600 15px/1.3 var(--ok-font); color: var(--ok-text); }   /* float 让 legend 参与栅格间距 */
+.ok-fieldset__legend + * { clear: both; }
+.ok-fieldset__hint { font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); margin-top: calc(var(--ok-s-2) * -1); }
+.ok-fieldset__body { display: grid; gap: var(--ok-s-4); min-width: 0; }
+.ok-fieldset:disabled .ok-fieldset__legend { color: var(--ok-text-3); }

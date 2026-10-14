@@ -1,0 +1,28 @@
+/* ==========================================================================
+   页面结构：Page / PageHeader / Section
+   区块间 32，行内 16（见规范“形状 · 间距 · 层级”）
+   ========================================================================== */
+.ok-page {
+  display: flex; flex-direction: column; gap: var(--_l-gap, var(--ok-s-8));
+  padding-top: var(--ok-s-6); padding-bottom: max(var(--ok-s-8), env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) { .ok-page { padding-top: var(--ok-s-8); padding-bottom: max(var(--ok-s-12), env(safe-area-inset-bottom, 0px)); } }
+.ok-page[data-padded="false"] { padding-top: 0; padding-bottom: 0; }
+.ok-page > * { min-width: 0; }
+
+.ok-page-header { display: flex; flex-direction: column; gap: var(--ok-s-3); min-width: 0; }
+.ok-page-header__breadcrumb { min-width: 0; font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); }
+/* 操作区放不下就整块换到标题下面：不靠断点，按实际宽度 */
+.ok-page-header__row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--ok-s-3) var(--ok-s-4); min-width: 0; }
+.ok-page-header__text { display: grid; gap: var(--ok-s-1); flex: 1 1 280px; min-width: 0; }
+.ok-page-header__title { margin: 0; font: 700 var(--ok-fs-h2)/1.25 var(--ok-font-display); letter-spacing: -.015em; color: var(--ok-text); overflow-wrap: anywhere; }
+.ok-page-header__desc { margin: 0; max-width: 68ch; font: 450 15px/1.6 var(--ok-font); color: var(--ok-text-2); }
+.ok-page-header__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ok-s-2); flex: 0 1 auto; min-width: 0; max-width: 100%; }
+
+.ok-section { display: flex; flex-direction: column; gap: var(--_l-gap, var(--ok-s-4)); min-width: 0; }
+.ok-section > * { min-width: 0; }
+.ok-section__head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--ok-s-2) var(--ok-s-4); }
+.ok-section__text { display: grid; gap: 2px; flex: 1 1 200px; min-width: 0; }
+.ok-section__title { margin: 0; font: 600 var(--ok-fs-h3)/1.35 var(--ok-font); letter-spacing: -.01em; color: var(--ok-text); overflow-wrap: anywhere; }
+.ok-section__desc { margin: 0; font: 450 14px/1.6 var(--ok-font); color: var(--ok-text-2); }
+.ok-section__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ok-s-2); min-width: 0; max-width: 100%; }

@@ -1,0 +1,14 @@
+/* 固定的行结构：标签 / 数值 / 底部信息行。底部行那一轨是 1fr、内容贴底：
+   同一排卡片被栅格拉到等高时，标签和数值对齐在上、涨跌信息对齐在下，不管谁的 hint 换了行 */
+.ok-stat { display: grid; grid-template-rows: auto auto; grid-auto-rows: 1fr; gap: var(--ok-s-2); min-width: 0; align-content: start; }
+/* 在 Grid 里默认撑满行高（即使栅格的 align 不是 stretch，一排指标卡也应该等高） */
+.ok-grid > .ok-stat { align-self: stretch; }
+.ok-stat__label { display: flex; align-items: center; gap: 6px; min-width: 0; font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); overflow-wrap: anywhere; }
+.ok-stat__icon { display: grid; place-items: center; flex: none; }
+.ok-stat__icon .ok-icon { width: 16px; height: 16px; }
+.ok-stat__value { min-width: 0; font: 700 clamp(24px, 6vw, 28px)/1.2 var(--ok-font-display); letter-spacing: -.015em; font-variant-numeric: tabular-nums; color: var(--ok-text); overflow-wrap: anywhere; }
+.ok-stat__foot { align-self: end; display: flex; flex-wrap: wrap; align-items: center; min-width: 0; gap: 4px var(--ok-s-2); font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); }
+.ok-stat__delta { position: relative; display: inline-flex; align-items: center; gap: 2px; height: 22px; padding: 0 8px 0 5px; border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-fill); color: var(--ok-text-2); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ok-stat__delta .ok-icon { width: 14px; height: 14px; stroke-width: 2.2; }
+.ok-stat__delta[data-mood="good"] { background: var(--ok-success-soft); color: var(--ok-success-text); }
+.ok-stat__delta[data-mood="bad"] { background: var(--ok-danger-soft); color: var(--ok-danger-text); }

@@ -1,0 +1,45 @@
+/* ==========================================================================
+   响应式基础
+   组件把响应式属性写成带断点后缀的自定义属性（--ok-l-gap、--ok-l-gap-md …），
+   这里在对应的 @media 里解析成 --_l-*，组件样式只读 --_l-*。不靠脚本，首屏不闪。
+   断点（min-width）：sm 520 / md 768 / lg 1024 / xl 1280
+   ========================================================================== */
+.ok-l {
+  box-sizing: border-box; min-width: 0;
+  /* 自定义属性会继承：先在每个原语上清掉，免得外层的值漏进里层（行内样式仍然优先） */
+  --ok-l-gap: initial; --ok-l-gap-sm: initial; --ok-l-gap-md: initial; --ok-l-gap-lg: initial; --ok-l-gap-xl: initial;
+  --ok-l-rgap: initial; --ok-l-rgap-sm: initial; --ok-l-rgap-md: initial; --ok-l-rgap-lg: initial; --ok-l-rgap-xl: initial;
+  --ok-l-p: initial; --ok-l-p-sm: initial; --ok-l-p-md: initial; --ok-l-p-lg: initial; --ok-l-p-xl: initial;
+  --ok-l-px: initial; --ok-l-px-sm: initial; --ok-l-px-md: initial; --ok-l-px-lg: initial; --ok-l-px-xl: initial;
+  --ok-l-py: initial; --ok-l-py-sm: initial; --ok-l-py-md: initial; --ok-l-py-lg: initial; --ok-l-py-xl: initial;
+  --ok-l-align: initial; --ok-l-align-sm: initial; --ok-l-align-md: initial; --ok-l-align-lg: initial; --ok-l-align-xl: initial;
+  --ok-l-justify: initial; --ok-l-justify-sm: initial; --ok-l-justify-md: initial; --ok-l-justify-lg: initial; --ok-l-justify-xl: initial;
+  --ok-l-cols: initial; --ok-l-cols-sm: initial; --ok-l-cols-md: initial; --ok-l-cols-lg: initial; --ok-l-cols-xl: initial;
+  --ok-l-span: initial; --ok-l-span-sm: initial; --ok-l-span-md: initial; --ok-l-span-lg: initial; --ok-l-span-xl: initial;
+  --_l-gap: var(--ok-l-gap); --_l-rgap: var(--ok-l-rgap); --_l-p: var(--ok-l-p); --_l-px: var(--ok-l-px); --_l-py: var(--ok-l-py); --_l-align: var(--ok-l-align); --_l-justify: var(--ok-l-justify); --_l-cols: var(--ok-l-cols); --_l-span: var(--ok-l-span);
+}
+@media (min-width: 520px) {
+  .ok-l { --_l-gap: var(--ok-l-gap-sm, var(--ok-l-gap)); --_l-rgap: var(--ok-l-rgap-sm, var(--ok-l-rgap)); --_l-p: var(--ok-l-p-sm, var(--ok-l-p)); --_l-px: var(--ok-l-px-sm, var(--ok-l-px)); --_l-py: var(--ok-l-py-sm, var(--ok-l-py)); --_l-align: var(--ok-l-align-sm, var(--ok-l-align)); --_l-justify: var(--ok-l-justify-sm, var(--ok-l-justify)); --_l-cols: var(--ok-l-cols-sm, var(--ok-l-cols)); --_l-span: var(--ok-l-span-sm, var(--ok-l-span)); }
+}
+@media (min-width: 768px) {
+  .ok-l { --_l-gap: var(--ok-l-gap-md, var(--ok-l-gap)); --_l-rgap: var(--ok-l-rgap-md, var(--ok-l-rgap)); --_l-p: var(--ok-l-p-md, var(--ok-l-p)); --_l-px: var(--ok-l-px-md, var(--ok-l-px)); --_l-py: var(--ok-l-py-md, var(--ok-l-py)); --_l-align: var(--ok-l-align-md, var(--ok-l-align)); --_l-justify: var(--ok-l-justify-md, var(--ok-l-justify)); --_l-cols: var(--ok-l-cols-md, var(--ok-l-cols)); --_l-span: var(--ok-l-span-md, var(--ok-l-span)); }
+}
+@media (min-width: 1024px) {
+  .ok-l { --_l-gap: var(--ok-l-gap-lg, var(--ok-l-gap)); --_l-rgap: var(--ok-l-rgap-lg, var(--ok-l-rgap)); --_l-p: var(--ok-l-p-lg, var(--ok-l-p)); --_l-px: var(--ok-l-px-lg, var(--ok-l-px)); --_l-py: var(--ok-l-py-lg, var(--ok-l-py)); --_l-align: var(--ok-l-align-lg, var(--ok-l-align)); --_l-justify: var(--ok-l-justify-lg, var(--ok-l-justify)); --_l-cols: var(--ok-l-cols-lg, var(--ok-l-cols)); --_l-span: var(--ok-l-span-lg, var(--ok-l-span)); }
+}
+@media (min-width: 1280px) {
+  .ok-l { --_l-gap: var(--ok-l-gap-xl, var(--ok-l-gap)); --_l-rgap: var(--ok-l-rgap-xl, var(--ok-l-rgap)); --_l-p: var(--ok-l-p-xl, var(--ok-l-p)); --_l-px: var(--ok-l-px-xl, var(--ok-l-px)); --_l-py: var(--ok-l-py-xl, var(--ok-l-py)); --_l-align: var(--ok-l-align-xl, var(--ok-l-align)); --_l-justify: var(--ok-l-justify-xl, var(--ok-l-justify)); --_l-cols: var(--ok-l-cols-xl, var(--ok-l-cols)); --_l-span: var(--ok-l-span-xl, var(--ok-l-span)); }
+}
+.ok-l[data-pad] { padding: var(--_l-py, var(--_l-p, 0px)) var(--_l-px, var(--_l-p, 0px)); }
+
+/* Show / Hide：纯 CSS 的按断点显隐。默认 display: contents，包裹层不参与布局；
+   传了 as（data-box）时是真实的盒子，display 交还给元素自己和使用者的 className */
+.ok-show:not([data-box]) { display: contents; }
+@media (max-width: 519.98px) { [data-ok-hide-below="sm"] { display: none !important; } }
+@media (max-width: 767.98px) { [data-ok-hide-below="md"] { display: none !important; } }
+@media (max-width: 1023.98px) { [data-ok-hide-below="lg"] { display: none !important; } }
+@media (max-width: 1279.98px) { [data-ok-hide-below="xl"] { display: none !important; } }
+@media (min-width: 520px) { [data-ok-hide-above="sm"] { display: none !important; } }
+@media (min-width: 768px) { [data-ok-hide-above="md"] { display: none !important; } }
+@media (min-width: 1024px) { [data-ok-hide-above="lg"] { display: none !important; } }
+@media (min-width: 1280px) { [data-ok-hide-above="xl"] { display: none !important; } }

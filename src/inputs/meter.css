@@ -1,0 +1,23 @@
+/* Meter · 搬自 oink.css 第 9 节（只有样式，供原生标记使用；本组没有做 Meter 组件） */
+.ok-meter {
+  --v: .5;
+  position: relative; isolation: isolate; overflow: hidden; flex: none;
+  width: 190px; height: var(--ok-h-md); border-radius: var(--ok-r-full); corner-shape: round;
+  background: var(--ok-well); cursor: ew-resize; touch-action: none; user-select: none;
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-meter__fill {
+  position: absolute; inset: 0; z-index: -1; background: var(--ok-accent-tint);
+  transform-origin: 0 50%; transform: scaleX(var(--v));
+  transition: transform var(--ok-spring-dur) var(--ok-spring), background-color var(--ok-dur-3);
+}
+.ok-meter__value {
+  position: absolute; inset: 0 auto 0 16px; display: flex; align-items: center;
+  font: 600 15px/1 var(--ok-font); font-variant-numeric: tabular-nums; color: var(--ok-text);
+}
+.ok-meter.is-active { transform: scale(1.03, 1.08); }
+.ok-meter.is-active .ok-meter__fill { background: var(--ok-accent-tint-2); }
+.ok-meter.is-tracking .ok-meter__fill { transition: background-color var(--ok-dur-3); }
+
+:where(.ok-meter) { outline: 2px solid transparent; outline-offset: 5px; -webkit-tap-highlight-color: transparent; }
+:where(.ok-meter):focus-visible { outline-color: var(--ok-accent); outline-offset: 2px; transition: outline-offset var(--ok-dur-3) var(--ok-ease-out), outline-color var(--ok-dur-2); }

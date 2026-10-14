@@ -1,0 +1,52 @@
+/* Chip · 搬自 oink.css 第 8 节 */
+.ok-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ok-chip {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 13px; margin: 0; border: 0;
+  border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-fill); color: var(--ok-text-2);
+  font: 600 13px/1 var(--ok-font); white-space: nowrap; cursor: pointer; user-select: none;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), color var(--ok-dur-2) var(--ok-ease-out),
+    transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+@media (hover: hover) { .ok-chip:hover { background: var(--ok-fill-hover); color: var(--ok-text); } }
+.ok-chip:active { transform: scale(.93); transition-duration: var(--ok-dur-2), var(--ok-dur-2), var(--ok-dur-1); }
+.ok-chip__check {
+  display: inline-grid; width: 0; margin-right: 0; opacity: 0; overflow: hidden;
+  transition: width var(--ok-spring-dur) var(--ok-spring), margin var(--ok-spring-dur) var(--ok-spring), opacity var(--ok-dur-2);
+}
+.ok-chip__check svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ok-chip__check path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset var(--ok-dur-1); }
+.ok-chip[aria-pressed="true"] { background: var(--ok-accent-soft); color: var(--ok-accent-text); }
+.ok-chip[aria-pressed="true"] .ok-chip__check { width: 14px; margin-right: 6px; opacity: 1; }
+.ok-chip[aria-pressed="true"] .ok-chip__check path { stroke-dashoffset: 0; transition: stroke-dashoffset var(--ok-dur-3) var(--ok-ease-out) calc(80ms * var(--ok-ms)); }
+.ok-chip__remove {
+  display: grid; place-items: center; width: 18px; height: 18px; margin: 0 -6px 0 6px; padding: 0; border: 0;
+  border-radius: 50%; corner-shape: round; background: transparent; color: inherit; cursor: pointer;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out);
+}
+@media (hover: hover) { .ok-chip__remove:hover { background: var(--ok-line-2); } }
+.ok-chip__remove .ok-icon { width: 12px; height: 12px; stroke-width: 2.4; }
+
+/* —— 以下为组件库补充 —— */
+.ok-chip { max-width: 100%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.ok-chip__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ok-chip .ok-icon { width: 14px; height: 14px; }
+.ok-chip__lead { display: inline-grid; margin-right: 6px; }
+span.ok-chip { cursor: default; }
+@media (hover: hover) { span.ok-chip:hover { background: var(--ok-fill); color: var(--ok-text-2); } }
+span.ok-chip:active { transform: none; }
+.ok-chip:disabled,
+.ok-chip[aria-disabled="true"] { opacity: .42; cursor: not-allowed; transform: none; }
+.ok-chip__remove:disabled { cursor: not-allowed; }
+/* 触屏（触屏设备自动生效，或祖先带 data-touch）：标签高 36px，移除按钮 24px；
+   视觉尺寸到此为止，点按热区用伪元素向外扩到 44px（标签上下各 4px，移除按钮四周各 10px） */
+.ok-chip, .ok-chip__remove { position: relative; }
+@media (pointer: coarse) {
+  .ok-chip { height: 36px; }
+  .ok-chip__remove { width: 24px; height: 24px; }
+  button.ok-chip::before { content: ""; position: absolute; inset: -4px 0; }
+  .ok-chip__remove::before { content: ""; position: absolute; inset: -10px; }
+}
+[data-touch] .ok-chip { height: 36px; }
+[data-touch] .ok-chip__remove { width: 24px; height: 24px; }
+[data-touch] button.ok-chip::before { content: ""; position: absolute; inset: -4px 0; }
+[data-touch] .ok-chip__remove::before { content: ""; position: absolute; inset: -10px; }

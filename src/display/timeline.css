@@ -1,0 +1,17 @@
+.ok-timeline { --_m: 24px; display: grid; min-width: 0; margin: 0; padding: 0; list-style: none; font: 450 14px/1.5 var(--ok-font); color: var(--ok-text-2); }
+.ok-timeline__item { --_c: var(--ok-text-3); --_s: var(--ok-fill); position: relative; display: flex; align-items: flex-start; gap: var(--ok-s-3); min-width: 0; padding-bottom: var(--ok-s-5); }
+.ok-timeline__item:last-child { padding-bottom: 0; }
+.ok-timeline__item:not(:last-child)::after { content: ""; position: absolute; left: calc(var(--_m) / 2 - .5px); top: calc(var(--_m) + 2px); bottom: 2px; width: 1px; background: var(--ok-line-2); }
+.ok-timeline__item[data-tone="accent"] { --_c: var(--ok-accent-text); --_s: var(--ok-accent-soft); }
+.ok-timeline__item[data-tone="success"] { --_c: var(--ok-success-text); --_s: var(--ok-success-soft); }
+.ok-timeline__item[data-tone="warning"] { --_c: var(--ok-warning-text); --_s: var(--ok-warning-soft); }
+.ok-timeline__item[data-tone="danger"] { --_c: var(--ok-danger-text); --_s: var(--ok-danger-soft); }
+.ok-timeline__item[data-tone="info"] { --_c: var(--ok-info-text); --_s: var(--ok-info-soft); }
+.ok-timeline__marker { display: grid; place-items: center; flex: none; width: var(--_m); height: var(--_m); border-radius: 50%; corner-shape: round; color: var(--_c); }
+.ok-timeline__marker:not([data-icon])::before { content: ""; width: 9px; height: 9px; border-radius: 50%; corner-shape: round; background: currentColor; box-shadow: 0 0 0 4px var(--_s); }
+.ok-timeline__marker[data-icon] { background: var(--_s); }
+.ok-timeline__marker .ok-icon { width: 14px; height: 14px; stroke-width: 2.2; }
+.ok-timeline__content { display: grid; gap: 2px; flex: 1; min-width: 0; padding-top: calc((var(--_m) - 1.5em) / 2); overflow-wrap: anywhere; }
+.ok-timeline__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 var(--ok-s-3); }
+.ok-timeline__title { font-weight: 600; color: var(--ok-text); }
+.ok-timeline__time { font: 500 13px/1.5 var(--ok-font); font-variant-numeric: tabular-nums; color: var(--ok-text-2); }

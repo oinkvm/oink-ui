@@ -1,0 +1,107 @@
+.ok-card {
+  --_p: var(--ok-s-5); --_r: var(--ok-r-nested, var(--ok-r-4));
+  display: block; min-width: 0; margin: 0;
+  padding: var(--_p);
+  border: 0; border-radius: var(--_r); corner-shape: var(--ok-corner);
+  background: var(--ok-card); color: var(--ok-text);
+  box-shadow: inset 0 0 0 1px var(--ok-line), inset 0 1.5px 0 var(--ok-hi);
+  --ok-avatar-ring: var(--ok-card);
+}
+.ok-card--sm { --_p: var(--ok-s-4); --_r: var(--ok-r-nested, calc(20px * var(--ok-rk))); }
+.ok-card--lg { --_p: var(--ok-s-6); --_r: var(--ok-r-nested, var(--ok-r-5)); }
+/* 同心圆角：放进 Surface、悬浮卡片等容器时，圆角取外层给的 --ok-r-nested（没有就用上面的默认值）；
+   卡片再把自己的“圆角 − 内边距 × rk”（不小于 4 × rk）交给里面的 Image / CodeBlock / Group / Table / Alert。
+   这个值写到子元素上而不是卡片自己身上，免得卡片读到自己写的值形成循环；卡片直接套卡片时，里层沿用外层拿到的值 */
+.ok-card { --_card-nest: max(calc(4px * var(--ok-rk)), calc(var(--_r) - var(--_p) * var(--ok-rk))); }
+.ok-card > :not(.ok-card, .ok-panel) { --ok-r-nested: var(--_card-nest); }
+/* 根节点是 <a> / <button> 时去掉它们自带的样子 */
+a.ok-card, button.ok-card { width: 100%; font: inherit; text-align: start; text-decoration: none; }
+
+/* 可点击的卡片：悬停时只把描边加深、箭头前移，底色不变；按下整体回缩，松手弹回 */
+.ok-card--interactive,
+.ok-card:has(.ok-card__link) {
+  position: relative; cursor: pointer;
+  transition: transform var(--ok-spring-dur) var(--ok-spring), box-shadow var(--ok-dur-2) var(--ok-ease-out);
+}
+@media (hover: hover) {
+  .ok-card--interactive:hover,
+  .ok-card:has(.ok-card__link):hover { box-shadow: inset 0 0 0 1px var(--ok-line-2), inset 0 1.5px 0 var(--ok-hi); }
+}
+.ok-card--interactive:active,
+.ok-card:has(.ok-card__link:active) { transform: scale(.985); transition-duration: var(--ok-dur-1), var(--ok-dur-2); transition-timing-function: var(--ok-ease-out); }
+.ok-card--chev { display: flex; align-items: center; gap: var(--ok-s-4); }
+.ok-card__main { display: block; flex: 1; min-width: 0; }
+.ok-card__chev { flex: none; color: var(--ok-text-3); transition: transform var(--ok-spring-dur) var(--ok-spring), color var(--ok-dur-2) var(--ok-ease-out); }
+@media (hover: hover) {
+  .ok-card--interactive:hover .ok-card__chev,
+  .ok-card:has(.ok-card__link):hover .ok-card__chev { color: var(--ok-text); }
+}
+.ok-card--interactive:disabled,
+.ok-card--interactive[aria-disabled="true"] { cursor: not-allowed; opacity: .5; transform: none; box-shadow: inset 0 0 0 1px var(--ok-line), inset 0 1.5px 0 var(--ok-hi); }
+.ok-card--interactive:disabled .ok-card__chev,
+.ok-card--interactive[aria-disabled="true"] .ok-card__chev { transform: none; color: var(--ok-text-3); }
+
+/* 覆盖链接：文字在标题里，点击区域铺满整张卡片 */
+.ok-card__link { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: inherit; text-decoration: none; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.ok-card__link::after { content: ""; position: absolute; inset: 0; border-radius: var(--_r); corner-shape: var(--ok-corner); outline: 2px solid transparent; outline-offset: 5px; }
+.ok-card__link:focus-visible::after { outline-color: var(--ok-accent); outline-offset: 2px; transition: outline-offset var(--ok-dur-3) var(--ok-ease-out); }
+/* 卡片里别的可交互元素浮在覆盖链接之上。
+   Checkbox / Radio / Switch / FileDrop 里那个透明的原生 input 本来是 absolute 叠在控件上的，不能改成 relative
+   （否则它回到文档流里把控件挤出一块空白）——它们的外层 label 已经被抬起来了，input 跟着就行 */
+.ok-card:has(.ok-card__link) :is(a, button, input, select, textarea, label, summary):not(.ok-card__link):not(.ok-check input, .ok-radio input, .ok-switch input, .ok-filedrop__input):not([inert] *, [aria-hidden="true"] *) { position: relative; z-index: 1; }
+/* 不可交互的内容（inert / aria-hidden，比如纯展示的组件预览）不浮起来，点它等于点卡片 */
+
+/* 分区 */
+.ok-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ok-s-3); min-width: 0; }
+.ok-card__heading { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.ok-card__title { margin: 0; font: 600 17px/1.35 var(--ok-font); letter-spacing: -.005em; color: var(--ok-text); overflow-wrap: anywhere; }
+.ok-card__desc { margin: 0; font: 450 14px/1.5 var(--ok-font); color: var(--ok-text-2); overflow-wrap: anywhere; }
+.ok-card__actions { display: flex; align-items: center; gap: var(--ok-s-2); flex: none; }
+.ok-card__body { min-width: 0; font: 450 15px/1.6 var(--ok-font); color: var(--ok-text-2); overflow-wrap: anywhere; }
+.ok-card__header + .ok-card__body { margin-top: var(--ok-s-3); }
+.ok-card__footer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ok-s-2); margin-top: var(--ok-s-4); }
+.ok-card__footer[data-align="end"] { justify-content: flex-end; }
+.ok-card__footer[data-align="between"] { justify-content: space-between; }
+
+/* —— 卡片主图 CardMedia —— */
+/* 第一个子元素：抵消卡片内边距贴满顶部，上两个角跟卡片圆角，下边是直的；下面的内容照常留内边距。
+   卡片本身不裁切（overflow 保持可见），焦点环、覆盖链接的焦点环都不会被切掉 */
+.ok-card > .ok-card__media:first-child {
+  max-width: none;   /* Image 默认 max-width: 100%，贴边时要比内容区宽出两个内边距 */
+  margin: calc(-1 * var(--_p)) calc(-1 * var(--_p)) var(--_p);
+  border-radius: var(--_r) var(--_r) 0 0; corner-shape: var(--ok-corner);
+}
+.ok-card > .ok-card__media:only-child { margin-bottom: calc(-1 * var(--_p)); border-radius: var(--_r); }
+/* 不在第一个的主图：留在内边距里，圆角和卡片同心（见上面的 --_card-nest） */
+.ok-card > .ok-card__media:not(:first-child) { border-radius: var(--_card-nest); margin-block: var(--ok-s-4); }
+.ok-card > .ok-card__media:not(:first-child):last-child { margin-bottom: 0; }
+
+/* 描边和顶部高光改由 ::after 叠在最上层画，图片盖不住；卡片自己的 box-shadow 关掉，免得半透明的线叠两遍。
+   isolation 把 ::after 的层级关在卡片里，不会压到页面上别的东西 */
+.ok-card:has(> .ok-card__media:first-child) { --_ring: var(--ok-line); position: relative; isolation: isolate; }
+.ok-card.ok-card:has(> .ok-card__media:first-child) { box-shadow: none; }
+.ok-card:has(> .ok-card__media:first-child)::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  border-radius: inherit; corner-shape: inherit;
+  box-shadow: inset 0 0 0 1px var(--_ring), inset 0 1.5px 0 var(--ok-hi);
+  transition: box-shadow var(--ok-dur-2) var(--ok-ease-out);
+}
+@media (hover: hover) {
+  .ok-card--interactive:has(> .ok-card__media:first-child):hover,
+  .ok-card:has(.ok-card__link):has(> .ok-card__media:first-child):hover { --_ring: var(--ok-line-2); }
+}
+.ok-card--interactive:has(> .ok-card__media:first-child):is(:disabled, [aria-disabled="true"]) { --_ring: var(--ok-line); }
+
+/* position="start"：卡片够宽（≈ 520px，内容区 480 + 内边距）时主图贴左、占满卡片高度，左两个角跟卡片圆角；窄了退回顶部 */
+.ok-card:has(> .ok-card__media--start:first-child) {
+  container-type: inline-size;
+  min-height: 160px;   /* 横排时内容再少，图也有像样的高度；竖排时图 + 内容总高远超过它，不受影响 */
+  --_mw: calc((100cqi + 2 * var(--_p)) * var(--ok-card-media-share, .4));
+}
+@container (min-width: 480px) {
+  .ok-card > .ok-card__media--start:first-child {
+    position: absolute; inset-block: 0; inset-inline-start: 0; width: var(--_mw); height: 100%; margin: 0;   /* 写明高度，内联的 aspect-ratio 才不生效 */
+    border-radius: 0; border-start-start-radius: var(--_r); border-end-start-radius: var(--_r);
+  }
+  .ok-card > .ok-card__media--start:first-child ~ * { margin-inline-start: var(--_mw); }
+}

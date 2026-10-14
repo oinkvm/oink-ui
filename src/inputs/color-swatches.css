@@ -1,0 +1,42 @@
+/* ColorSwatches · 搬自 oink.css 第 8 节 */
+.ok-swatches { display: inline-flex; align-items: center; gap: 10px; }
+.ok-swatch {
+  --c: var(--ok-accent);
+  position: relative; display: grid; place-items: center; flex: none;
+  width: 30px; height: 30px; padding: 0; margin: 0; border: 0; border-radius: 50%; corner-shape: round;
+  background: var(--c); cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+  transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-swatch::after {
+  content: ""; width: 10px; height: 10px; border-radius: 50%; corner-shape: round; background: #fff;
+  transform: scale(0); transition: transform var(--ok-dur-1) var(--ok-ease-in);
+}
+.ok-swatch:active { transform: scale(.88); transition-duration: var(--ok-dur-1); transition-timing-function: var(--ok-ease-out); }
+.ok-swatch[aria-checked="true"]::after { transform: scale(1); transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy); }
+.ok-swatches--sm { gap: 8px; }
+.ok-swatches--sm .ok-swatch { width: 22px; height: 22px; }
+.ok-swatches--sm .ok-swatch::after { width: 8px; height: 8px; }
+
+/* —— 以下为组件库补充 —— */
+.ok-swatches { flex-wrap: wrap; }
+.ok-swatch { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.ok-swatch:disabled { opacity: .42; cursor: not-allowed; transform: none; }
+.ok-swatches--lg .ok-swatch { width: 38px; height: 38px; }
+.ok-swatches--lg .ok-swatch::after { width: 12px; height: 12px; }
+/* 触屏（触屏设备自动生效，或祖先带 data-touch）：圆点不变大，点按区域向外扩到 44px（30 + 7×2；小号 22 + 11×2；大号 38 + 3×2） */
+.ok-swatch { --ok-swatch-hit: -7px; }
+.ok-swatches--sm .ok-swatch { --ok-swatch-hit: -11px; }
+.ok-swatches--lg .ok-swatch { --ok-swatch-hit: -3px; }
+/* 相邻色块的间距同时拉到“圆心相距 44px”，热区才不会互相压住（30 + 14；小号 22 + 22；大号 38 + 10 本来就够） */
+@media (pointer: coarse) {
+  .ok-swatch::before { content: ""; position: absolute; inset: var(--ok-swatch-hit); }
+  .ok-swatches { gap: 14px; }
+  .ok-swatches--sm { gap: 22px; }
+}
+[data-touch] .ok-swatch::before { content: ""; position: absolute; inset: var(--ok-swatch-hit); }
+[data-touch] .ok-swatches { gap: 14px; }
+[data-touch] .ok-swatches--sm { gap: 22px; }
+
+/* 悬停：色板放大（图形，不涉及文字） */
+@media (hover: hover) { .ok-swatch:hover { transform: scale(1.14); } }

@@ -1,0 +1,37 @@
+/* Rating · 新增组件：星级 */
+.ok-rating { display: inline-flex; align-items: center; gap: 2px; }
+/* 星多、容器窄时换行（触屏上每颗星 44px，十颗星在 375px 宽的屏上放不下一行） */
+.ok-rating { flex-wrap: wrap; max-width: 100%; }
+.ok-rating__star {
+  display: grid; place-items: center; width: 32px; height: 32px; padding: 0; margin: 0; border: 0;
+  border-radius: 50%; corner-shape: round; background: none; color: var(--ok-well-2); cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+.ok-rating__star svg { width: 24px; height: 24px; fill: currentColor; stroke: none; }
+.ok-rating__star[data-on] { color: var(--ok-accent); }
+.ok-rating__star:active { transform: scale(.84); transition-duration: var(--ok-dur-2), var(--ok-dur-1); transition-timing-function: var(--ok-ease-out); }
+.ok-rating--sm .ok-rating__star { width: 24px; height: 24px; }
+.ok-rating--sm .ok-rating__star svg { width: 18px; height: 18px; }
+.ok-rating--lg .ok-rating__star { width: 40px; height: 40px; }
+.ok-rating--lg .ok-rating__star svg { width: 30px; height: 30px; }
+.ok-rating[aria-disabled="true"] { opacity: .5; }
+.ok-rating[aria-disabled="true"] .ok-rating__star { cursor: not-allowed; transform: none; }
+.ok-rating[data-readonly] .ok-rating__star { cursor: default; transform: none; }
+/* 只读：小数用第二层星表示——同一格里再叠一颗强调色的星，按比例从右边裁掉 */
+.ok-rating__star { position: relative; }
+.ok-rating__star svg { grid-area: 1 / 1; }
+.ok-rating__star svg.ok-rating__fill { color: var(--ok-accent); clip-path: inset(0 var(--ok-rating-cut, 100%) 0 0); }
+/* 触屏（触屏设备自动生效，或祖先带 data-touch）：可点的星放大到 44px；小号视觉 36px，热区上下各扩 4px。
+   只读的评分是一张图，不是点按目标，不放大 */
+@media (pointer: coarse) {
+  .ok-rating:not([data-readonly]) .ok-rating__star { width: 44px; height: 44px; }
+  .ok-rating--sm:not([data-readonly]) .ok-rating__star { width: 36px; height: 36px; }
+  .ok-rating--sm:not([data-readonly]) .ok-rating__star::before { content: ""; position: absolute; inset: -4px 0; }
+}
+[data-touch] .ok-rating:not([data-readonly]) .ok-rating__star { width: 44px; height: 44px; }
+[data-touch] .ok-rating--sm:not([data-readonly]) .ok-rating__star { width: 36px; height: 36px; }
+[data-touch] .ok-rating--sm:not([data-readonly]) .ok-rating__star::before { content: ""; position: absolute; inset: -4px 0; }
+
+/* 悬停：星星放大（图形，不涉及文字） */
+@media (hover: hover) { .ok-rating:not([aria-disabled="true"]):not([data-readonly]) .ok-rating__star:hover { transform: scale(1.14); } }

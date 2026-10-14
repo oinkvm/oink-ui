@@ -1,0 +1,23 @@
+.ok-breadcrumb { min-width: 0; font: 500 14px/1.3 var(--ok-font); color: var(--ok-text-2); }
+.ok-breadcrumb__list { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.ok-breadcrumb__item { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.ok-breadcrumb__sep { display: grid; place-items: center; flex: none; color: var(--ok-text-3); }
+.ok-breadcrumb__sep .ok-icon { width: 14px; height: 14px; }
+.ok-breadcrumb__link, .ok-breadcrumb__text, .ok-breadcrumb__current {
+  display: inline-flex; align-items: center; min-width: 0; max-width: 24ch; min-height: 28px; padding: 0 6px;
+  border-radius: var(--ok-r-1); corner-shape: var(--ok-corner);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ok-breadcrumb__link { margin: 0; border: 0; background: none; font: inherit; color: inherit; text-decoration: none; cursor: pointer; transition: color var(--ok-dur-2) var(--ok-ease-out), background-color var(--ok-dur-2) var(--ok-ease-out); }
+@media (hover: hover) { .ok-breadcrumb__link:hover { color: var(--ok-text); background: var(--ok-hover); } }
+@media (pointer: coarse) { .ok-breadcrumb__link, .ok-breadcrumb__text, .ok-breadcrumb__current { min-height: 44px; } }
+.ok-breadcrumb__current { font-weight: 600; color: var(--ok-text); }
+.ok-breadcrumb__more .ok-icon { width: 18px; height: 18px; }
+/* 折叠：中间项藏起来，换成一个“…”按钮 */
+.ok-breadcrumb__more { display: none; }
+.ok-breadcrumb[data-collapse="always"] .ok-breadcrumb__more { display: flex; }
+.ok-breadcrumb[data-collapse="always"] [data-middle] { display: none; }
+@media (max-width: 519.98px) {
+  .ok-breadcrumb[data-collapse="narrow"] .ok-breadcrumb__more { display: flex; }
+  .ok-breadcrumb[data-collapse="narrow"] [data-middle] { display: none; }
+}

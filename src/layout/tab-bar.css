@@ -1,0 +1,61 @@
+/* ==========================================================================
+   TabBar 手机底部标签栏（照 mobile-app.html 的 .m-tabbar）
+   就是一个放大的分段选择，旁边可以放一个主操作按钮。悬在底部，左右留缝，避开安全区。
+   ========================================================================== */
+.ok-tabbar {
+  --_pad: var(--ok-s-4);
+  position: fixed; z-index: 20; box-sizing: border-box;
+  /* --ok-tabbar-inset-start / -end：在某一侧多让出一段，给页面上别的固定元素（悬浮按钮、迷你播放器）腾位置 */
+  left: calc(max(var(--_pad), env(safe-area-inset-left, 0px)) + var(--ok-tabbar-inset-start, 0px));
+  right: calc(max(var(--_pad), env(safe-area-inset-right, 0px)) + var(--ok-tabbar-inset-end, 0px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+}
+.ok-tabbar[data-position="absolute"] { position: absolute; z-index: 4; }   /* 低于 contained 的悬浮卡片（5） */
+.ok-tabbar[data-position="static"] { position: static; }
+
+.ok-tabbar__list {
+  position: relative; isolation: isolate; display: flex; flex: 1 1 0%; min-width: 0; padding: 4px;
+  border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-well);
+  box-shadow: inset 0 0 0 1px var(--ok-line-2);
+}
+.ok-tabbar__thumb {
+  position: absolute; z-index: -1; top: 4px; bottom: 4px; left: 0; width: var(--w, 0);
+  transform: translateX(var(--x, 0));
+  border-radius: inherit; corner-shape: inherit; background: var(--ok-raised);
+  box-shadow: inset 0 0 0 1px var(--ok-line); opacity: 0;
+  transition: transform var(--ok-spring-dur) var(--ok-spring), width var(--ok-spring-dur) var(--ok-spring);
+}
+.ok-tabbar__list:not([data-ready]) .ok-tabbar__thumb { transition: none; }
+.ok-tabbar__list[data-ready] .ok-tabbar__thumb { opacity: 1; }
+
+.ok-tabbar__item {
+  position: relative; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1 1 0%; min-width: 0;
+  height: calc(var(--ok-h-lg) - 8px); padding: 0 12px; margin: 0; border: 0; border-radius: inherit; corner-shape: inherit; background: none;
+  font: 600 15px/1 var(--ok-font); color: var(--ok-text-2); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
+}
+@media (hover: hover) { .ok-tabbar__item:hover { color: var(--ok-text); } }
+.ok-tabbar__item:active { transform: scale(.93); transition-duration: var(--ok-dur-2), var(--ok-dur-1); }
+.ok-tabbar__item[aria-current="page"] { color: var(--ok-text); }
+.ok-tabbar__item[aria-disabled="true"] { color: var(--ok-text-3); cursor: not-allowed; transform: none; }
+.ok-tabbar__icon { display: inline-grid; place-items: center; flex: none; }
+.ok-tabbar__icon .ok-icon { width: 18px; height: 18px; }
+.ok-tabbar__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.ok-tabbar__badge { display: inline-flex; flex: none; font-size: 12px; }
+.ok-tabbar__action { display: flex; flex: none; }
+.ok-tabbar[data-position="static"] { padding-inline: var(--ok-tabbar-inset-start, 0px) var(--ok-tabbar-inset-end, 0px); }
+
+/* 上下排：图标在上、文字在下。项数 ≥ 4（或 layout="stacked"）时用——横排在 375 宽放四项，文字会被压没。
+   各项按内容分配宽度（flex-basis: auto），再窄也留 44px 的点按区；放不下时文字省略 */
+.ok-tabbar[data-layout="stacked"] .ok-tabbar__list { border-radius: calc(26px * var(--ok-rk, 1)); corner-shape: var(--ok-corner); }
+/* 滑块和各项离轨道边 4px：同心圆角 26 − 4 = 22（继承轨道的 26 会让四角间距不匀） */
+.ok-tabbar[data-layout="stacked"] :is(.ok-tabbar__thumb, .ok-tabbar__item) { border-radius: calc(22px * var(--ok-rk, 1)); }
+.ok-tabbar[data-layout="stacked"] .ok-tabbar__item {
+  flex: 1 1 auto; flex-direction: column; gap: 3px; min-width: 44px; height: auto; min-height: 52px; padding: 6px 8px;
+  font-size: 11px; letter-spacing: .01em;
+}
+.ok-tabbar[data-layout="stacked"] .ok-tabbar__icon .ok-icon { width: 20px; height: 20px; }
+.ok-tabbar[data-layout="stacked"] .ok-tabbar__label { max-width: 100%; }
+/* 徽标挂在图标右上角，不占一行的宽度，也就不会被截断 */
+.ok-tabbar[data-layout="stacked"] .ok-tabbar__badge { position: absolute; top: 3px; left: calc(50% + 5px); }

@@ -1,0 +1,23 @@
+.ok-tree, .ok-tree__group { display: grid; gap: 2px; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.ok-tree { --_indent: 20px; font: 500 14px/1.3 var(--ok-font); color: var(--ok-text-2); }
+.ok-tree__group { margin-top: 2px; padding-left: var(--_indent); animation: ok-rise var(--ok-dur-3) var(--ok-ease-out); }
+.ok-tree__item { min-width: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+.ok-tree__row {
+  display: flex; align-items: center; gap: 6px; min-width: 0; min-height: var(--ok-h-item); padding: 0 10px 0 4px;
+  border-radius: calc(10px * var(--ok-rk)); corner-shape: var(--ok-corner); cursor: pointer; touch-action: manipulation;
+  outline: 2px solid transparent; outline-offset: 5px;
+  transition: background-color var(--ok-dur-2) var(--ok-ease-out), color var(--ok-dur-2) var(--ok-ease-out);
+}
+@media (hover: hover) { .ok-tree__item:not([aria-disabled="true"]) > .ok-tree__row:hover { background: var(--ok-hover); color: var(--ok-text); } }
+/* 焦点在 li 上，焦点环画在它自己的那一行 */
+.ok-tree__item:focus-visible > .ok-tree__row { outline-color: var(--ok-accent); outline-offset: 2px; transition: outline-offset var(--ok-dur-3) var(--ok-ease-out), outline-color var(--ok-dur-2); }
+/* 选中：中性色 —— 填充色的底 + 加粗。（原来用抬起一档的白底 + 发丝线，放在浅色卡片上几乎看不出来） */
+.ok-tree__item[aria-selected="true"] > .ok-tree__row { background: var(--ok-fill); color: var(--ok-text); font-weight: 600; }
+@media (hover: hover) { .ok-tree__item[aria-selected="true"]:not([aria-disabled="true"]) > .ok-tree__row:hover { background: var(--ok-fill-hover); } }
+.ok-tree__item[aria-disabled="true"] > .ok-tree__row { cursor: not-allowed; opacity: .5; }
+.ok-tree__chev { display: grid; place-items: center; flex: none; width: 20px; height: 20px; color: var(--ok-text-3); }
+.ok-tree__chev .ok-icon { width: 14px; height: 14px; stroke-width: 2.2; transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy); }
+.ok-tree__item[aria-expanded="true"] > .ok-tree__row .ok-tree__chev .ok-icon { transform: rotate(90deg); }
+.ok-tree__icon { display: grid; place-items: center; flex: none; }
+.ok-tree__icon .ok-icon { width: 16px; height: 16px; }
+.ok-tree__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
