@@ -28,6 +28,8 @@ A soft, flat, quiet React component library: large continuous corner radii, flat
 
 <img alt="The Mail example app with a three-column layout: folders, the inbox list and an open email thread" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/example-mail.webp">
 
+<img alt="The Analytics example app in dark mode: date range and comparison controls, four KPI cards, a revenue trend chart and quarterly goals" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/example-analytics-dark.webp">
+
 ## Install
 
 ```bash
