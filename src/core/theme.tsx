@@ -7,7 +7,7 @@ import { canUseDOM } from './utils';
 import { accentVars, normalizeHex } from './color';
 import { TailProvider } from './tail';
 import { LocaleProvider } from './locale';
-import type { OinkLocale } from './locale';
+import type { OinkLocaleSetting } from './locale';
 import type { TailGlyphSource } from './tail';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -58,8 +58,11 @@ export interface OinkProviderProps {
   storageKey?: string;
   /** 替换全局的“尾巴”图案（加载、提示里用到的品牌图形）。见 TailProvider */
   tail?: TailGlyphSource;
-  /** 组件内置文案（默认的读屏文字、按钮文字、占位符……）和日期格式的语言。默认 zh-CN。见 LocaleProvider */
-  locale?: OinkLocale;
+  /**
+   * 组件内置文案（默认的读屏文字、按钮文字、占位符……）和日期格式的语言。默认 'auto'：跟随浏览器语言，中文用 zh-CN、其它用 en-US。
+   * 服务端渲染时第一帧是 en-US、注水后才换成浏览器的语言；服务端渲染的应用最好显式传入。见 LocaleProvider
+   */
+  locale?: OinkLocaleSetting;
 }
 
 /** 读存储并逐项校验：已经不存在的值（比如移除了的预设色）当作没存 */

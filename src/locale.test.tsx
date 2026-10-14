@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderToString } from 'react-dom/server';
+import { hydrateRoot } from 'react-dom/client';
 import {
   Alert, AppShell, Avatar, AvatarGroup, Breadcrumb, Button, Calendar, Chip, CodeBlock, ColorPicker, CommandPalette, Combobox, Confirmer,
   DatePicker, DateRangePicker, Dialog, Dots, Drawer, FileDrop, FloatingHeader, Hotkey, Input, Kbd, LocaleProvider, MultiSelect, NumberInput,
@@ -8,6 +9,7 @@ import {
   Tag, Toaster, confirm, toast, useLocale,
 } from './index';
 import type { OinkLocale } from './index';
+import { detectLocale } from './index';
 
 const TODAY = new Date(2026, 9, 13);
 const CJK = /[　-〿一-鿿＀-￯]/;
@@ -23,7 +25,7 @@ function visibleStrings(root: ParentNode = document.body) {
 }
 
 describe('语言（locale）', () => {
-  it('没有 Provider 时是 zh-CN；LocaleProvider 可以嵌套，内层优先，不传时沿用外层', () => {
+  it('没有 Provider 时跟随浏览器语言（测试环境设成了中文）；LocaleProvider 可以嵌套，内层优先，不传时沿用外层', () => {
     const seen: OinkLocale[] = [];
     function Probe() { seen.push(useLocale().locale); return null; }
     render(
@@ -66,7 +68,7 @@ describe('语言（locale）', () => {
     expect(await screen.findByRole('dialog', { name: 'Choose date range' })).toBeInTheDocument();
   });
 
-  it('zh-CN（默认）：日历标题仍是“2026年10月”', () => {
+  it('zh-CN（测试环境的浏览器语言）：日历标题仍是“2026年10月”', () => {
     render(<Calendar today={TODAY} />);
     expect(screen.getByRole('grid', { name: '2026年10月' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '上个月' })).toBeInTheDocument();
@@ -236,5 +238,59 @@ describe('语言（locale）', () => {
     expect(html).toContain('Digit 1 of 2');
     expect(CJK.test(html)).toBe(false);
     spy.mockRestore();
+  });
+});
+
+describe('locale="auto"（默认）：跟随浏览器语言', () => {
+  const setLanguages = (langs: string[]) => {
+    Object.defineProperty(window.navigator, 'languages', { value: langs, configurable: true });
+    Object.defineProperty(window.navigator, 'language', { value: langs[0] ?? '', configurable: true });
+  };
+  afterEach(() => setLanguages(['zh-CN', 'zh']));
+
+  function Probe() { return <span data-testid="loc">{useLocale().locale}</span>; }
+
+  it('detectLocale：任何一种中文都是 zh-CN，其它都是 en-US；只看首选语言', () => {
+    expect(detectLocale(['zh-CN'])).toBe('zh-CN');
+    expect(detectLocale(['zh-TW', 'en'])).toBe('zh-CN');
+    expect(detectLocale(['zh-Hant-HK'])).toBe('zh-CN');
+    expect(detectLocale(['zh'])).toBe('zh-CN');
+    expect(detectLocale(['en-GB', 'zh-CN'])).toBe('en-US');
+    expect(detectLocale(['ja'])).toBe('en-US');
+    expect(detectLocale(['zhuang'])).toBe('en-US');
+    expect(detectLocale([])).toBe('en-US');
+  });
+
+  it('不传 locale：英文浏览器下是 en-US，中文浏览器下是 zh-CN；显式传入的仍然优先', () => {
+    setLanguages(['en-GB', 'en']);
+    const { unmount } = render(<OinkProvider><Probe /></OinkProvider>);
+    expect(screen.getByTestId('loc').textContent).toBe('en-US');
+    unmount();
+    setLanguages(['zh-TW']);
+    render(<><OinkProvider><Probe /></OinkProvider><OinkProvider locale="en-US"><Probe /></OinkProvider><OinkProvider locale="auto"><Probe /></OinkProvider></>);
+    expect(screen.getAllByTestId('loc').map((n) => n.textContent)).toEqual(['zh-CN', 'en-US', 'zh-CN']);
+  });
+
+  it('浏览器语言变了（languagechange）就跟着换', () => {
+    setLanguages(['en-US']);
+    render(<Pagination count={5} defaultPage={2} />);
+    expect(screen.getByRole('navigation').getAttribute('aria-label')).toBe('Pagination');
+    act(() => { setLanguages(['zh-CN']); window.dispatchEvent(new Event('languagechange')); });
+    expect(screen.getByRole('navigation').getAttribute('aria-label')).not.toBe('Pagination');
+  });
+
+  it('服务端渲染：不传 locale 时第一帧是 en-US；注水不报不一致，之后换成浏览器的中文', async () => {
+    setLanguages(['zh-CN']);
+    const tree = <OinkProvider><Probe /></OinkProvider>;
+    const html = renderToString(tree);
+    expect(html).toContain('en-US');
+    const host = document.createElement('div');
+    host.innerHTML = html;
+    document.body.appendChild(host);
+    const errors: unknown[] = [];
+    await act(async () => { hydrateRoot(host, tree, { onRecoverableError: (e) => errors.push(e) }); });
+    expect(errors).toEqual([]);
+    expect(host.textContent).toBe('zh-CN');
+    host.remove();
   });
 });

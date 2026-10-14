@@ -65,12 +65,12 @@ export function App() {
 | `defaultTheme` | `'light' \| 'dark' \| 'system'` | `'system'` |
 | `defaultAccent` | `'pink' \| 'orange' \| 'amber' \| 'blue' \| 'violet'` or any `#rrggbb` | `'pink'` |
 | `defaultMotion` | `'auto' \| 'full' \| 'reduced'` | `'auto'` |
-| `locale` | `'zh-CN' \| 'en-US'` | `'zh-CN'` |
+| `locale` | `'auto' \| 'zh-CN' \| 'en-US'` — `'auto'` follows the browser language: Chinese → `zh-CN`, anything else → `en-US` | `'auto'` |
 | `storageKey` | remember the user's choices in `localStorage` under this key | — |
 
 With a custom accent color, the text color on top of it (ink or white) and the darker / lighter variants used for text are derived automatically. `useOink()` reads and changes the theme at runtime.
 
-Components render the same markup on the server and the client, so they work with server rendering and static prerendering.
+Components render the same markup on the server and the client, so they work with server rendering and static prerendering. The server can't know the visitor's language, so with `locale="auto"` the server render and the hydration pass use `en-US` and switch to the browser's language right after; if you render on the server, pass `locale` explicitly (for example from the URL or the `Accept-Language` header).
 
 ## Development
 
