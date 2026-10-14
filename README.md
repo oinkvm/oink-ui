@@ -81,8 +81,6 @@ npm run typecheck
 npm run build      # dist/: ESM + CJS, type declarations, styles.css and per-component style entries
 ```
 
-Component conventions (in Chinese) are in [CONTRIBUTING.md](./CONTRIBUTING.md).
-
 Every push to `main` that changes code is released automatically as a new patch version (`1.0.x`) by [`release.yml`](./.github/workflows/release.yml); put `[skip ci]` in the commit message to skip a release.
 
 ## License
