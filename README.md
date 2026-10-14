@@ -1,8 +1,10 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/banner-dark.png">
-    <img alt="Oink UI — soft, flat, quiet React components" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/banner-light.png" width="860">
-  </picture>
+  <a href="https://oink-ui.hachiwii.com">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/banner-dark.png">
+      <img alt="Oink UI — soft, flat, quiet React components" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/banner-light.png" width="860">
+    </picture>
+  </a>
 </p>
 
 <p align="center">
@@ -19,16 +21,18 @@ A soft, flat, quiet React component library: large continuous corner radii, flat
 
 ## Examples
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/showcase-dark.webp">
-  <img alt="The Oink UI component showcase: inputs, a select, checkboxes, a switch, radios, a slider, a product card, buttons, a table, progress, toasts, rating, tabs and an accordion" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/showcase-light.webp">
-</picture>
+<a href="https://oink-ui.hachiwii.com">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/showcase-dark.webp">
+    <img alt="The Oink UI component showcase: inputs, a select, checkboxes, a switch, radios, a slider, a product card, buttons, a table, progress, toasts, rating, tabs and an accordion" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/showcase-light.webp">
+  </picture>
+</a>
 
-<img alt="Twelve common components animating in a 4 by 3 grid: Button, Input, Select, Checkbox, Switch, Slider, Tabs, DatePicker, Dialog, Menu, Tooltip and Toast" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/components.gif">
+<a href="https://oink-ui.hachiwii.com/components"><img alt="Twelve common components animating in a 4 by 3 grid: Button, Input, Select, Checkbox, Switch, Slider, Tabs, DatePicker, Dialog, Menu, Tooltip and Toast" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/components.gif"></a>
 
-<img alt="The Mail example app with a three-column layout: folders, the inbox list and an open email thread" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/example-mail.webp">
+<a href="https://oink-ui.hachiwii.com/examples/mail"><img alt="The Mail example app with a three-column layout: folders, the inbox list and an open email thread" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/example-mail.webp"></a>
 
-<img alt="The Analytics example app in dark mode: date range and comparison controls, four KPI cards, a revenue trend chart and quarterly goals" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/example-analytics-dark.webp">
+<a href="https://oink-ui.hachiwii.com/examples/analytics"><img alt="The Analytics example app in dark mode: date range and comparison controls, four KPI cards, a revenue trend chart and quarterly goals" src="https://raw.githubusercontent.com/oinkvm/oink-ui/main/.github/assets/example-analytics-dark.webp"></a>
 
 ## Install
 
