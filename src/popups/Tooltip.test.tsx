@@ -150,4 +150,30 @@ describe('Tooltip', () => {
     await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
+
+  describe('interactive：能不能移到提示上、选中文字', () => {
+    /** 悬停目标 → 提示出现 → 指针挪到提示上 → 离开目标，等过 hideDelay */
+    async function moveOntoTip(interactive?: boolean) {
+      render(<Tooltip content="设备 ID：4C2A-91E7" delay={0} hideDelay={50} interactive={interactive}><button>此设备</button></Tooltip>);
+      const button = screen.getByRole('button');
+      firePointer(button, 'pointerover');
+      const tip = await screen.findByRole('tooltip');
+      firePointer(tip, 'pointerover');
+      firePointer(button, 'pointerout');
+      await act(async () => { await new Promise((r) => setTimeout(r, 120)); });
+      return tip;
+    }
+
+    it('默认可以交互：指针挪到提示上，提示留着', async () => {
+      const tip = await moveOntoTip();
+      expect(tip).not.toHaveAttribute('data-interactive');
+      expect(tip).toHaveAttribute('data-state', 'open');
+    });
+
+    it('interactive={false}：提示标上 data-interactive="false"（样式上不接指针、不能选字），挪到提示上也照样收起', async () => {
+      const tip = await moveOntoTip(false);
+      expect(tip).toHaveAttribute('data-interactive', 'false');
+      expect(tip).toHaveAttribute('data-state', 'closed');
+    });
+  });
 });

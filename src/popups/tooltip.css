@@ -34,4 +34,6 @@
 .ok-tip[data-warm] { opacity: 1; translate: 0 0; scale: 1; transition: none; pointer-events: auto; }
 /* 让位给下一个提示：立刻消失 */
 .ok-tip[data-instant] { transition: none; }
+/* 不能交互的提示：始终不接指针（连同上面那块“桥”），文字不能选中 */
+.ok-tip[data-interactive="false"] { pointer-events: none; user-select: none; -webkit-user-select: none; }
 .ok-tip kbd { font: 600 11px/1 var(--ok-font); color: color-mix(in srgb, var(--ok-on-inverse) 60%, var(--ok-inverse)); }

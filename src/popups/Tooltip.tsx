@@ -20,6 +20,12 @@ export interface TooltipProps {
   skipDelayWithin?: number;
   /** 指针离开后多久收起（ms）。默认 160，期间可以把指针移到提示上 */
   hideDelay?: number;
+  /**
+   * 提示能不能交互：指针能移到提示上停留、能选中复制提示里的文字。默认 true。
+   * 设为 false 时提示不接指针（指针离开目标就按 hideDelay 收起，移到提示上也不留），文字也不能选中——
+   * 适合只是说明一下、没有需要复制的内容的提示
+   */
+  interactive?: boolean;
   disabled?: boolean;
   open?: boolean;
   defaultOpen?: boolean;
@@ -44,7 +50,7 @@ const focusVisible = (el: Element) => {
  */
 export function Tooltip({
   content, shortcut, children, placement = 'top', offset = 8, delay = 380, skipDelayWithin = 320, hideDelay = 160,
-  disabled, open: openProp, defaultOpen = false, onOpenChange, className,
+  interactive = true, disabled, open: openProp, defaultOpen = false, onOpenChange, className,
 }: TooltipProps) {
   const [open, setOpen] = useControllable(openProp, defaultOpen, onOpenChange);
   const [warm, setWarm] = useState(false);
@@ -178,8 +184,10 @@ export function Tooltip({
             placement={placement}
             offset={offset}
             className={className}
-            onPointerEnter={() => { overTip.current = true; clearTimeout(hideTimer.current); hideTimer.current = undefined; }}
-            onPointerLeave={() => { overTip.current = false; if (!pressing.current) leave(); }}
+            interactive={interactive}
+            // 不能交互的提示：指针移到它上面不算“还在”，离开目标就收起
+            onPointerEnter={interactive ? () => { overTip.current = true; clearTimeout(hideTimer.current); hideTimer.current = undefined; } : undefined}
+            onPointerLeave={interactive ? () => { overTip.current = false; if (!pressing.current) leave(); } : undefined}
           >
             {text}
             {keys != null && keys !== '' && <kbd>{keys}</kbd>}
@@ -201,12 +209,13 @@ interface TipBodyProps {
   placement: Placement;
   offset: number;
   className?: string;
-  onPointerEnter: () => void;
-  onPointerLeave: () => void;
+  interactive: boolean;
+  onPointerEnter?: () => void;
+  onPointerLeave?: () => void;
   children: ReactNode;
 }
 
-function TipBody({ id, anchorRef, tipRef, presenceRef, state, warm, instant, placement, offset, className, onPointerEnter, onPointerLeave, children }: TipBodyProps) {
+function TipBody({ id, anchorRef, tipRef, presenceRef, state, warm, instant, placement, offset, className, interactive, onPointerEnter, onPointerLeave, children }: TipBodyProps) {
   const first = useRef(true);
   const onPosition = (info: PositionInfo) => {
     const el = tipRef.current;
@@ -232,6 +241,7 @@ function TipBody({ id, anchorRef, tipRef, presenceRef, state, warm, instant, pla
       data-state={state}
       data-warm={warm || undefined}
       data-instant={instant || undefined}
+      data-interactive={interactive ? undefined : 'false'}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
     >
