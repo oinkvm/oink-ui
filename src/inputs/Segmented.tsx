@@ -39,7 +39,8 @@ function SegmentedInner<T extends string>(
   const root = useRef<HTMLDivElement>(null);
   const thumb = useRef<HTMLSpanElement>(null);
   const [ready, setReady] = useState(false);
-  const mounted = useRef(false);
+  /** 滑块上一次摆在哪个值上（还没摆过是 null）：值真的变了才回弹 */
+  const placed = useRef<T | null>(null);
 
   /** 把共享滑块摆到选中项上：位置走 transform（--x），宽度走 --w，过渡在 CSS 里 */
   const place = () => {
@@ -69,9 +70,10 @@ function SegmentedInner<T extends string>(
   useIsoLayoutEffect(() => {
     place();
     reveal();
-    // 滑块在途中被轻轻压扁，落位时回弹（首次摆放不做）
-    if (mounted.current) animate(thumb.current, { scale: ['1 1', '1.05 .86', '1 1'] }, { duration: 340, easing: ease.out });
-    mounted.current = true;
+    // 滑块在途中被轻轻压扁，落位时回弹。首次摆放不做；
+    // 比较的是值而不是“挂没挂过”：StrictMode 开发模式会把 effect 跑两遍，第二遍值没变，不能误当成切换
+    if (placed.current !== null && placed.current !== current) animate(thumb.current, { scale: ['1 1', '1.05 .86', '1 1'] }, { duration: 340, easing: ease.out });
+    placed.current = current;
   }, [current]);
 
   // 选项文字或尺寸变了也要重摆

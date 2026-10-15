@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Segmented } from './Segmented';
@@ -93,5 +94,41 @@ describe('Segmented', () => {
     const group = screen.getByRole('radiogroup');
     rerender(<Segmented aria-label="周期" options={options} value="year" />);
     expect(group.scrollLeft).toBe(0);
+  });
+
+  describe('滑块落位回弹', () => {
+    const had = 'animate' in Element.prototype;
+    let thumbAnims: Keyframe[][] = [];
+    beforeEach(() => {
+      thumbAnims = [];
+      const stub = function (this: Element, keyframes: Keyframe[] | PropertyIndexedKeyframes | null) {
+        if (this.classList.contains('ok-seg__thumb')) thumbAnims.push(keyframes as Keyframe[]);
+        return { cancel() {}, finished: Promise.resolve() } as unknown as Animation;
+      };
+      if (had) vi.spyOn(Element.prototype, 'animate').mockImplementation(stub);
+      else (Element.prototype as unknown as { animate: typeof stub }).animate = stub;
+    });
+    afterEach(() => {
+      vi.restoreAllMocks();
+      if (!had) delete (Element.prototype as unknown as { animate?: unknown }).animate;
+    });
+
+    it('StrictMode 下挂载不回弹（effect 跑两遍也一样），之后切换选中项才回弹', async () => {
+      render(<StrictMode><Segmented aria-label="范围" options={options} defaultValue="week" /></StrictMode>);
+      expect(thumbAnims).toHaveLength(0);
+      await userEvent.click(screen.getByRole('radio', { name: '年' }));
+      expect(thumbAnims).toHaveLength(1);
+      // 点已经选中的那一项：值没变，不回弹
+      await userEvent.click(screen.getByRole('radio', { name: '年' }));
+      expect(thumbAnims).toHaveLength(1);
+    });
+
+    it('受控：值不变的重新渲染不回弹，值变了才回弹', () => {
+      const { rerender } = render(<StrictMode><Segmented aria-label="范围" options={options} value="day" /></StrictMode>);
+      rerender(<StrictMode><Segmented aria-label="范围" options={options} value="day" /></StrictMode>);
+      expect(thumbAnims).toHaveLength(0);
+      rerender(<StrictMode><Segmented aria-label="范围" options={options} value="week" /></StrictMode>);
+      expect(thumbAnims).toHaveLength(1);
+    });
   });
 });
