@@ -378,8 +378,9 @@ class Runtime {
       const a = this.anchorOf(p);
       if (!a) continue;
       const cur = attached.get(a) ?? { path: '', reach: 0 };
-      cur.path += outerRegions(p.decor);
-      cur.reach = Math.max(cur.reach, reach);
+      // 外扩 1px：环的边由伪元素自己的 clip 切一次就够，锚点的 clip 不再在同一条边上再切一次（两次抗锯齿会让环变细）
+      cur.path += outerRegions(p.decor, { x: 0, y: 0 }, 1);
+      cur.reach = Math.max(cur.reach, reach + 1);
       attached.set(a, cur);
     }
     for (const p of all) {
@@ -484,7 +485,12 @@ class Runtime {
     // 不裁溢出的元素：大矩形外扩 1024px，溢出的子元素（角标、提示）照常可见
     const clip = clipKey === p.clipKey ? p.clip : `path("${cornerClipPath(d, p.clipsOverflow ? 0 : 1024, p.attached, p.attachedReach)}")`;
     p.clipKey = clipKey;
-    const paint = paintFor(p.attached ? { ...d, outerAttached: true } : d);
+    let pd = d;
+    if (p.attached) {
+      // 锚点自己没有外侧装饰时还没取过背后的颜色
+      pd = { ...d, attached: p.attached, backdrop: d.backdrop || backdropOf(this.doc.defaultView!, p.el.parentElement) };
+    }
+    const paint = paintFor(pd);
     if (clip !== p.clip) { p.el.style.setProperty(v + '-clip', clip); p.clip = clip; }
     if (paint !== p.paint) {
       if (paint) p.el.style.setProperty(v + '-paint', paint); else p.el.style.removeProperty(v + '-paint');

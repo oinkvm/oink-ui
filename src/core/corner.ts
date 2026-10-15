@@ -174,8 +174,11 @@ export interface CornerDecor {
    * 那里原生画的是直角的底色，Chromium 那里露出的是背后的页面。补丁先用这个颜色盖住，再画环
    */
   backdrop?: string;
-  /** 有别的部件（伪元素）的外侧装饰叠在这个元素外面：超椭圆外紧挨着的地方可见，补丁不能越过超椭圆 */
-  outerAttached?: boolean;
+  /**
+   * 叠在这个元素上的其它部件（伪元素）的外侧装饰，在本元素坐标里的区域（outerRegions，已外扩 1px）。
+   * 这时超椭圆外紧挨着的地方可见，补丁不能越过超椭圆；并且这片区域落在盒子矩形里的部分先铺 backdrop，盖住原生直角底色
+   */
+  attached?: string;
 }
 
 /** 颜色的不透明度：transparent、rgba(…, a)、rgb(… / a)、color(… / a)；解析不了当作不透明 */
@@ -242,17 +245,17 @@ function paddingContour(d: CornerDecor): { box: Box; radii: CornerRadii } {
  * 外侧装饰在这个元素坐标里的可见区域（nonzero 子路径），供 clip-path 合并。
  * 外阴影 = 外扩后的形状（盒内部分本来就可见）；outline = 外扩到外缘的形状 + 外扩到内缘的形状（逆时针挖掉中间的缝）
  */
-export function outerRegions(d: CornerDecor, at: { x: number; y: number } = { x: 0, y: 0 }): string {
+export function outerRegions(d: CornerDecor, at: { x: number; y: number } = { x: 0, y: 0 }, grow = 0): string {
   let p = '';
   const base = { x: at.x, y: at.y, w: d.w, h: d.h };
   for (const s of d.shadows) {
     if (s.inset || colorAlpha(s.color) <= 0) continue;
-    p += shapePath(inflate(base, s.spread, s.dx, s.dy), offsetRadii(d.radii, s.spread), d.ks);
+    p += shapePath(inflate(base, s.spread + grow, s.dx, s.dy), offsetRadii(d.radii, s.spread + grow), d.ks);
   }
   const o = d.outline;
   if (o && o.width > 0 && colorAlpha(o.color) > 0) {
-    p += shapePath(inflate(base, o.offset + o.width), offsetRadii(d.radii, o.offset + o.width), d.ks);
-    p += shapePath(inflate(base, o.offset), offsetRadii(d.radii, o.offset), d.ks, true);
+    p += shapePath(inflate(base, o.offset + o.width + grow), offsetRadii(d.radii, o.offset + o.width + grow), d.ks);
+    p += shapePath(inflate(base, o.offset - grow), offsetRadii(d.radii, o.offset - grow), d.ks, true);
   }
   return p;
 }
@@ -303,7 +306,7 @@ export interface CornerPaint {
 /** 补丁九宫格的布局：外扩、角块往盒内伸多远、能不能拉伸。补丁只在这些和装饰本身变了时才需要重画 */
 function paintLayout(d: CornerDecor) {
   const shadows = d.shadows.filter((s) => colorAlpha(s.color) > 0);
-  const E = Math.ceil(outerExtent(d)) + 1;
+  const E = Math.ceil(outerExtent(d)) + 1 + (d.attached ? Math.ceil(attachedReach(d.attached, d)) : 0);
   // 角块往盒内要伸到：半径 + 内阴影的内缩和平移 + 边框 + 1px 抗锯齿
   let pad = 1 + Math.max(...d.border);
   for (const s of shadows) if (s.inset) pad = Math.max(pad, 1 + s.spread + Math.max(Math.abs(s.dx), Math.abs(s.dy)));
@@ -311,7 +314,20 @@ function paintLayout(d: CornerDecor) {
   const [tl, tr, br, bl] = d.radii;
   const L = Math.ceil(Math.max(tl[0], bl[0])) + pad, R = Math.ceil(Math.max(tr[0], br[0])) + pad;
   const T = Math.ceil(Math.max(tl[1], tr[1])) + pad, B = Math.ceil(Math.max(bl[1], br[1])) + pad;
-  return { E, L, R, T, B, stretchX: L + R + 1 <= d.w, stretchY: T + B + 1 <= d.h };
+  // 叠了伪元素外侧装饰的元素按真实尺寸画（attached 是真实坐标），不拉伸
+  const fixed = !!d.attached;
+  return { E, L, R, T, B, stretchX: !fixed && L + R + 1 <= d.w, stretchY: !fixed && T + B + 1 <= d.h };
+}
+
+/** attached 路径伸出盒子多远（从路径坐标里取最小 / 最大值） */
+function attachedReach(path: string, d: { w: number; h: number }): number {
+  let r = 0;
+  const n = path.match(/-?[\d.]+/g) || [];
+  for (let i = 0; i + 1 < n.length; i += 2) {
+    const x = +n[i], y = +n[i + 1];
+    r = Math.max(r, -x, -y, x - d.w, y - d.h);
+  }
+  return r;
 }
 
 /** 补丁缓存键里和尺寸有关的部分：能拉伸的方向不看尺寸 */
@@ -347,7 +363,7 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
   const shadowReach = (s: ShadowLayer) => s.spread + Math.max(Math.abs(s.dx), Math.abs(s.dy));
   const reach = outerExtent(d);
   // C 外面紧挨着的地方要是可见（外阴影、贴着边的 outline），补丁不能越过 C
-  const nearOutside = outerShadows.length > 0 || !!d.outerAttached || (outline !== null && outline.offset < AA && outline.offset + outline.width > 0);
+  const nearOutside = outerShadows.length > 0 || !!d.attached || (outline !== null && outline.offset < AA && outline.offset + outline.width > 0);
   const Cx = nearOutside ? C : shapePath(inflate(box, AA), offsetRadii(radii, AA), ks);
 
   // 角上的洞（和 cornerClipPath 里挖的洞同一范围）：多画的那 1px 只许落在洞里，直边上原生绘制本来就对
@@ -357,6 +373,11 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
   let defs = `<clipPath id='h'><path d='${holes}'/></clipPath><clipPath id='p'><path d='${P ?? Cx}'/></clipPath>`;
   let body = '';
   // 外侧装饰伸进盒子矩形、又在超椭圆外的那一弯：先铺背后的颜色，盖住原生直角底色
+  // 叠在上面的伪元素的环：环本身由伪元素画、由它自己的 clip 切边；这里只把本元素的直角底色在那片区域里换成背后的颜色
+  if (d.attached && d.backdrop && colorAlpha(d.backdrop) > 0) {
+    defs += `<mask id='ba' maskUnits='userSpaceOnUse' x='${-E}' y='${-E}' width='${vw + 2 * E}' height='${vh + 2 * E}'><path fill='#fff' d='${rectPath(box)}'/><path fill='#000' d='${C}'/></mask>`;
+    body += `<path mask='url(#ba)' clip-path='url(#h)' fill='${d.backdrop}' d='${d.attached}'/>`;
+  }
   // 多层外阴影时，上层原生的直角环在角上会盖住下层本该露出的地方（比如选项卡片选中环 4px 底色外那 1px 线），那里也先铺背后的颜色。
   // 从最外一层往里画遮罩：后画的黑色只会挖掉更小的形状
   if (reach > 0 && d.backdrop && colorAlpha(d.backdrop) > 0) {
