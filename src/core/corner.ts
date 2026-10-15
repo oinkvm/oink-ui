@@ -169,6 +169,11 @@ export interface CornerDecor {
   borderColor: string;
   shadows: ShadowLayer[];
   outline: OutlineLayer | null;
+  /**
+   * 元素背后的颜色（最近的不透明祖先背景）。外侧装饰（outline、外阴影）离超椭圆很近时，环在 45° 附近会伸进盒子的矩形里；
+   * 那里原生画的是直角的底色，Chromium 那里露出的是背后的页面。补丁先用这个颜色盖住，再画环
+   */
+  backdrop?: string;
 }
 
 /** 颜色的不透明度：transparent、rgba(…, a)、rgb(… / a)、color(… / a)；解析不了当作不透明 */
@@ -331,18 +336,36 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
   const box = boxOf(v);
   const C = shapePath(box, radii, ks);
   const pad0 = paddingContour(v);
-  const P = hasBorder ? shapePath(pad0.box, pad0.radii, ks) : C;
+  const P = hasBorder ? shapePath(pad0.box, pad0.radii, ks) : null;
+  // 边缘只抗锯齿一次：补丁的外缘如果正好落在元素 clip-path 的边上（超椭圆本身、最外一圈装饰的外缘），
+  // 两边各抗锯齿一次，1px 的线在角上会变淡、断续。这些边上补丁多画 1px，由 clip-path 统一切边
+  const AA = 1;
+  const outerShadows = shadows.filter((s) => !s.inset);
+  const shadowReach = (s: ShadowLayer) => s.spread + Math.max(Math.abs(s.dx), Math.abs(s.dy));
+  const reach = outerExtent(d);
+  // C 外面紧挨着的地方要是可见（外阴影、贴着边的 outline），补丁不能越过 C
+  const nearOutside = outerShadows.length > 0 || (outline !== null && outline.offset < AA && outline.offset + outline.width > 0);
+  const Cx = nearOutside ? C : shapePath(inflate(box, AA), offsetRadii(radii, AA), ks);
 
-  let defs = `<clipPath id='c'><path d='${C}'/></clipPath><clipPath id='p'><path d='${P}'/></clipPath>`;
+  // 角上的洞（和 cornerClipPath 里挖的洞同一范围）：多画的那 1px 只许落在洞里，直边上原生绘制本来就对
+  const [rtl, rtr, rbr, rbl] = radii;
+  const holes = rectPath({ x: -E, y: -E, w: rtl[0] + E, h: rtl[1] + E }) + rectPath({ x: vw - rtr[0], y: -E, w: rtr[0] + E, h: rtr[1] + E })
+    + rectPath({ x: vw - rbr[0], y: vh - rbr[1], w: rbr[0] + E, h: rbr[1] + E }) + rectPath({ x: -E, y: vh - rbl[1], w: rbl[0] + E, h: rbl[1] + E });
+  let defs = `<clipPath id='h'><path d='${holes}'/></clipPath><clipPath id='p'><path d='${P ?? Cx}'/></clipPath>`;
   let body = '';
+  // 外侧装饰伸进盒子矩形、又在超椭圆外的那一弯：先铺背后的颜色，盖住原生直角底色
+  if (reach > 0 && d.backdrop && colorAlpha(d.backdrop) > 0) {
+    defs += `<mask id='bd' maskUnits='userSpaceOnUse' x='${-E}' y='${-E}' width='${vw + 2 * E}' height='${vh + 2 * E}'><path fill='#fff' d='${outerRegions(v)}'/><path fill='#000' d='${C}'/></mask>`;
+    body += `<path mask='url(#bd)' clip-path='url(#h)' fill='${d.backdrop}' d='${rectPath(box)}'/>`;
+  }
   // 外阴影：从最下层画起（box-shadow 列表里越靠前越在上）
-  const outer = shadows.filter((s) => !s.inset);
-  outer.slice().reverse().forEach((s, ri) => {
-    const i = outer.length - 1 - ri;
-    const shape = shapePath(inflate(box, s.spread, s.dx, s.dy), offsetRadii(radii, s.spread), ks);
+  outerShadows.slice().reverse().forEach((s, ri) => {
+    const i = outerShadows.length - 1 - ri;
+    const grow = shadowReach(s) >= reach && reach > 0 ? AA : 0;   // 最外一圈：外缘就是 clip 的边
+    const shape = shapePath(inflate(box, s.spread + grow, s.dx, s.dy), offsetRadii(radii, s.spread + grow), ks);
     let mask = '';
     for (let j = 0; j < i; j++) {
-      const u = outer[j];
+      const u = outerShadows[j];
       mask += `<path fill='#fff' d='${rectPath(inflate(box, u.spread, u.dx, u.dy))}'/>`;
       mask += `<path fill='#000' d='${shapePath(inflate(box, u.spread, u.dx, u.dy), offsetRadii(radii, u.spread), ks)}'/>`;
     }
@@ -357,12 +380,18 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
     const hole = shapePath(hr, offsetRadii(pad0.radii, -s.spread), ks);
     body += `<path clip-path='url(#p)' fill-rule='evenodd' fill='${s.color}' d='${rectPath(hr)}${hole}'/>`;
   });
-  if (hasBorder) body += `<path fill-rule='evenodd' fill='${d.borderColor}' d='${C}${P}'/>`;
+  if (P) {
+    body += `<path fill-rule='evenodd' fill='${d.borderColor}' d='${C}${P}'/>`;
+    if (Cx !== C) body += `<path clip-path='url(#h)' fill-rule='evenodd' fill='${d.borderColor}' d='${Cx}${C}'/>`;
+  }
   if (outline && hasRadius) {
-    const inner = inflate(box, outline.offset);
-    defs += `<clipPath id='o'><path d='${rectPath(inner)}'/></clipPath>`;
-    const out = shapePath(inflate(box, outline.offset + outline.width), offsetRadii(radii, outline.offset + outline.width), ks);
-    const inn = shapePath(inner, offsetRadii(radii, outline.offset), ks);
+    const o = outline.offset, w2 = outline.width;
+    const inner = inflate(box, o);
+    defs += `<clipPath id='o' clip-path='url(#h)'><path d='${rectPath(inner)}'/></clipPath>`;
+    const outGrow = o + w2 > 0 && o + w2 >= reach ? AA : 0;   // 外缘在盒子外、又是最外一圈：外缘是 clip 的边
+    const inGrow = o >= AA ? AA : 0;                           // 内缘在盒子外：内缘也是 clip 的边（缝被 clip 挖掉）
+    const out = shapePath(inflate(box, o + w2 + outGrow), offsetRadii(radii, o + w2 + outGrow), ks);
+    const inn = shapePath(inflate(box, o - inGrow), offsetRadii(radii, o - inGrow), ks);
     body += `<path clip-path='url(#o)' fill-rule='evenodd' fill='${outline.color}' d='${out}${inn}'/>`;
   }
   if (!body) return null;

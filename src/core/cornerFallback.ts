@@ -123,6 +123,15 @@ function paintFor(d: CornerDecor): string {
   return v;
 }
 
+/** 最近的不透明祖先背景色；都透明就取 <html> 的 */
+function backdropOf(view: Window, from: Element | null): string {
+  for (let el = from; el; el = el.parentElement) {
+    const c = view.getComputedStyle(el).backgroundColor;
+    if (colorAlpha(c) >= 0.99) return c;
+  }
+  return '';
+}
+
 class Runtime {
   private doc: Document;
   private root: HTMLElement;
@@ -440,6 +449,11 @@ class Runtime {
     if (p.pseudo && px(cs.opacity) === 0) {
       decor.shadows = decor.shadows.map((s) => (s.inset ? s : { ...s, color: 'transparent' }));
       if (decor.outline) decor.outline = { ...decor.outline, color: 'transparent' };
+    }
+    // 有可见的外侧装饰时，记下背后的颜色（见 CornerDecor.backdrop）。伪元素背后是它覆盖的那个元素的背后
+    if (outerExtent(decor) > 0) {
+      const a = p.pseudo ? this.anchorOf({ ...p, decor }) : null;
+      decor.backdrop = backdropOf(view, ((a ? a.el : p.el) as HTMLElement).parentElement);
     }
     const clips = p.pseudo ? true : cs.overflowX !== 'visible' && cs.overflowY !== 'visible';
     const key = JSON.stringify(decor) + clips;
