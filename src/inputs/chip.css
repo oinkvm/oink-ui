@@ -2,7 +2,7 @@
 .ok-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .ok-chip {
   display: inline-flex; align-items: center; height: 32px; padding: 0 13px; margin: 0; border: 0;
-  border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-fill); color: var(--ok-text-2);
+  border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: var(--ok-fill); color: var(--ok-text-2);
   font: 600 13px/1 var(--ok-font); white-space: nowrap; cursor: pointer; user-select: none;
   transition: background-color var(--ok-dur-2) var(--ok-ease-out), color var(--ok-dur-2) var(--ok-ease-out),
     transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
@@ -20,7 +20,7 @@
 .ok-chip[aria-pressed="true"] .ok-chip__check path { stroke-dashoffset: 0; transition: stroke-dashoffset var(--ok-dur-3) var(--ok-ease-out) calc(80ms * var(--ok-ms)); }
 .ok-chip__remove {
   display: grid; place-items: center; width: 18px; height: 18px; margin: 0 -6px 0 6px; padding: 0; border: 0;
-  border-radius: 50%; corner-shape: round; background: transparent; color: inherit; cursor: pointer;
+  border-radius: 50%; corner-shape: round; --ok-shape: round; background: transparent; color: inherit; cursor: pointer;
   transition: background-color var(--ok-dur-2) var(--ok-ease-out);
 }
 @media (hover: hover) { .ok-chip__remove:hover { background: var(--ok-line-2); } }

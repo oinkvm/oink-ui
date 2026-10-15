@@ -5,7 +5,7 @@
   position: fixed; z-index: 400; left: 0; top: 0;
   display: flex; align-items: center; gap: 8px;
   max-width: var(--ok-popup-avail-w, calc(100vw - 16px));
-  padding: 7px 10px; border-radius: calc(10px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  padding: 7px 10px; border-radius: calc(10px * var(--ok-rk)); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);
   background: var(--ok-inverse); color: var(--ok-on-inverse);
   font: 500 12.5px/1.2 var(--ok-font); white-space: nowrap;
   pointer-events: none;

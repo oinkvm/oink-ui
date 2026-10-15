@@ -26,14 +26,14 @@
   position: relative; overflow: hidden; pointer-events: auto;
   display: flex; align-items: center; gap: 12px;
   width: min(360px, calc(100vw - 32px)); padding: var(--ok-s-4);
-  border-radius: calc(20px * var(--ok-rk)); corner-shape: var(--ok-corner); background: var(--ok-pop); color: var(--ok-text);
+  border-radius: calc(20px * var(--ok-rk)); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner); background: var(--ok-pop); color: var(--ok-text);
   box-shadow: inset 0 0 0 1px var(--ok-line-2), inset 0 1.5px 0 var(--ok-hi);
   cursor: pointer; touch-action: manipulation;
 }
 .ok-toast[data-leaving] { pointer-events: none; }
 .ok-toast__icon {
   --_c: var(--ok-accent-text); --_s: var(--ok-accent-soft);
-  display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 50%; corner-shape: round;
+  display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 50%; corner-shape: round; --ok-shape: round;
   background: var(--_s); color: var(--_c);
   animation: ok-pop var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy) calc(120ms * var(--ok-ms)) both;
 }

@@ -1,7 +1,7 @@
 /* NumberInput（Stepper）· 搬自 oink.css 第 9 节 */
-.ok-stepper { display: inline-flex; align-items: center; gap: 2px; height: var(--ok-h-md); padding: 3px; border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-well); }
+.ok-stepper { display: inline-flex; align-items: center; gap: 2px; height: var(--ok-h-md); padding: 3px; border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: var(--ok-well); }
 .ok-stepper__btn {
-  display: grid; place-items: center; width: calc(var(--ok-h-md) - 6px); height: calc(var(--ok-h-md) - 6px); padding: 0; margin: 0; border: 0; border-radius: 50%; corner-shape: round;
+  display: grid; place-items: center; width: calc(var(--ok-h-md) - 6px); height: calc(var(--ok-h-md) - 6px); padding: 0; margin: 0; border: 0; border-radius: 50%; corner-shape: round; --ok-shape: round;
   background: var(--ok-raised); color: var(--ok-text); cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--ok-line);
   transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), opacity var(--ok-dur-2);

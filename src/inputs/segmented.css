@@ -1,19 +1,19 @@
 /* Segmented · 搬自 oink.css 第 7 节 */
 .ok-seg {
   position: relative; isolation: isolate; display: inline-flex; padding: 3px;
-  border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-well);
+  border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: var(--ok-well);
 }
 .ok-seg__thumb {
   position: absolute; z-index: -1; top: 3px; bottom: 3px; left: 0; width: var(--w, 0);
   transform: translateX(var(--x, 0));
-  border-radius: inherit; corner-shape: inherit; background: var(--ok-raised);
+  border-radius: inherit; corner-shape: inherit; --ok-shape: inherit; background: var(--ok-raised);
   box-shadow: inset 0 0 0 1px var(--ok-line);
   transition: transform var(--ok-spring-dur) var(--ok-spring), width var(--ok-spring-dur) var(--ok-spring);
 }
 .ok-seg:not(.is-ready):not([data-ready]) .ok-seg__thumb { transition: none; }
 .ok-seg__item {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 1;
-  height: calc(var(--ok-h-md) - 6px); padding: 0 16px; margin: 0; border: 0; border-radius: inherit; corner-shape: inherit; background: none;
+  height: calc(var(--ok-h-md) - 6px); padding: 0 16px; margin: 0; border: 0; border-radius: inherit; corner-shape: inherit; --ok-shape: inherit; background: none;
   font: 600 14px/1 var(--ok-font); color: var(--ok-text-2); white-space: nowrap; cursor: pointer;
   transition: color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
 }

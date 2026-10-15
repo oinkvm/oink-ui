@@ -6,7 +6,7 @@
 .ok-progress[data-tone="danger"] { --_c: var(--ok-danger); }
 .ok-progress[data-tone="info"] { --_c: var(--ok-info); }
 .ok-progress__bar {
-  position: absolute; inset: 0; border-radius: inherit; corner-shape: inherit; background: var(--_c);
+  position: absolute; inset: 0; border-radius: inherit; corner-shape: inherit; --ok-shape: inherit; background: var(--_c);
   transform: translateX(calc((var(--v) - 1) * 100%));
   transition: transform var(--ok-spring-soft-dur) var(--ok-spring-soft), background-color var(--ok-dur-3);
 }

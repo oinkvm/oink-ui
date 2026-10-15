@@ -4,7 +4,7 @@
 .ok-tree__item { min-width: 0; outline: none; -webkit-tap-highlight-color: transparent; }
 .ok-tree__row {
   display: flex; align-items: center; gap: 6px; min-width: 0; min-height: var(--ok-h-item); padding: 0 10px 0 4px;
-  border-radius: calc(10px * var(--ok-rk)); corner-shape: var(--ok-corner); cursor: pointer; touch-action: manipulation;
+  border-radius: calc(10px * var(--ok-rk)); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner); cursor: pointer; touch-action: manipulation;
   outline: 2px solid transparent; outline-offset: 5px;
   transition: background-color var(--ok-dur-2) var(--ok-ease-out), color var(--ok-dur-2) var(--ok-ease-out);
 }

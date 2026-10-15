@@ -1,7 +1,7 @@
 .ok-badge {
   --_c: var(--ok-text-2); --_s: var(--ok-fill); --_solid: var(--ok-accent); --_on: var(--ok-on-accent);   /* 原型：不带 tone 的 solid 就是强调色 */
   display: inline-flex; align-items: center; gap: 6px; height: 24px; max-width: 100%; padding: 0 10px;
-  border-radius: var(--ok-r-full); corner-shape: round; background: var(--_s); color: var(--_c);
+  border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: var(--_s); color: var(--_c);
   font: 600 12px/1 var(--ok-font); white-space: nowrap; vertical-align: middle;
 }
 .ok-badge--accent { --_c: var(--ok-accent-text); --_s: var(--ok-accent-soft); --_solid: var(--ok-accent); --_on: var(--ok-on-accent); }
@@ -13,8 +13,8 @@
 .ok-badge--ink { background: var(--ok-inverse); color: var(--ok-on-inverse); }
 
 /* 状态点：跟随文字颜色；live 向外扩散 3.2 倍 */
-.ok-dot { position: relative; display: inline-block; width: 7px; height: 7px; border-radius: 50%; corner-shape: round; background: currentColor; flex: none; }
-.ok-dot--live::after { content: ""; position: absolute; inset: 0; border-radius: 50%; corner-shape: round; background: currentColor; animation: ok-ping calc(1.8s * var(--ok-ms)) var(--ok-ease-out) infinite; }
+.ok-dot { position: relative; display: inline-block; width: 7px; height: 7px; border-radius: 50%; corner-shape: round; --ok-shape: round; background: currentColor; flex: none; }
+.ok-dot--live::after { content: ""; position: absolute; inset: 0; border-radius: 50%; corner-shape: round; --ok-shape: round; background: currentColor; animation: ok-ping calc(1.8s * var(--ok-ms)) var(--ok-ease-out) infinite; }
 /* 减弱动效：--ok-ms 为 0 时这条循环已经是 0 秒（不动），这里再明确关掉，不依赖浏览器对 0 秒无限循环的处理 */
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-motion="full"]) .ok-dot--live::after { animation: none; }

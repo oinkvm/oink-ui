@@ -2,7 +2,7 @@
 .ok-meter {
   --v: .5;
   position: relative; isolation: isolate; overflow: hidden; flex: none;
-  width: 190px; height: var(--ok-h-md); border-radius: var(--ok-r-full); corner-shape: round;
+  width: 190px; height: var(--ok-h-md); border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round;
   background: var(--ok-well); cursor: ew-resize; touch-action: none; user-select: none;
   transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
 }

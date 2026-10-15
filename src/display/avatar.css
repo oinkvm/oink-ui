@@ -1,31 +1,31 @@
 .ok-avatar {
   --c: var(--ok-accent); --size: 36px;
-  position: relative; display: inline-grid; place-items: center; width: var(--size); height: var(--size); border-radius: 50%; corner-shape: round; flex: none;
+  position: relative; display: inline-grid; place-items: center; width: var(--size); height: var(--size); border-radius: 50%; corner-shape: round; --ok-shape: round; flex: none;
   background: var(--c); color: #1B1C22; font: 700 calc(var(--size) * .36)/1 var(--ok-font); vertical-align: middle; user-select: none;
   box-shadow: 0 0 0 2.5px var(--ok-avatar-ring, var(--ok-surface));   /* 这一圈是和背景同色的描边，用来把叠放的头像分开，不是阴影 */
 }
 .ok-avatar__fallback { display: grid; place-items: center; white-space: nowrap; }
 .ok-avatar__fallback .ok-icon { width: calc(var(--size) * .56); height: calc(var(--size) * .56); }
-.ok-avatar__img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; corner-shape: inherit; object-fit: cover; }
+.ok-avatar__img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; corner-shape: inherit; --ok-shape: inherit; object-fit: cover; }
 .ok-avatar--more { --c: var(--ok-fill); color: var(--ok-text-2); font-size: calc(var(--size) * .32); font-variant-numeric: tabular-nums; }
 /* 状态点：颜色之外，形状也不同 —— 在线实心、忙碌带横杠、离开半月、离线空心 */
 .ok-avatar__status {
   position: absolute; right: -1px; bottom: -1px; width: max(9px, calc(var(--size) * .28)); height: max(9px, calc(var(--size) * .28));
-  border-radius: 50%; corner-shape: round; background: var(--ok-success);
+  border-radius: 50%; corner-shape: round; --ok-shape: round; background: var(--ok-success);
   box-shadow: 0 0 0 2px var(--ok-avatar-ring, var(--ok-surface));
 }
 .ok-avatar__status[data-status="busy"] { background: var(--ok-danger); }
 .ok-avatar__status[data-status="busy"]::after { content: ""; position: absolute; inset: calc(50% - 1px) 22%; border-radius: 1px; background: var(--ok-avatar-ring, var(--ok-surface)); }
 .ok-avatar__status[data-status="away"] { background: var(--ok-warning); }
-.ok-avatar__status[data-status="away"]::after { content: ""; position: absolute; left: -10%; top: -10%; width: 60%; height: 60%; border-radius: 50%; corner-shape: round; background: var(--ok-avatar-ring, var(--ok-surface)); }
+.ok-avatar__status[data-status="away"]::after { content: ""; position: absolute; left: -10%; top: -10%; width: 60%; height: 60%; border-radius: 50%; corner-shape: round; --ok-shape: round; background: var(--ok-avatar-ring, var(--ok-surface)); }
 .ok-avatar__status[data-status="offline"] { background: var(--ok-avatar-ring, var(--ok-surface)); }
-.ok-avatar__status[data-status="offline"]::after { content: ""; position: absolute; inset: 0; border-radius: 50%; corner-shape: round; box-shadow: inset 0 0 0 2px var(--ok-text-3); }
+.ok-avatar__status[data-status="offline"]::after { content: ""; position: absolute; inset: 0; border-radius: 50%; corner-shape: round; --ok-shape: round; box-shadow: inset 0 0 0 2px var(--ok-text-3); }
 
 .ok-avatars { display: inline-flex; min-width: 0; }
 .ok-avatars .ok-avatar + .ok-avatar { margin-left: -10px; }
 
 /* “+N” 是一个按钮：悬停或聚焦时浮出全部成员 */
-.ok-avatars__more { display: inline-flex; margin: 0 0 0 -10px; padding: 0; border: 0; background: none; border-radius: 50%; corner-shape: round; cursor: pointer; }
+.ok-avatars__more { display: inline-flex; margin: 0 0 0 -10px; padding: 0; border: 0; background: none; border-radius: 50%; corner-shape: round; --ok-shape: round; cursor: pointer; }
 .ok-avatars__more .ok-avatar--more { margin-left: 0; }
 @media (hover: hover) { .ok-avatars__more:hover .ok-avatar--more { --c: var(--ok-fill-hover); color: var(--ok-text); } }
 .ok-avatars__panel { min-width: 200px; max-width: min(280px, calc(100vw - 16px)); }

@@ -3,8 +3,8 @@
   background: linear-gradient(100deg, var(--ok-well) 30%, var(--ok-well-hi) 50%, var(--ok-well) 70%) 0 0 / 300% 100%;
   animation: ok-shimmer 1.6s linear infinite;
 }
-.ok-skel--circle { width: 40px; height: 40px; border-radius: 50%; corner-shape: round; flex: none; }
-.ok-skel--rect { height: 96px; border-radius: var(--ok-r-2); corner-shape: var(--ok-corner); }
+.ok-skel--circle { width: 40px; height: 40px; border-radius: 50%; corner-shape: round; --ok-shape: round; flex: none; }
+.ok-skel--rect { height: 96px; border-radius: var(--ok-r-2); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner); }
 .ok-skel-lines { display: grid; gap: 10px; min-width: 0; }
 /* 减弱动效：高光不再扫过 */
 @media (prefers-reduced-motion: reduce) { :root:not([data-motion="full"]) .ok-skel { animation: none; } }

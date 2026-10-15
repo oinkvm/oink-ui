@@ -1,6 +1,6 @@
 .ok-alert {
   --_c: var(--ok-accent-text); --_s: var(--ok-accent-soft);
-  display: flex; align-items: flex-start; gap: 12px; min-width: 0; padding: var(--ok-s-4); border-radius: var(--ok-r-nested, calc(18px * var(--ok-rk))); corner-shape: var(--ok-corner);
+  display: flex; align-items: flex-start; gap: 12px; min-width: 0; padding: var(--ok-s-4); border-radius: var(--ok-r-nested, calc(18px * var(--ok-rk))); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);
   background: var(--_s); color: var(--ok-text); font: 450 14px/1.55 var(--ok-font);
 }
 .ok-alert > .ok-icon { color: var(--_c); margin-top: 1px; }

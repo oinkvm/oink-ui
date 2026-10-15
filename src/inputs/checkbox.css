@@ -14,7 +14,7 @@
   transition: background-color var(--ok-dur-2) var(--ok-ease-out), box-shadow var(--ok-dur-2) var(--ok-ease-out),
     transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), outline-offset var(--ok-dur-3) var(--ok-ease-out);
 }
-.ok-check__box { border-radius: calc(7px * var(--ok-rk)); corner-shape: var(--ok-corner); }
+.ok-check__box { border-radius: calc(7px * var(--ok-rk)); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner); }
 @media (hover: hover) {
 .ok-check:hover .ok-check__box { box-shadow: inset 0 0 0 1.5px var(--ok-accent); }
 }

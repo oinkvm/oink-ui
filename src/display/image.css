@@ -3,7 +3,7 @@
   --_ir: var(--ok-r-nested, var(--ok-r-3));   /* 默认（radius 不传或为 3）：放进容器取外层给的同心圆角 */
   position: relative; display: block; min-width: 0; max-width: 100%;
   overflow: hidden; isolation: isolate;
-  border-radius: var(--_ir); corner-shape: var(--ok-corner);
+  border-radius: var(--_ir); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);
   background: var(--ok-well); color: var(--ok-text-3);
 }
 .ok-image[data-radius="0"] { --_ir: 0px; }
@@ -12,7 +12,7 @@
 .ok-image[data-radius="4"] { --_ir: var(--ok-r-4); }
 .ok-image[data-radius="5"] { --_ir: var(--ok-r-5); }
 .ok-image[data-radius="6"] { --_ir: var(--ok-r-6); }
-.ok-image[data-radius="full"] { --_ir: var(--ok-r-full); corner-shape: round; }
+.ok-image[data-radius="full"] { --_ir: var(--ok-r-full); corner-shape: round; --ok-shape: round; }
 
 /* 没给比例时按图片本身的比例；还没有尺寸可用（加载中 / 回退）时先撑出一块，免得塌成 0 高 */
 .ok-image:not([data-ratio]):is([data-status="loading"], [data-status="error"], [data-status="empty"]) { min-height: 96px; }

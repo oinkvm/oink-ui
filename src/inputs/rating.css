@@ -4,7 +4,7 @@
 .ok-rating { flex-wrap: wrap; max-width: 100%; }
 .ok-rating__star {
   display: grid; place-items: center; width: 32px; height: 32px; padding: 0; margin: 0; border: 0;
-  border-radius: 50%; corner-shape: round; background: none; color: var(--ok-well-2); cursor: pointer;
+  border-radius: 50%; corner-shape: round; --ok-shape: round; background: none; color: var(--ok-well-2); cursor: pointer;
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   transition: color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
 }

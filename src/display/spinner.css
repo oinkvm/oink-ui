@@ -6,9 +6,9 @@
 .ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect):not([stroke-width]) { stroke-width: 5.5; }
 .ok-tail :is(path, circle, ellipse, line, polyline, polygon, rect) { stroke-linecap: round; stroke-linejoin: round; }
 .ok-tail [pathLength="1"] { stroke-dasharray: 1 1.2; animation: ok-tail-draw 1.5s var(--ok-ease-in-out) infinite; }
-.ok-spinner { display: block; width: calc(var(--size, 28px) * .8); height: calc(var(--size, 28px) * .8); border-radius: 50%; corner-shape: round; border: 2.5px solid var(--ok-well-2); border-top-color: var(--ok-accent); animation: ok-spin .8s linear infinite; flex: none; }
+.ok-spinner { display: block; width: calc(var(--size, 28px) * .8); height: calc(var(--size, 28px) * .8); border-radius: 50%; corner-shape: round; --ok-shape: round; border: 2.5px solid var(--ok-well-2); border-top-color: var(--ok-accent); animation: ok-spin .8s linear infinite; flex: none; }
 .ok-dots { position: relative; display: inline-flex; align-items: center; gap: 5px; color: var(--ok-accent); vertical-align: middle; }
-.ok-dots i { width: 8px; height: 8px; border-radius: 50%; corner-shape: round; background: currentColor; animation: ok-dot-bounce 1s var(--ok-ease-in-out) infinite; }
+.ok-dots i { width: 8px; height: 8px; border-radius: 50%; corner-shape: round; --ok-shape: round; background: currentColor; animation: ok-dot-bounce 1s var(--ok-ease-in-out) infinite; }
 .ok-dots i:nth-child(2) { animation-delay: .12s; }
 .ok-dots i:nth-child(3) { animation-delay: .24s; }
 /* 减弱动效：尾巴不甩、圆点不跳，只保留描线 / 透明度的变化，仍然看得出在加载 */

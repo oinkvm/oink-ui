@@ -9,7 +9,7 @@
 }
 .ok-steps__item[data-state="complete"]:not(:last-child)::after { background: var(--ok-accent); }
 .ok-steps__marker {
-  display: grid; place-items: center; flex: none; width: var(--_m); height: var(--_m); border-radius: 50%; corner-shape: round;
+  display: grid; place-items: center; flex: none; width: var(--_m); height: var(--_m); border-radius: 50%; corner-shape: round; --ok-shape: round;
   background: var(--ok-fill); color: var(--ok-text-2); font: 700 13px/1 var(--ok-font); font-variant-numeric: tabular-nums;
   transition: background-color var(--ok-dur-3) var(--ok-ease-out), color var(--ok-dur-3) var(--ok-ease-out), box-shadow var(--ok-dur-3) var(--ok-ease-out);
 }

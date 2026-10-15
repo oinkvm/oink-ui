@@ -14,11 +14,11 @@
 
 .ok-split__sep {
   position: relative; flex: 0 0 var(--_sep); align-self: stretch; display: grid; place-items: center;
-  border-radius: var(--ok-r-full); corner-shape: round; cursor: col-resize; touch-action: none; user-select: none; -webkit-user-select: none;
+  border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; cursor: col-resize; touch-action: none; user-select: none; -webkit-user-select: none;
 }
 .ok-split[data-orientation="vertical"] > .ok-split__track > .ok-split__sep { cursor: row-resize; }
 .ok-split__sep::after {
-  content: ""; width: 4px; height: 32px; max-height: 60%; border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-line-2);
+  content: ""; width: 4px; height: 32px; max-height: 60%; border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: var(--ok-line-2);
   transition: background-color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-dur) var(--ok-spring);
 }
 .ok-split[data-orientation="vertical"] > .ok-split__track > .ok-split__sep::after { width: 32px; max-width: 60%; height: 4px; max-height: none; }

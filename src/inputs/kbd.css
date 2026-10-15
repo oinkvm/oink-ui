@@ -1,7 +1,7 @@
 /* Kbd · 搬自 oink.css 第 10 节 */
 .ok-kbd {
   display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 7px;
-  border-radius: calc(7px * var(--ok-rk)); corner-shape: var(--ok-corner); background: var(--ok-well); color: var(--ok-text);
+  border-radius: calc(7px * var(--ok-rk)); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner); background: var(--ok-well); color: var(--ok-text);
   box-shadow: inset 0 0 0 1px var(--ok-line), inset 0 -1.5px 0 var(--ok-line-2);
   font: 600 13px/1 var(--ok-font);
 }

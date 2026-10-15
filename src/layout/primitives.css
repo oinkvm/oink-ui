@@ -5,8 +5,8 @@
    ========================================================================== */
 
 /* —— Box —— */
-.ok-box[data-radius] { border-radius: var(--ok-box-r); corner-shape: var(--ok-corner); }
-.ok-box[data-radius="full"] { corner-shape: round; }
+.ok-box[data-radius] { border-radius: var(--ok-box-r); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner); }
+.ok-box[data-radius="full"] { corner-shape: round; --ok-shape: round; }
 .ok-box[data-surface] { background: var(--ok-box-bg); color: var(--ok-text); }
 .ok-box:is([data-border], [data-highlight]) {
   --_box-line: transparent; --_box-hi: transparent;

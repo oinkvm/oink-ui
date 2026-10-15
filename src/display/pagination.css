@@ -3,7 +3,7 @@
 .ok-pagination__list { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .ok-pagination__btn {
   display: grid; place-items: center; min-width: var(--_h); height: var(--_h); padding: 0 8px; margin: 0; border: 0;
-  border-radius: var(--ok-r-full); corner-shape: round; background: none;
+  border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: none;
   font: inherit; font-variant-numeric: tabular-nums; color: inherit; cursor: pointer;
   transition: background-color var(--ok-dur-2) var(--ok-ease-out), color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
 }

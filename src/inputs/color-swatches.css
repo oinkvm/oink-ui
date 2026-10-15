@@ -3,13 +3,13 @@
 .ok-swatch {
   --c: var(--ok-accent);
   position: relative; display: grid; place-items: center; flex: none;
-  width: 30px; height: 30px; padding: 0; margin: 0; border: 0; border-radius: 50%; corner-shape: round;
+  width: 30px; height: 30px; padding: 0; margin: 0; border: 0; border-radius: 50%; corner-shape: round; --ok-shape: round;
   background: var(--c); cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--ok-line);
   transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
 }
 .ok-swatch::after {
-  content: ""; width: 10px; height: 10px; border-radius: 50%; corner-shape: round; background: #fff;
+  content: ""; width: 10px; height: 10px; border-radius: 50%; corner-shape: round; --ok-shape: round; background: #fff;
   transform: scale(0); transition: transform var(--ok-dur-1) var(--ok-ease-in);
 }
 .ok-swatch:active { transform: scale(.88); transition-duration: var(--ok-dur-1); transition-timing-function: var(--ok-ease-out); }

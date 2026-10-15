@@ -13,7 +13,7 @@
 .ok-dialog__panel--center { text-align: center; }   /* 无图标：标题与说明居中 */
 .ok-dialog__panel--center .ok-dialog__head { justify-content: center; }
 .ok-dialog__icon {
-  display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner);
+  display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);
   background: var(--ok-accent-soft); color: var(--ok-accent-text);
 }
 .ok-dialog__icon--neutral { background: var(--ok-fill); color: var(--ok-text); }

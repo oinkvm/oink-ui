@@ -2,13 +2,13 @@
 .ok-switch { position: relative; display: inline-flex; flex: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ok-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
 .ok-switch__track {
-  position: relative; display: block; width: 54px; height: 32px; border-radius: var(--ok-r-full); corner-shape: round;
+  position: relative; display: block; width: 54px; height: 32px; border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round;
   background: var(--ok-well-2);
   outline: 2px solid transparent; outline-offset: 5px;
   transition: background-color var(--ok-dur-3) var(--ok-ease-out), outline-offset var(--ok-dur-3) var(--ok-ease-out);
 }
 .ok-switch__thumb {
-  position: absolute; top: 3px; left: 3px; width: 32px; height: 26px; border-radius: var(--ok-r-full); corner-shape: round;
+  position: absolute; top: 3px; left: 3px; width: 32px; height: 26px; border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round;
   background: var(--ok-thumb);
   transition: transform var(--ok-spring-dur) var(--ok-spring), width var(--ok-dur-2) var(--ok-ease-out);
 }

@@ -15,7 +15,7 @@
 .ok-select__trigger {
   display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: none;
   min-width: 0; max-width: 100%; height: var(--ok-h-md); padding: 0 12px 0 16px; margin: 0; border: 0;
-  border-radius: var(--ok-r-full); corner-shape: round;
+  border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round;
   background: var(--ok-fill); color: var(--ok-text); font: 600 14px/1 var(--ok-font); cursor: pointer;
   transition: background-color var(--ok-dur-2), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
 }
@@ -35,7 +35,7 @@
 .ok-select__chips { display: flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; }
 .ok-select__chip {
   flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  padding: 3px 8px; border-radius: var(--ok-r-full); corner-shape: round;
+  padding: 3px 8px; border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round;
   background: var(--ok-raised); font: 600 12px/1.3 var(--ok-font); color: var(--ok-text);
 }
 .ok-select__chip--more { flex: none; color: var(--ok-text-2); }

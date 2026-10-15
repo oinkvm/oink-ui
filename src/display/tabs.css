@@ -7,7 +7,7 @@
 }
 .ok-tabs__list::-webkit-scrollbar { display: none; }
 .ok-tabs__tab {
-  flex: none; height: 44px; padding: 0 14px; margin: 0; border: 0; border-radius: calc(12px * var(--ok-rk)) calc(12px * var(--ok-rk)) 0 0; corner-shape: var(--ok-corner); background: none;
+  flex: none; height: 44px; padding: 0 14px; margin: 0; border: 0; border-radius: calc(12px * var(--ok-rk)) calc(12px * var(--ok-rk)) 0 0; corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner); background: none;
   font: 600 15px/1 var(--ok-font); color: var(--ok-text-3); white-space: nowrap; cursor: pointer;
   transition: color var(--ok-dur-2) var(--ok-ease-out);
 }

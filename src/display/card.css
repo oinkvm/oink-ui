@@ -2,7 +2,7 @@
   --_p: var(--ok-s-5); --_r: var(--ok-r-nested, var(--ok-r-4));
   display: block; min-width: 0; margin: 0;
   padding: var(--_p);
-  border: 0; border-radius: var(--_r); corner-shape: var(--ok-corner);
+  border: 0; border-radius: var(--_r); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);
   background: var(--ok-card); color: var(--ok-text);
   box-shadow: inset 0 0 0 1px var(--ok-line), inset 0 1.5px 0 var(--ok-hi);
   --ok-avatar-ring: var(--ok-card);
@@ -43,7 +43,7 @@ a.ok-card, button.ok-card { width: 100%; font: inherit; text-align: start; text-
 
 /* 覆盖链接：文字在标题里，点击区域铺满整张卡片 */
 .ok-card__link { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: inherit; text-decoration: none; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-.ok-card__link::after { content: ""; position: absolute; inset: 0; border-radius: var(--_r); corner-shape: var(--ok-corner); outline: 2px solid transparent; outline-offset: 5px; }
+.ok-card__link::after { content: ""; position: absolute; inset: 0; border-radius: var(--_r); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner); outline: 2px solid transparent; outline-offset: 5px; }
 .ok-card__link:focus-visible::after { outline-color: var(--ok-accent); outline-offset: 2px; transition: outline-offset var(--ok-dur-3) var(--ok-ease-out); }
 /* 卡片里别的可交互元素浮在覆盖链接之上。
    Checkbox / Radio / Switch / FileDrop 里那个透明的原生 input 本来是 absolute 叠在控件上的，不能改成 relative
@@ -69,7 +69,7 @@ a.ok-card, button.ok-card { width: 100%; font: inherit; text-align: start; text-
 .ok-card > .ok-card__media:first-child {
   max-width: none;   /* Image 默认 max-width: 100%，贴边时要比内容区宽出两个内边距 */
   margin: calc(-1 * var(--_p)) calc(-1 * var(--_p)) var(--_p);
-  border-radius: var(--_r) var(--_r) 0 0; corner-shape: var(--ok-corner);
+  border-radius: var(--_r) var(--_r) 0 0; corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);
 }
 .ok-card > .ok-card__media:only-child { margin-bottom: calc(-1 * var(--_p)); border-radius: var(--_r); }
 /* 不在第一个的主图：留在内边距里，圆角和卡片同心（见上面的 --_card-nest） */
@@ -82,7 +82,7 @@ a.ok-card, button.ok-card { width: 100%; font: inherit; text-align: start; text-
 .ok-card.ok-card:has(> .ok-card__media:first-child) { box-shadow: none; }
 .ok-card:has(> .ok-card__media:first-child)::after {
   content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  border-radius: inherit; corner-shape: inherit;
+  border-radius: inherit; corner-shape: inherit; --ok-shape: inherit;
   box-shadow: inset 0 0 0 1px var(--_ring), inset 0 1.5px 0 var(--ok-hi);
   transition: box-shadow var(--ok-dur-2) var(--ok-ease-out);
 }

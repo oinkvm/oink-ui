@@ -14,14 +14,14 @@
   transition: background-color var(--ok-dur-2) var(--ok-ease-out), box-shadow var(--ok-dur-2) var(--ok-ease-out),
     transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy), outline-offset var(--ok-dur-3) var(--ok-ease-out);
 }
-.ok-radio__dot { border-radius: 50%; corner-shape: round; }
+.ok-radio__dot { border-radius: 50%; corner-shape: round; --ok-shape: round; }
 @media (hover: hover) {
 .ok-radio:hover .ok-radio__dot { box-shadow: inset 0 0 0 1.5px var(--ok-accent); }
 }
 .ok-radio:active .ok-radio__dot { transform: scale(.84); transition-duration: var(--ok-dur-2), var(--ok-dur-2), var(--ok-dur-1), var(--ok-dur-3); transition-timing-function: var(--ok-ease-out); }
 .ok-radio input:checked + .ok-radio__dot { background: var(--ok-accent); box-shadow: inset 0 0 0 1.5px transparent; }
 .ok-radio__dot::after {
-  content: ""; width: 8px; height: 8px; border-radius: 50%; corner-shape: round; background: var(--ok-on-accent);
+  content: ""; width: 8px; height: 8px; border-radius: 50%; corner-shape: round; --ok-shape: round; background: var(--ok-on-accent);
   transform: scale(0); transition: transform var(--ok-dur-1) var(--ok-ease-in);
 }
 .ok-radio input:checked + .ok-radio__dot::after { transform: scale(1); transition: transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy); }

@@ -12,5 +12,5 @@
 .ok-list__desc { font: 450 13px/1.45 var(--ok-font); color: var(--ok-text-2); }
 .ok-list__leading { display: grid; place-items: center; flex: none; min-height: 1.5em; color: var(--ok-text-2); }
 .ok-list__trailing { display: flex; align-items: center; gap: var(--ok-s-2); flex: none; min-height: 1.5em; font: 450 13px/1.45 var(--ok-font); color: var(--ok-text-2); }
-.ok-list[data-marker="bullet"] > .ok-list__item::before { content: ""; flex: none; width: 6px; height: 6px; margin: calc(.75em - 3px) 3px 0; border-radius: 50%; corner-shape: round; background: var(--ok-text-3); }
+.ok-list[data-marker="bullet"] > .ok-list__item::before { content: ""; flex: none; width: 6px; height: 6px; margin: calc(.75em - 3px) 3px 0; border-radius: 50%; corner-shape: round; --ok-shape: round; background: var(--ok-text-3); }
 .ok-list[data-marker="number"] > .ok-list__item::before { content: counter(ok-list) "."; flex: none; min-width: 1.5em; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ok-text-2); }

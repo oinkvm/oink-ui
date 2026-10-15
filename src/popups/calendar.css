@@ -17,7 +17,7 @@
 .ok-calendar__day {
   position: relative; display: grid; place-items: center;
   width: var(--ok-cal-cell); height: var(--ok-cal-cell); padding: 0; margin: 0; border: 0;
-  border-radius: var(--ok-r-full); corner-shape: round; background: none;
+  border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: none;
   font: 500 14px/1 var(--ok-font); font-variant-numeric: tabular-nums; color: var(--ok-text); cursor: pointer;
   transition: background-color var(--ok-dur-1) var(--ok-ease-out), color var(--ok-dur-1) var(--ok-ease-out),
     transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
@@ -30,7 +30,7 @@
 .ok-calendar__day[data-today] { font-weight: 700; }
 .ok-calendar__day[data-today]::after {
   content: ""; position: absolute; left: 50%; bottom: 5px; width: 4px; height: 4px; margin-left: -2px;
-  border-radius: 50%; corner-shape: round; background: var(--ok-accent);
+  border-radius: 50%; corner-shape: round; --ok-shape: round; background: var(--ok-accent);
 }
 /* 禁用：换一种画法（划线），和“不在本月”能分开 */
 .ok-calendar__day[aria-disabled="true"] { color: var(--ok-text-3); text-decoration: line-through; cursor: not-allowed; }
@@ -61,7 +61,7 @@
 .ok-datepicker__btn {
   display: grid; place-items: center; flex: none;
   width: calc(var(--ok-h-md) - 12px); height: calc(var(--ok-h-md) - 12px); padding: 0; margin: 0; border: 0;
-  border-radius: var(--ok-r-full); corner-shape: round; background: none; color: var(--ok-text-2); cursor: pointer;
+  border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: none; color: var(--ok-text-2); cursor: pointer;
   transition: background-color var(--ok-dur-2) var(--ok-ease-out), color var(--ok-dur-2);
 }
 .ok-datepicker[data-size="sm"] .ok-datepicker__btn { width: calc(var(--ok-h-sm) - 8px); height: calc(var(--ok-h-sm) - 8px); }

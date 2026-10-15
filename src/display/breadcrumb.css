@@ -5,7 +5,7 @@
 .ok-breadcrumb__sep .ok-icon { width: 14px; height: 14px; }
 .ok-breadcrumb__link, .ok-breadcrumb__text, .ok-breadcrumb__current {
   display: inline-flex; align-items: center; min-width: 0; max-width: 24ch; min-height: 28px; padding: 0 6px;
-  border-radius: var(--ok-r-1); corner-shape: var(--ok-corner);
+  border-radius: var(--ok-r-1); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .ok-breadcrumb__link { margin: 0; border: 0; background: none; font: inherit; color: inherit; text-decoration: none; cursor: pointer; transition: color var(--ok-dur-2) var(--ok-ease-out), background-color var(--ok-dur-2) var(--ok-ease-out); }

@@ -7,8 +7,8 @@
 .ok-timeline__item[data-tone="warning"] { --_c: var(--ok-warning-text); --_s: var(--ok-warning-soft); }
 .ok-timeline__item[data-tone="danger"] { --_c: var(--ok-danger-text); --_s: var(--ok-danger-soft); }
 .ok-timeline__item[data-tone="info"] { --_c: var(--ok-info-text); --_s: var(--ok-info-soft); }
-.ok-timeline__marker { display: grid; place-items: center; flex: none; width: var(--_m); height: var(--_m); border-radius: 50%; corner-shape: round; color: var(--_c); }
-.ok-timeline__marker:not([data-icon])::before { content: ""; width: 9px; height: 9px; border-radius: 50%; corner-shape: round; background: currentColor; box-shadow: 0 0 0 4px var(--_s); }
+.ok-timeline__marker { display: grid; place-items: center; flex: none; width: var(--_m); height: var(--_m); border-radius: 50%; corner-shape: round; --ok-shape: round; color: var(--_c); }
+.ok-timeline__marker:not([data-icon])::before { content: ""; width: 9px; height: 9px; border-radius: 50%; corner-shape: round; --ok-shape: round; background: currentColor; box-shadow: 0 0 0 4px var(--_s); }
 .ok-timeline__marker[data-icon] { background: var(--_s); }
 .ok-timeline__marker .ok-icon { width: 14px; height: 14px; stroke-width: 2.2; }
 .ok-timeline__content { display: grid; gap: 2px; flex: 1; min-width: 0; padding-top: calc((var(--_m) - 1.5em) / 2); overflow-wrap: anywhere; }

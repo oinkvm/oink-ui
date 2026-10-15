@@ -8,7 +8,7 @@
 .ok-stat__icon .ok-icon { width: 16px; height: 16px; }
 .ok-stat__value { min-width: 0; font: 700 clamp(24px, 6vw, 28px)/1.2 var(--ok-font-display); letter-spacing: -.015em; font-variant-numeric: tabular-nums; color: var(--ok-text); overflow-wrap: anywhere; }
 .ok-stat__foot { align-self: end; display: flex; flex-wrap: wrap; align-items: center; min-width: 0; gap: 4px var(--ok-s-2); font: 500 13px/1.4 var(--ok-font); color: var(--ok-text-2); }
-.ok-stat__delta { position: relative; display: inline-flex; align-items: center; gap: 2px; height: 22px; padding: 0 8px 0 5px; border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-fill); color: var(--ok-text-2); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ok-stat__delta { position: relative; display: inline-flex; align-items: center; gap: 2px; height: 22px; padding: 0 8px 0 5px; border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: var(--ok-fill); color: var(--ok-text-2); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ok-stat__delta .ok-icon { width: 14px; height: 14px; stroke-width: 2.2; }
 .ok-stat__delta[data-mood="good"] { background: var(--ok-success-soft); color: var(--ok-success-text); }
 .ok-stat__delta[data-mood="bad"] { background: var(--ok-danger-soft); color: var(--ok-danger-text); }

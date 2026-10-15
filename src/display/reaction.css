@@ -1,6 +1,6 @@
 .ok-react {
   display: inline-flex; align-items: center; gap: 8px; height: var(--ok-h-md); padding: 0 16px 0 12px; margin: 0; border: 0;
-  border-radius: var(--ok-r-full); corner-shape: round; background: var(--ok-fill); color: var(--ok-text-2);
+  border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: var(--ok-fill); color: var(--ok-text-2);
   font: 600 14px/1 var(--ok-font); font-variant-numeric: tabular-nums; cursor: pointer; user-select: none;
   transition: background-color var(--ok-dur-3), color var(--ok-dur-3), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
 }
@@ -14,4 +14,4 @@
 .ok-react:disabled { cursor: not-allowed; opacity: .5; transform: none; }
 /* 只有图标、没有数字时收成圆的 */
 .ok-react[data-icon-only] { padding: 0; width: var(--ok-h-md); justify-content: center; }
-.ok-particle { position: fixed; z-index: 600; left: 0; top: 0; border-radius: 50%; corner-shape: round; pointer-events: none; }
+.ok-particle { position: fixed; z-index: 600; left: 0; top: 0; border-radius: 50%; corner-shape: round; --ok-shape: round; pointer-events: none; }

@@ -7,7 +7,7 @@
   position: relative; isolation: isolate; overflow: hidden;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   height: var(--_h); min-width: var(--_h); padding: 0 calc(var(--_h) * .48);
-  border: 0; border-radius: var(--ok-r-full); corner-shape: round; margin: 0;
+  border: 0; border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; margin: 0;
   background: var(--_bg); color: var(--_fg);
   font: 600 15px/1 var(--ok-font); letter-spacing: -.005em; white-space: nowrap; text-decoration: none;
   cursor: pointer; user-select: none;
