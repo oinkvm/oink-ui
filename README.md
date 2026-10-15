@@ -73,10 +73,26 @@ export function App() {
 | `defaultMotion` | `'auto' \| 'full' \| 'reduced'` | `'auto'` |
 | `locale` | `'auto' \| 'zh-CN' \| 'en-US'` — `'auto'` follows the browser language: Chinese → `zh-CN`, anything else → `en-US` | `'auto'` |
 | `storageKey` | remember the user's choices in `localStorage` under this key | — |
+| `cornerFallback` | draw the superellipse corners with script in engines without `corner-shape` (see [Corners](#corners)) | `true` |
 
 With a custom accent color, the text color on top of it (ink or white) and the darker / lighter variants used for text are derived automatically. `useOink()` reads and changes the theme at runtime.
 
 Components render the same markup on the server and the client, so they work with server rendering and static prerendering. The server can't know the visitor's language, so with `locale="auto"` the server render and the hydration pass use `en-US` and switch to the browser's language right after; if you render on the server, pass `locale` explicitly (for example from the URL or the `Accept-Language` header).
+
+## Corners
+
+Containers use continuous-curvature superellipse corners: `border-radius` plus `corner-shape: superellipse(1.75)` (the `--ok-corner` token), with radii multiplied by `--ok-rk` (1.45) so they look as large as their nominal size. Fully round shapes (pills, circles) stay `corner-shape: round`.
+
+Only Chromium supports `corner-shape` (Chrome, Edge, WebView2). In Safari, in the `WKWebView` that Tauri uses on macOS, and in Firefox, `OinkProvider` turns on a small script fallback that draws the same curve Chromium draws, so a Mac build looks like the Windows build:
+
+- It does nothing at all where `corner-shape` is supported, and nothing on the server.
+- It finds the elements to redraw through `--ok-shape`, a non-inherited custom property every stylesheet declaration of `corner-shape` is paired with. Fully round elements keep the native `border-radius`.
+- On those elements the native corners are squared off and then cut along the curve with `clip-path`; the parts native painting can't put on a curve — the hairline, the top highlight, borders and the focus ring — are patched in with a nine-slice SVG `border-image`. Fills, straight edges and hover / press transitions stay native; the corner patches follow transitions frame by frame. Clipped content (images, scrolling areas) is cut on the curve too.
+- It follows mounts, unmounts, resizes, theme changes, hover, focus and running transitions. On a page with 300 rounded elements (about 1,900 elements in all) in WKWebView it costs about 13 ms once at start-up plus 8 ms for the first paint, 6–8 ms extra on a theme switch, and 1–2 ms of script per frame while 50 rounded elements resize or 10 animate their ring colour.
+
+Without `OinkProvider`, call `installCornerFallback()` once on the client (it returns a function that removes it again; calls are reference-counted). `<OinkProvider cornerFallback={false}>` turns it off. Your own CSS gets the same treatment when it pairs the declarations: `corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);`.
+
+Code that reads the tokens to draw matching shapes (`getComputedStyle(document.documentElement).getPropertyValue('--ok-corner')`) sees `superellipse(1.75)` and `--ok-rk: 1.45` wherever the corners are superellipses: natively in Chromium, and in other engines once the fallback is running (it marks `<html data-ok-corner-fallback>`). Before the script runs, or with the fallback turned off, those engines draw plain round corners and the tokens say `round` and `1`. `cornerShapePath()` returns the SVG path of a box with these corners, using the same Bézier construction as Chromium.
 
 ## Development
 

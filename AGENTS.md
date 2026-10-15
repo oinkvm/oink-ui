@@ -13,7 +13,7 @@ Soft shapes, flat surfaces, quiet color, crisp motion.
 - **Only two stroke weights.** White blocks on the page use a 1px `--ok-line`; overlays use a 1px `--ok-line-2`; checkboxes, radios and outline buttons use a 1.5px `--ok-line-2`. If fill colors already separate things, don't add a stroke. Hover only darkens the stroke color, never thickens it.
 - **Top highlight `--ok-hi`** is only for large containers (panels, groups, cards, tables, menus, toasts, dialogs).
 - **Selection uses neutral colors**; the accent color is reserved for primary actions and a few states.
-- **Corner radii** use `--ok-r-1..6` together with `corner-shape: var(--ok-corner)`; fully round shapes use `--ok-r-full` with `corner-shape: round`.
+- **Corner radii** use `--ok-r-1..6` together with `corner-shape: var(--ok-corner)`; fully round shapes use `--ok-r-full` with `corner-shape: round`. **Every `corner-shape: X;` is immediately followed by `--ok-shape: X;`** (same value, `inherit` included): engines without `corner-shape` (Safari / WKWebView, Firefox) drop the first declaration but keep the second, and the superellipse fallback (`src/core/cornerFallback.ts`, started by `OinkProvider`) uses it to find the elements to redraw. `src/corner-shape.test.ts` checks this. Draw rings, hairlines and highlights with `box-shadow`, `border` or `outline` as usual — the fallback reproduces them on the curve; don't add your own pseudo-element tricks for corners.
 - **Container padding is equal on all four sides**, about three quarters of the corner radius, snapped to the 4pt grid: R20→16, R24→20, R32→24. For nested rounded containers, padding = outer radius − inner radius.
 - **Concentric radii in practice:** an outer layer that holds rounded containers (Surface, FloatingCard, the AppShell sidebar card, the Popover content area; Card writes it on its direct children so it doesn't read its own value) sets `--ok-r-nested: max(calc(4px * var(--ok-rk)), calc(<radius> - <padding> * var(--ok-rk)))`, and nestable containers (Card, Group, Table, CodeBlock, Image, Alert) use `border-radius: var(--ok-r-nested, <default radius>)`. Padding is multiplied by `--ok-rk` too: with superellipse corners that keeps the gap even at all four corners. Fixed nesting inside a component (an 18 menu around a 12 highlight, a 20 option card around a 12 illustration) subtracts nominal values and then multiplies the result by `--ok-rk`.
 - **Control heights** use `--ok-h-sm / md / lg` (32 / 40 / 48, automatically 36 / 44 / 52 on touch screens).
@@ -25,7 +25,7 @@ Soft shapes, flat surfaces, quiet color, crisp motion.
 ## Directories and files
 
 ```
-src/core/      utilities, hooks, motion core, Portal, FocusScope, Icon (done — use them, don't change them)
+src/core/      utilities, hooks, motion core, Portal, FocusScope, Icon, superellipse fallback (done — use them, don't change them)
 src/styles/    tokens.css / base.css / keyframes.css (done — don't change; if a token is missing, use a local variable in your own CSS)
 src/inputs/    forms and actions
 src/overlays/  floating cards: Dialog / Drawer / Sheet / Panel / Toast… (the FloatingCard base is done)
