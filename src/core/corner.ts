@@ -174,6 +174,8 @@ export interface CornerDecor {
    * 那里原生画的是直角的底色，Chromium 那里露出的是背后的页面。补丁先用这个颜色盖住，再画环
    */
   backdrop?: string;
+  /** 有别的部件（伪元素）的外侧装饰叠在这个元素外面：超椭圆外紧挨着的地方可见，补丁不能越过超椭圆 */
+  outerAttached?: boolean;
 }
 
 /** 颜色的不透明度：transparent、rgba(…, a)、rgb(… / a)、color(… / a)；解析不了当作不透明 */
@@ -266,10 +268,11 @@ export function outerRegions(d: CornerDecor, at: { x: number; y: number } = { x:
 export function cornerClipPath(d: CornerDecor, bleed: number, extra = '', extraReach = 0): string {
   const { w, h, radii } = d;
   const reach = Math.max(outerExtent(d), extraReach);
-  const B = Math.max(bleed, reach + 1);
+  const B = Math.max(bleed, reach + 2);
   let p = rectPath({ x: -B, y: -B, w: w + 2 * B, h: h + 2 * B });
   const [tl, tr, br, bl] = radii;
-  const E = reach;
+  // 洞往外多挖 1px：补丁在 clip 的边上多画了 1px（见 cornerPaint 的 AA），要落在洞里被切掉
+  const E = reach + 1;
   if (tl[0] > 0 && tl[1] > 0) p += rectPath({ x: -E, y: -E, w: tl[0] + E, h: tl[1] + E }, true);
   if (tr[0] > 0 && tr[1] > 0) p += rectPath({ x: w - tr[0], y: -E, w: tr[0] + E, h: tr[1] + E }, true);
   if (br[0] > 0 && br[1] > 0) p += rectPath({ x: w - br[0], y: h - br[1], w: br[0] + E, h: br[1] + E }, true);
@@ -344,7 +347,7 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
   const shadowReach = (s: ShadowLayer) => s.spread + Math.max(Math.abs(s.dx), Math.abs(s.dy));
   const reach = outerExtent(d);
   // C 外面紧挨着的地方要是可见（外阴影、贴着边的 outline），补丁不能越过 C
-  const nearOutside = outerShadows.length > 0 || (outline !== null && outline.offset < AA && outline.offset + outline.width > 0);
+  const nearOutside = outerShadows.length > 0 || !!d.outerAttached || (outline !== null && outline.offset < AA && outline.offset + outline.width > 0);
   const Cx = nearOutside ? C : shapePath(inflate(box, AA), offsetRadii(radii, AA), ks);
 
   // 角上的洞（和 cornerClipPath 里挖的洞同一范围）：多画的那 1px 只许落在洞里，直边上原生绘制本来就对
@@ -354,9 +357,17 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
   let defs = `<clipPath id='h'><path d='${holes}'/></clipPath><clipPath id='p'><path d='${P ?? Cx}'/></clipPath>`;
   let body = '';
   // 外侧装饰伸进盒子矩形、又在超椭圆外的那一弯：先铺背后的颜色，盖住原生直角底色
+  // 多层外阴影时，上层原生的直角环在角上会盖住下层本该露出的地方（比如选项卡片选中环 4px 底色外那 1px 线），那里也先铺背后的颜色。
+  // 从最外一层往里画遮罩：后画的黑色只会挖掉更小的形状
   if (reach > 0 && d.backdrop && colorAlpha(d.backdrop) > 0) {
-    defs += `<mask id='bd' maskUnits='userSpaceOnUse' x='${-E}' y='${-E}' width='${vw + 2 * E}' height='${vh + 2 * E}'><path fill='#fff' d='${outerRegions(v)}'/><path fill='#000' d='${C}'/></mask>`;
-    body += `<path mask='url(#bd)' clip-path='url(#h)' fill='${d.backdrop}' d='${rectPath(box)}'/>`;
+    let m = '';
+    outerShadows.slice().sort((a, b) => shadowReach(b) - shadowReach(a)).forEach((u) => {
+      m += `<path fill='#fff' d='${rectPath(inflate(box, u.spread, u.dx, u.dy))}'/>`;
+      m += `<path fill='#000' d='${shapePath(inflate(box, u.spread, u.dx, u.dy), offsetRadii(radii, u.spread), ks)}'/>`;
+    });
+    m += `<path fill='#fff' d='${rectPath(box)}'/><path fill='#000' d='${C}'/>`;
+    defs += `<mask id='bd' maskUnits='userSpaceOnUse' x='${-E}' y='${-E}' width='${vw + 2 * E}' height='${vh + 2 * E}'>${m}</mask>`;
+    body += `<path mask='url(#bd)' clip-path='url(#h)' fill='${d.backdrop}' d='${outerRegions(v)}'/>`;
   }
   // 外阴影：从最下层画起（box-shadow 列表里越靠前越在上）
   outerShadows.slice().reverse().forEach((s, ri) => {

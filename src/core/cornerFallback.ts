@@ -484,7 +484,7 @@ class Runtime {
     // 不裁溢出的元素：大矩形外扩 1024px，溢出的子元素（角标、提示）照常可见
     const clip = clipKey === p.clipKey ? p.clip : `path("${cornerClipPath(d, p.clipsOverflow ? 0 : 1024, p.attached, p.attachedReach)}")`;
     p.clipKey = clipKey;
-    const paint = paintFor(d);
+    const paint = paintFor(p.attached ? { ...d, outerAttached: true } : d);
     if (clip !== p.clip) { p.el.style.setProperty(v + '-clip', clip); p.clip = clip; }
     if (paint !== p.paint) {
       if (paint) p.el.style.setProperty(v + '-paint', paint); else p.el.style.removeProperty(v + '-paint');
