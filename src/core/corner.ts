@@ -366,10 +366,12 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
   const nearOutside = outerShadows.length > 0 || !!d.attached || (outline !== null && outline.offset < AA && outline.offset + outline.width > 0);
   const Cx = nearOutside ? C : shapePath(inflate(box, AA), offsetRadii(radii, AA), ks);
 
-  // 角上的洞（和 cornerClipPath 里挖的洞同一范围）：多画的那 1px 只许落在洞里，直边上原生绘制本来就对
+  // 角上的洞（cornerClipPath 里挖的洞）：多画的那 1px 只许落在洞里，直边上原生绘制本来就对。
+  // 洞朝盒内的两条边再往里收 1px：和 clip 的洞边重合时两边各抗锯齿一次，交界的像素会漏出一点；曲线在那里已经和直边重合，用不着补丁
   const [rtl, rtr, rbr, rbl] = radii;
-  const holes = rectPath({ x: -E, y: -E, w: rtl[0] + E, h: rtl[1] + E }) + rectPath({ x: vw - rtr[0], y: -E, w: rtr[0] + E, h: rtr[1] + E })
-    + rectPath({ x: vw - rbr[0], y: vh - rbr[1], w: rbr[0] + E, h: rbr[1] + E }) + rectPath({ x: -E, y: vh - rbl[1], w: rbl[0] + E, h: rbl[1] + E });
+  const hole = (x: number, y: number, w: number, h: number) => (w > 0 && h > 0 ? rectPath({ x, y, w, h }) : '');
+  const holes = hole(-E, -E, rtl[0] + E - 1, rtl[1] + E - 1) + hole(vw - rtr[0] + 1, -E, rtr[0] + E - 1, rtr[1] + E - 1)
+    + hole(vw - rbr[0] + 1, vh - rbr[1] + 1, rbr[0] + E - 1, rbr[1] + E - 1) + hole(-E, vh - rbl[1] + 1, rbl[0] + E - 1, rbl[1] + E - 1);
   let defs = `<clipPath id='h'><path d='${holes}'/></clipPath><clipPath id='p'><path d='${P ?? Cx}'/></clipPath>`;
   let body = '';
   // 外侧装饰伸进盒子矩形、又在超椭圆外的那一弯：先铺背后的颜色，盖住原生直角底色
