@@ -12,3 +12,6 @@ export * from './theme';
 export * from './locale';
 export * from './tail';
 export * from './OinkLogo';
+export { shapePath as cornerShapePath, cornerHandles, parseCornerShape, clampRadii as clampCornerRadii } from './corner';
+export type { CornerKs, CornerRadii, CornerRadius } from './corner';
+export { installCornerFallback, useCornerFallback, cornerFallbackNeeded, cornerFallbackActive } from './cornerFallback';

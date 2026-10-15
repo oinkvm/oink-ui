@@ -79,7 +79,8 @@
   /* —— 圆角 —— */
   /* 容器类圆角用连续曲率的超椭圆曲线（直边到弧线之间没有曲率突变）。
      --ok-corner 是曲线形状，--ok-rk 是配套的半径倍率：超椭圆在同样的半径下显得更方，
-     所以把曲线起点外扩，让视觉上的圆角大小与标称值一致。不支持 corner-shape 的浏览器回退为普通圆角。
+     所以把曲线起点外扩，让视觉上的圆角大小与标称值一致。不支持 corner-shape 的浏览器由脚本回退画出同一条曲线
+     （OinkProvider 自动打开，见 core/cornerFallback.ts）；脚本没跑时是普通圆角。
      全圆（胶囊、圆）不受影响，始终是正圆。 */
   --ok-corner: round;
   --ok-rk: 1;
@@ -159,6 +160,9 @@
 @supports (corner-shape: squircle) {
   :root { --ok-corner: superellipse(1.75); --ok-rk: 1.45; }
 }
+/* 不支持 corner-shape 的内核（Safari / WKWebView、Firefox）：超椭圆回退（core/cornerFallback.ts）工作时在 <html> 上加这个属性，
+   令牌换成和上面一样的值，半径和同心内边距都和 Chromium 一致，曲线由回退画出来 */
+:root[data-ok-corner-fallback] { --ok-corner: superellipse(1.75); --ok-rk: 1.45; }
 
 @supports (transition-timing-function: linear(0, 1)) {
   :root {

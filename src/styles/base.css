@@ -17,6 +17,30 @@
 }
 .ok-icon--fill { fill: currentColor; stroke: none; }
 
+/* 超椭圆圆角的回退（core/cornerFallback.ts，只在不支持 corner-shape 的内核里由脚本打开）
+   · --ok-shape：每条 corner-shape 旁边都写一条同值的 --ok-shape。不认识 corner-shape 的内核会丢掉前者、留下后者，
+     脚本靠它知道哪些元素要超椭圆。注册成不继承，和 corner-shape 一样只作用于声明它的元素，inherit 也照常生效
+   · data-ok-se="on"：原生圆角置 0（"r" 是脚本读真实半径时的临时状态），四角由 clip-path 裁形、border-image 补画 */
+@property --ok-shape { syntax: "*"; inherits: false; initial-value: round; }
+@property --ok-se-clip { syntax: "*"; inherits: false; }
+@property --ok-se-paint { syntax: "*"; inherits: false; }
+@property --ok-se-before-clip { syntax: "*"; inherits: false; }
+@property --ok-se-before-paint { syntax: "*"; inherits: false; }
+@property --ok-se-after-clip { syntax: "*"; inherits: false; }
+@property --ok-se-after-paint { syntax: "*"; inherits: false; }
+[data-ok-se="on"] { border-radius: 0 !important; }
+[data-ok-se] { clip-path: var(--ok-se-clip) !important; border-image: var(--ok-se-paint) !important; }
+[data-ok-se-before="on"]::before,
+[data-ok-se-after="on"]::after { border-radius: 0 !important; }
+[data-ok-se-before]::before {
+  --ok-se-before-clip: inherit; --ok-se-before-paint: inherit;
+  clip-path: var(--ok-se-before-clip) !important; border-image: var(--ok-se-before-paint) !important;
+}
+[data-ok-se-after]::after {
+  --ok-se-after-clip: inherit; --ok-se-after-paint: inherit;
+  clip-path: var(--ok-se-after-clip) !important; border-image: var(--ok-se-after-paint) !important;
+}
+
 .ok-focusable {
   outline: 2px solid transparent;
   outline-offset: 5px;

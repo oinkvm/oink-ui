@@ -7,6 +7,7 @@ import { canUseDOM } from './utils';
 import { accentVars, normalizeHex } from './color';
 import { TailProvider } from './tail';
 import { LocaleProvider } from './locale';
+import { useCornerFallback } from './cornerFallback';
 import type { OinkLocaleSetting } from './locale';
 import type { TailGlyphSource } from './tail';
 
@@ -63,6 +64,11 @@ export interface OinkProviderProps {
    * 服务端渲染时第一帧是 en-US、注水后才换成浏览器的语言；服务端渲染的应用最好显式传入。见 LocaleProvider
    */
   locale?: OinkLocaleSetting;
+  /**
+   * 不支持 `corner-shape` 的内核（Safari、macOS 上的 WKWebView、Firefox）里用脚本画出和 Chromium 一样的超椭圆圆角。默认打开；
+   * 支持 corner-shape 的内核里本来就什么都不做。见 installCornerFallback
+   */
+  cornerFallback?: boolean;
 }
 
 /** 读存储并逐项校验：已经不存在的值（比如移除了的预设色）当作没存 */
@@ -119,7 +125,8 @@ function revealEase(x: number) {
  * 主题、强调色、动效偏好。把结果写到 <html> 的 data-theme / data-accent / data-motion 上，
  * 所有组件的样式都从这三个属性派生。不包 Provider 也能用组件，默认浅色 + 粉色强调。
  */
-export function OinkProvider({ children, defaultTheme = 'system', defaultAccent = 'pink', defaultMotion = 'auto', storageKey, tail, locale }: OinkProviderProps) {
+export function OinkProvider({ children, defaultTheme = 'system', defaultAccent = 'pink', defaultMotion = 'auto', storageKey, tail, locale, cornerFallback = true }: OinkProviderProps) {
+  useCornerFallback(cornerFallback);
   const [theme, setThemeState] = useState<ThemeMode>(defaultTheme);
   const [accent, setAccentState] = useState<Accent>(defaultAccent);
   const setAccent = useCallback((a: Accent) => { const n = normalizeAccent(a); if (n) setAccentState(n); }, []);
