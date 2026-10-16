@@ -83,7 +83,7 @@ Components render the same markup on the server and the client, so they work wit
 
 Containers use continuous-curvature superellipse corners: `border-radius` plus `corner-shape: superellipse(1.75)` (the `--ok-corner` token), with radii multiplied by `--ok-rk` (1.45) so they look as large as their nominal size. Fully round shapes (pills, circles) stay `corner-shape: round`.
 
-Only Chromium supports `corner-shape` (Chrome, Edge, WebView2). In Safari, in the `WKWebView` that Tauri uses on macOS, and in Firefox, `OinkProvider` turns on a small script fallback that draws the same curve Chromium draws, so a Mac build looks like the Windows build:
+Only Chromium supports `corner-shape` (Chrome, Edge, WebView2). In Safari and in the `WKWebView` that Tauri uses on macOS, `OinkProvider` turns on a small script fallback that draws the same curve Chromium draws, so a Mac build looks like the Windows build. The fallback also starts in Firefox, which lacks `corner-shape` too, but it has not been checked there yet:
 
 - It does nothing at all where `corner-shape` is supported, and nothing on the server.
 - It finds the elements to redraw through `--ok-shape`, a non-inherited custom property every stylesheet declaration of `corner-shape` is paired with. Fully round elements keep the native `border-radius`.
