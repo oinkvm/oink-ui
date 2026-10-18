@@ -153,6 +153,31 @@ describe('裁剪和补丁', () => {
     expect(small.svg).not.toContain("width='62'");
   });
 
+  it('repaints stacked outer rings in one corner clip without per-layer mask seams', () => {
+    const p = cornerPaint(decor({
+      backdrop: 'rgb(236, 236, 239)',
+      shadows: parseBoxShadow('rgb(236, 236, 239) 0px 0px 0px 2.5px, rgb(46, 123, 255) 0px 0px 0px 4.5px'),
+    }))!;
+    // Both rings share the outside-of-fill clip. Repeated masks previously
+    // exposed the native square rings as extra antialiased lines at corners.
+    expect(p.svg).toContain("<g clip-path='url(#h)'><g clip-path='url(#s)'>");
+    expect(p.svg).not.toContain('<mask');
+    const paths = p.svg.slice(p.svg.indexOf("<g clip-path='url(#h)'>"));
+    expect([...paths.matchAll(/<path fill='([^']+)'/g)].map(match => match[1])).toEqual([
+      'rgb(236, 236, 239)', 'rgb(46, 123, 255)', 'rgb(236, 236, 239)',
+    ]);
+  });
+
+  it('clips negative-spread shadow patches outside the fill', () => {
+    const p = cornerPaint(decor({shadows: parseBoxShadow('red 6px 0px 0px -2px')}))!;
+    const clip = /<clipPath id='s'><path clip-rule='evenodd' d='([^']+)'/.exec(p.svg);
+    expect(clip).not.toBeNull();
+    // An explicit rectangle with the original contour cut out constrains
+    // shifted/shrunken shadows too; XOR of shadow and fill would paint inside.
+    expect(clip![1].match(/M/g)).toHaveLength(2);
+    expect(p.svg).toContain("<g clip-path='url(#s)'>");
+  });
+
   it('outline 把补丁往外扩到外缘', () => {
     const p = cornerPaint(decor({ outline: { offset: 2, width: 2, color: 'rgb(255, 107, 142)' } }))!;
     expect(p.outset).toBe(5);

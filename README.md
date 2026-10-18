@@ -83,6 +83,18 @@ Components render the same markup on the server and the client, so they work wit
 
 Containers use continuous-curvature superellipse corners: `border-radius` plus `corner-shape: superellipse(1.75)` (the `--ok-corner` token), with radii multiplied by `--ok-rk` (1.45) so they look as large as their nominal size. Fully round shapes (pills, circles) stay `corner-shape: round`.
 
+When overriding a component's shape in application CSS, override its fallback marker in the same rule, including explicit round or inherited shapes:
+
+```css
+.search-button {
+  border-radius: calc(14px * var(--ok-rk));
+  corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);
+}
+```
+
+WebKit drops `corner-shape`, so omitting `--ok-shape` can retain a component's original marker (for example Button's `round`) even though its radius changed. A radius near half the control height then becomes a pill. The fallback does not infer the intended shape from radius alone.
+
+
 Only Chromium supports `corner-shape` (Chrome, Edge, WebView2). In Safari and in the `WKWebView` that Tauri uses on macOS, `OinkProvider` turns on a small script fallback that draws the same curve Chromium draws, so a Mac build looks like the Windows build. The fallback also starts in Firefox, which lacks `corner-shape` too, but it has not been checked there yet:
 
 - It does nothing at all where `corner-shape` is supported, and nothing on the server.

@@ -380,33 +380,24 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
     defs += `<mask id='ba' maskUnits='userSpaceOnUse' x='${-E}' y='${-E}' width='${vw + 2 * E}' height='${vh + 2 * E}'><path fill='#fff' d='${rectPath(box)}'/><path fill='#000' d='${C}'/></mask>`;
     body += `<path mask='url(#ba)' clip-path='url(#h)' fill='${d.backdrop}' d='${d.attached}'/>`;
   }
-  // 多层外阴影时，上层原生的直角环在角上会盖住下层本该露出的地方（比如选项卡片选中环 4px 底色外那 1px 线），那里也先铺背后的颜色。
-  // 从最外一层往里画遮罩：后画的黑色只会挖掉更小的形状
-  if (reach > 0 && d.backdrop && colorAlpha(d.backdrop) > 0) {
-    let m = '';
-    outerShadows.slice().sort((a, b) => shadowReach(b) - shadowReach(a)).forEach((u) => {
-      m += `<path fill='#fff' d='${rectPath(inflate(box, u.spread, u.dx, u.dy))}'/>`;
-      m += `<path fill='#000' d='${shapePath(inflate(box, u.spread, u.dx, u.dy), offsetRadii(radii, u.spread), ks)}'/>`;
-    });
-    m += `<path fill='#fff' d='${rectPath(box)}'/><path fill='#000' d='${C}'/>`;
-    defs += `<mask id='bd' maskUnits='userSpaceOnUse' x='${-E}' y='${-E}' width='${vw + 2 * E}' height='${vh + 2 * E}'>${m}</mask>`;
-    body += `<path mask='url(#bd)' clip-path='url(#h)' fill='${d.backdrop}' d='${outerRegions(v)}'/>`;
-  }
-  // 外阴影：从最下层画起（box-shadow 列表里越靠前越在上）
-  outerShadows.slice().reverse().forEach((s, ri) => {
-    const i = outerShadows.length - 1 - ri;
-    const grow = shadowReach(s) >= reach && reach > 0 ? AA : 0;   // 最外一圈：外缘就是 clip 的边
-    const shape = shapePath(inflate(box, s.spread + grow, s.dx, s.dy), offsetRadii(radii, s.spread + grow), ks);
-    let mask = '';
-    for (let j = 0; j < i; j++) {
-      const u = outerShadows[j];
-      mask += `<path fill='#fff' d='${rectPath(inflate(box, u.spread, u.dx, u.dy))}'/>`;
-      mask += `<path fill='#000' d='${shapePath(inflate(box, u.spread, u.dx, u.dy), offsetRadii(radii, u.spread), ks)}'/>`;
+  // Clear and repaint the native square shadows once per corner. Per-layer
+  // masks leave antialiased seams between stacked opaque rings in WebKit 26.
+  // Keep an explicit outside-of-fill clip: evenodd subtraction alone also
+  // paints inside the element when a negative spread shrinks the shadow.
+  if (outerShadows.length) {
+    defs += `<clipPath id='s'><path clip-rule='evenodd' d='${rectPath(inflate(box, E))}${C}'/></clipPath>`;
+    body += `<g clip-path='url(#h)'><g clip-path='url(#s)'>`;
+    if (d.backdrop && colorAlpha(d.backdrop) > 0) {
+      const regions = outerShadows.map((s) => shapePath(inflate(box, s.spread, s.dx, s.dy), offsetRadii(radii, s.spread), ks)).join('');
+      body += `<path fill='${d.backdrop}' d='${regions}'/>`;
     }
-    mask += `<path fill='#fff' d='${rectPath(box)}'/><path fill='#000' d='${C}'/>`;
-    defs += `<mask id='m${i}' maskUnits='userSpaceOnUse' x='${-E}' y='${-E}' width='${vw + 2 * E}' height='${vh + 2 * E}'>${mask}</mask>`;
-    body += `<path mask='url(#m${i})' fill='${s.color}' d='${shape}'/>`;
-  });
+    outerShadows.slice().reverse().forEach((s) => {
+      const grow = shadowReach(s) >= reach && reach > 0 ? AA : 0;
+      const outer = shapePath(inflate(box, s.spread + grow, s.dx, s.dy), offsetRadii(radii, s.spread + grow), ks);
+      body += `<path fill='${s.color}' d='${outer}'/>`;
+    });
+    body += `</g></g>`;
+  }
   // 内阴影：洞 = 内边框轮廓内缩 spread、再平移
   shadows.filter((s) => s.inset).reverse().forEach((s) => {
     const hr = inflate(pad0.box, -s.spread, s.dx, s.dy);
