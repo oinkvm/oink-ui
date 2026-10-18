@@ -1,5 +1,5 @@
 import {
-  clampRadii, colorAlpha, cornerClipPath, cornerHandles, cornerPaint, parseBoxShadow, parseCornerShape, shapePath, superellipseExponent, unitCorner,
+  clampRadii, colorAlpha, outerExtent, cornerClipPath, cornerHandles, cornerPaint, parseBoxShadow, parseCornerShape, shapePath, superellipseExponent, unitCorner,
 } from './corner';
 import type { CornerDecor, CornerRadii } from './corner';
 
@@ -115,6 +115,12 @@ describe('计算样式的解析', () => {
     expect(parseBoxShadow('none')).toEqual([]);
   });
 
+  it('preserves a blurred outer shadow and reserves its Gaussian tail', () => {
+    const shadows = parseBoxShadow('rgba(0, 0, 0, .12) 0px 6px 18px 0px');
+    expect(shadows).toEqual([{inset:false,dx:0,dy:6,blur:18,spread:0,color:'rgba(0, 0, 0, .12)'}]);
+    expect(outerExtent({shadows,outline:null})).toBe(33);
+  });
+
   it('颜色的不透明度', () => {
     expect(colorAlpha('transparent')).toBe(0);
     expect(colorAlpha('rgba(0, 0, 0, 0)')).toBe(0);
@@ -176,6 +182,18 @@ describe('裁剪和补丁', () => {
     // shifted/shrunken shadows too; XOR of shadow and fill would paint inside.
     expect(clip![1].match(/M/g)).toHaveLength(2);
     expect(p.svg).toContain("<g clip-path='url(#s)'>");
+  });
+
+  it('renders blurred outer corners with the CSS Gaussian and enough patch margin', () => {
+    const shadows = parseBoxShadow('rgba(0, 0, 0, .12) 0px 6px 18px 0px');
+    const p = cornerPaint(decor({shadows}))!;
+    expect(p.outset).toBe(34);
+    expect(p.svg).toContain("<feGaussianBlur stdDeviation='9'/>");
+    expect(p.svg).toContain("filter='url(#sb0)'");
+    // A compact nine-slice source still needs enough straight edge between
+    // corners for the two Gaussian kernels to decay before they meet.
+    expect(p.slice[0]).toBeGreaterThan(34.8 + 27 + 6);
+    expect(cornerClipPath(decor({shadows}),1024)).not.toEqual(cornerClipPath(decor(),1024));
   });
 
   it('outline 把补丁往外扩到外缘', () => {

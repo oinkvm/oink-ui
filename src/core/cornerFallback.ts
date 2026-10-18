@@ -480,7 +480,7 @@ class Runtime {
       return;
     }
     // clip 只和几何有关（外侧装饰只看可见与否，不看颜色）
-    const clipKey = JSON.stringify([d.w, d.h, d.radii, d.ks, d.shadows.map((x) => [x.inset, x.dx, x.dy, x.spread, colorAlpha(x.color) > 0]),
+    const clipKey = JSON.stringify([d.w, d.h, d.radii, d.ks, d.shadows.map((x) => [x.inset, x.dx, x.dy, x.spread, x.blur ?? 0, colorAlpha(x.color) > 0]),
       d.outline && [d.outline.offset, d.outline.width, colorAlpha(d.outline.color) > 0], p.attached, p.attachedReach, p.clipsOverflow]);
     // 不裁溢出的元素：大矩形外扩 1024px，溢出的子元素（角标、提示）照常可见
     const clip = clipKey === p.clipKey ? p.clip : `path("${cornerClipPath(d, p.clipsOverflow ? 0 : 1024, p.attached, p.attachedReach)}")`;

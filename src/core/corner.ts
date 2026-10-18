@@ -155,7 +155,7 @@ export function parseCornerShape(value: string): CornerKs | null {
    ========================================================================== */
 
 /** 一层阴影（来自计算后的 box-shadow）。模糊忽略不计：设计里没有阴影，只有零模糊的描边和高光 */
-export interface ShadowLayer { inset: boolean; dx: number; dy: number; spread: number; color: string }
+export interface ShadowLayer { inset: boolean; dx: number; dy: number; spread: number; color: string; blur?: number }
 export interface OutlineLayer { offset: number; width: number; color: string }
 
 /** 一个元素（或伪元素）在回退里需要知道的全部：尺寸、半径（已缩放）、曲率、边框、阴影、outline */
@@ -216,14 +216,18 @@ export function parseBoxShadow(value: string): ShadowLayer[] {
     rest = rest.replace(/\binset\b/, ' ');
     if (!color) { const w = rest.split(/\s+/).find((t) => t && !/^-?[\d.]/.test(t)); color = w || 'currentcolor'; }
     const n = (rest.match(/-?[\d.]+(?:e-?\d+)?(?=px)/g) || []).map(Number);
-    return { inset, dx: n[0] || 0, dy: n[1] || 0, spread: n[3] || 0, color };
+    return { inset, dx: n[0] || 0, dy: n[1] || 0, spread: n[3] || 0, color, ...(n[2] > 0 ? { blur: n[2] } : {}) };
   });
 }
+
+// CSS shadow blur is a Gaussian with sigma = blur / 2. Three sigma
+// contains the visible tail and keeps the SVG patch away from a hard cutoff.
+const blurReach = (s: ShadowLayer) => (s.blur ?? 0) * 1.5;
 
 /** 外侧的装饰（外阴影、outline）伸出盒子多远 */
 export function outerExtent(d: Pick<CornerDecor, 'shadows' | 'outline'>): number {
   let e = 0;
-  for (const s of d.shadows) if (!s.inset && colorAlpha(s.color) > 0) e = Math.max(e, s.spread + Math.max(Math.abs(s.dx), Math.abs(s.dy)));
+  for (const s of d.shadows) if (!s.inset && colorAlpha(s.color) > 0) e = Math.max(e, s.spread + blurReach(s) + Math.max(Math.abs(s.dx), Math.abs(s.dy)));
   if (d.outline && colorAlpha(d.outline.color) > 0) e = Math.max(e, d.outline.offset + d.outline.width);
   return Math.max(0, e);
 }
@@ -250,7 +254,7 @@ export function outerRegions(d: CornerDecor, at: { x: number; y: number } = { x:
   const base = { x: at.x, y: at.y, w: d.w, h: d.h };
   for (const s of d.shadows) {
     if (s.inset || colorAlpha(s.color) <= 0) continue;
-    p += shapePath(inflate(base, s.spread + grow, s.dx, s.dy), offsetRadii(d.radii, s.spread + grow), d.ks);
+    p += shapePath(inflate(base, s.spread + blurReach(s) + grow, s.dx, s.dy), offsetRadii(d.radii, s.spread + blurReach(s) + grow), d.ks);
   }
   const o = d.outline;
   if (o && o.width > 0 && colorAlpha(o.color) > 0) {
@@ -309,7 +313,7 @@ function paintLayout(d: CornerDecor) {
   const E = Math.ceil(outerExtent(d)) + 1 + (d.attached ? Math.ceil(attachedReach(d.attached, d)) : 0);
   // 角块往盒内要伸到：半径 + 内阴影的内缩和平移 + 边框 + 1px 抗锯齿
   let pad = 1 + Math.max(...d.border);
-  for (const s of shadows) if (s.inset) pad = Math.max(pad, 1 + s.spread + Math.max(Math.abs(s.dx), Math.abs(s.dy)));
+  for (const s of shadows) if (s.inset || s.blur) pad = Math.max(pad, 1 + s.spread + blurReach(s) + Math.max(Math.abs(s.dx), Math.abs(s.dy)));
   pad = Math.ceil(pad);
   const [tl, tr, br, bl] = d.radii;
   const L = Math.ceil(Math.max(tl[0], bl[0])) + pad, R = Math.ceil(Math.max(tr[0], br[0])) + pad;
@@ -388,13 +392,19 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
     defs += `<clipPath id='s'><path clip-rule='evenodd' d='${rectPath(inflate(box, E))}${C}'/></clipPath>`;
     body += `<g clip-path='url(#h)'><g clip-path='url(#s)'>`;
     if (d.backdrop && colorAlpha(d.backdrop) > 0) {
-      const regions = outerShadows.map((s) => shapePath(inflate(box, s.spread, s.dx, s.dy), offsetRadii(radii, s.spread), ks)).join('');
+      const regions = outerShadows.map((s) => shapePath(inflate(box, s.spread + blurReach(s), s.dx, s.dy), offsetRadii(radii, s.spread + blurReach(s)), ks)).join('');
       body += `<path fill='${d.backdrop}' d='${regions}'/>`;
     }
-    outerShadows.slice().reverse().forEach((s) => {
-      const grow = shadowReach(s) >= reach && reach > 0 ? AA : 0;
+    outerShadows.slice().reverse().forEach((s, index) => {
+      const grow = !s.blur && shadowReach(s) >= reach && reach > 0 ? AA : 0;
       const outer = shapePath(inflate(box, s.spread + grow, s.dx, s.dy), offsetRadii(radii, s.spread + grow), ks);
-      body += `<path fill='${s.color}' d='${outer}'/>`;
+      let filter = '';
+      if (s.blur) {
+        const id = `sb${index}`;
+        defs += `<filter id='${id}' filterUnits='userSpaceOnUse' x='${-E}' y='${-E}' width='${vw + 2 * E}' height='${vh + 2 * E}' color-interpolation-filters='sRGB'><feGaussianBlur stdDeviation='${s.blur / 2}'/></filter>`;
+        filter = ` filter='url(#${id})'`;
+      }
+      body += `<path${filter} fill='${s.color}' d='${outer}'/>`;
     });
     body += `</g></g>`;
   }
