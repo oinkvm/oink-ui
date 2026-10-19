@@ -123,6 +123,7 @@ try {
         const frames = [], times = [];
         const started = Date.now();
         for (let i = 0; i < 20; i++) {
+          if (i && process.env.CORNER_CAPTURE_MODE !== 'rapid') await page.evaluate(() => new Promise(requestAnimationFrame));
           times.push(Date.now() - started);
           const png = await page.screenshot({ clip, animations: 'allow', caret: 'hide' });
           await writeFile(resolve(output, `${engine}-${scenario}-${String(i).padStart(2, '0')}.png`), png);
