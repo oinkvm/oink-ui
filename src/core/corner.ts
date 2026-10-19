@@ -340,7 +340,7 @@ export function paintSizeKey(d: CornerDecor): string {
   return (l.stretchX ? 'S' : d.w) + 'x' + (l.stretchY ? 'S' : d.h);
 }
 
-export function cornerPaint(d: CornerDecor): CornerPaint | null {
+export function cornerPaint(d: CornerDecor, layout: CornerDecor = d): CornerPaint | null {
   const { w, h, radii, ks } = d;
   if (w <= 0 || h <= 0) return null;
   const hasRadius = radii.some(([x, y]) => x > 0 && y > 0);
@@ -349,7 +349,7 @@ export function cornerPaint(d: CornerDecor): CornerPaint | null {
   const outline = d.outline && d.outline.width > 0 && colorAlpha(d.outline.color) > 0 ? d.outline : null;
   if (!hasBorder && (!hasRadius || (!shadows.length && !outline))) return null;
 
-  const { E, L, R, T, B: Bt, stretchX, stretchY } = paintLayout(d);
+  const { E, L, R, T, B: Bt, stretchX, stretchY } = paintLayout(layout);
   // 虚拟盒子：比四个角块加起来多 1px，中间那 1px 拉伸到真实尺寸。真实盒子更小就直接按真实尺寸画、不拉伸
   const vw = stretchX ? L + R + 1 : w, vh = stretchY ? T + Bt + 1 : h;
   const slice: [number, number, number, number] = [

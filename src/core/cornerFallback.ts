@@ -3,7 +3,7 @@ import { useIsoLayoutEffect } from './hooks';
 import {
   borderImageValue, clampRadii, colorAlpha, cornerClipPath, cornerPaint, outerExtent, outerRegions, paintSizeKey, parseBoxShadow, parseCornerShape,
 } from './corner';
-import type { CornerDecor, CornerKs, CornerRadii } from './corner';
+import type { CornerDecor, CornerKs, CornerPaint, CornerRadii } from './corner';
 
 /**
  * 超椭圆圆角的回退：不支持 `corner-shape` 的内核（Safari / macOS 上 Tauri 用的 WKWebView、Firefox）里，
@@ -18,11 +18,11 @@ import type { CornerDecor, CornerKs, CornerRadii } from './corner';
  * 3. 接管的元素加 data-ok-se="on"：原生 border-radius 置 0（角上原生画的都是直角），
  *    clip-path 在四个角按超椭圆和外侧装饰（outline、外阴影）的真实形状裁掉多余的直角，
  *    border-image 用一张九宫格 SVG 补上直角画不出的那几弯（描边、顶部高光、焦点环、边框）。直边全部还是原生绘制，
- *    所以悬停、按下的颜色过渡照常由浏览器做；角上的补丁在过渡期间逐帧跟着计算值重画。
+ *    所以悬停、按下的颜色过渡照常由浏览器做；角上预画过渡两端，只对固定图层做透明度动画。
  * 4. 读真实半径：原生半径被置 0 了，读的时候把所有接管的元素临时切成 data-ok-se="r"（覆盖失效）、读完切回去，
  *    同一个任务里完成，中间不会绘制；组件不过渡 border-radius，所以切换不会触发过渡。
  * 5. 跟随变化：ResizeObserver（尺寸）、MutationObserver（挂载、卸载、属性）、交互事件（悬停、按下、聚焦、勾选）、
- *    过渡和动画事件（逐帧）、窗口尺寸和配色方案变化。
+ *    过渡和动画事件（只有几何变化才逐帧重画）、窗口尺寸和配色方案变化。
  */
 
 type PseudoKey = '' | '::before' | '::after';
@@ -32,7 +32,18 @@ const VAR: Record<PseudoKey, string> = { '': '--ok-se', '::before': '--ok-se-bef
 /** <html> 上的开关：tokens.css 据此把 --ok-corner / --ok-rk 换成超椭圆那一套 */
 export const CORNER_FALLBACK_ATTR = 'data-ok-corner-fallback';
 /** 过渡、动画里这些属性变了，角上的补丁要逐帧重画 */
-const PAINT_PROPS = /^(box-shadow|outline|outline-(color|width|offset|style)|border(-(top|right|bottom|left))?(-(color|width))?|opacity|width|height|inset|top|right|bottom|left|border-.*radius|all)$/;
+const PAINT_PROPS = /^(box-shadow|outline|outline-(color|width|offset|style)|border(-(top|right|bottom|left))?(-(color|width))?|width|height|inset|top|right|bottom|left|border-.*radius|all)$/;
+const COLOR_PROPS = /^(box-shadow|outline-color|border(-top)?-color)$/;
+
+interface PaintFade {
+  animation: Animation;
+  property: string;
+  from: string;
+  to: string;
+  duration: number;
+  delay: number;
+  easing: string;
+}
 
 interface Part {
   el: HTMLElement;
@@ -61,6 +72,9 @@ interface Part {
   watched: Element[];
   /** 上次生成 clip 时的几何键（颜色变了、几何没变就不重算 clip） */
   clipKey: string;
+  /** 原生颜色过渡的端点；计算值的中间颜色不进入 SVG 缓存 */
+  fades: Map<string, PaintFade>;
+  fadeKey: string;
 }
 
 /** 当前内核要不要回退：能确定不支持 corner-shape、并且有需要的观察器时才要 */
@@ -111,6 +125,71 @@ function resolveRadius(raw: string, w: number, h: number): [number, number] {
  * 换主题、悬停时不用一个个重新拼 SVG。尺寸只在盒子小到不能拉伸时才进键
  */
 const paintCache = new Map<string, string>();
+const endpointCache = new Map<string, CornerPaint | null>();
+let fadeSerial = 0;
+
+function endpointFor(d: CornerDecor, layout: CornerDecor): CornerPaint | null {
+  const key = JSON.stringify([d, layout]);
+  if (!endpointCache.has(key)) {
+    if (endpointCache.size > 500) endpointCache.clear();
+    endpointCache.set(key, cornerPaint(d, layout));
+  }
+  return endpointCache.get(key)!;
+}
+
+/** 固定两端的九宫格补丁。图像内部只改变 opacity，不逐帧更换图像资源、路径或颜色。 */
+function fadePaint(to: CornerDecor, fades: PaintFade[]): string {
+  let from = to;
+  for (const fade of fades) from = withFade(from, fade, false);
+  // 透明端也用可见端的切片布局，确保四角和原生直边衔接位置相同。
+  const layout = { ...to, shadows: [...from.shadows, ...to.shadows], outline: outerExtent(from) > outerExtent(to) ? from.outline : to.outline };
+  const id = ++fadeSerial;
+  const inner = (svg: string, prefix: string) => svg.replace(/^<svg[^>]*>|<\/svg>$/g, '').replace(/id='([^']+)'/g, `id='${prefix}$1'`).replace(/url\(#([^)]*)\)/g, `url(#${prefix}$1)`);
+  // plus-lighter 在隔离组中相加预乘颜色：半透明发丝线和高光不会在交叉淡化中变暗。
+  const styles = fades.map((_, i) => `@keyframes ok-se-fade-${id}-${i}-a{from{opacity:1}to{opacity:0}}@keyframes ok-se-fade-${id}-${i}-b{from{opacity:0}to{opacity:1}}`).join('');
+  let spec: CornerPaint | null = null, layers = '';
+  // 各属性可以有不同的时长和缓动；静态端点组合的权重由各自透明度相乘得到。
+  for (let bits = 0; bits < 2 ** fades.length; bits++) {
+    let d = to;
+    fades.forEach((fade, i) => { d = withFade(d, fade, !!(bits & (1 << i))); });
+    const endpoint = endpointFor(d, layout);
+    if (!endpoint) continue;
+    spec = endpoint;
+    let layer = inner(endpoint.svg, `p${bits}-`);
+    fades.forEach((fade, i) => {
+      layer = `<g style='animation:ok-se-fade-${id}-${i}-${bits & (1 << i) ? 'b' : 'a'} ${fade.duration}ms ${fade.easing} ${fade.delay}ms both'>${layer}</g>`;
+    });
+    layers += `<g style='mix-blend-mode:plus-lighter'>${layer}</g>`;
+  }
+  if (!spec) return '';
+  const body = `<style>${styles}</style><g style='isolation:isolate'>${layers}</g>`;
+  return borderImageValue({ ...spec, svg: spec.svg.replace(/(<svg[^>]*>)[\s\S]*<\/svg>$/, `$1${body}</svg>`) });
+}
+
+function withFade(d: CornerDecor, fade: PaintFade, end: boolean): CornerDecor {
+  const value = end ? fade.to : fade.from;
+  if (fade.property === 'box-shadow') return { ...d, shadows: parseBoxShadow(value) };
+  if (fade.property === 'outline-color') return { ...d, outline: d.outline && { ...d.outline, color: value } };
+  return { ...d, borderColor: value };
+}
+
+/** 只比较几何；透明端缺少的阴影按 CSS 的规则补零。 */
+function sameGeometry(a: CornerDecor, b: CornerDecor): boolean {
+  const shadows = (d: CornerDecor) => d.shadows.map((s) => [s.inset, s.dx, s.dy, s.spread, s.blur ?? 0]);
+  return JSON.stringify(shadows(a)) === JSON.stringify(shadows(b)) || (!a.shadows.length && b.shadows.every((s) => s.dx === 0 && s.dy === 0 && !s.blur && s.spread === 0)) || (!b.shadows.length && a.shadows.every((s) => s.dx === 0 && s.dy === 0 && !s.blur && s.spread === 0));
+}
+
+/** 淡出还没结束时保留外环的裁切区域；不能按已经透明的终点提前裁掉它。 */
+function clipDecor(p: Part): CornerDecor {
+  const d = p.decor!;
+  let from = d;
+  for (const fade of p.fades.values()) from = withFade(from, fade, false);
+  return {
+    ...d,
+    shadows: d.shadows.map((s, i) => colorAlpha(s.color) > 0 ? s : from.shadows[i] ?? s),
+    outline: d.outline && colorAlpha(d.outline.color) > 0 ? d.outline : from.outline,
+  };
+}
 function paintFor(d: CornerDecor): string {
   const key = JSON.stringify({ ...d, w: 0, h: 0 }) + paintSizeKey(d);
   let v = paintCache.get(key);
@@ -235,7 +314,7 @@ class Runtime {
   }
 
   private addPart(el: HTMLElement, pseudo: PseudoKey, ks: CornerKs) {
-    const p: Part = { el, pseudo, ks, rawRadii: null, geomDirty: true, paintDirty: true, needsWrite: true, clipsOverflow: false, key: '', decor: null, attached: '', attachedReach: 0, clip: '', paint: '', active: false, anchor: null, watched: [], clipKey: '' };
+    const p: Part = { el, pseudo, ks, rawRadii: null, geomDirty: true, paintDirty: true, needsWrite: true, clipsOverflow: false, key: '', decor: null, attached: '', attachedReach: 0, clip: '', paint: '', active: false, anchor: null, watched: [], clipKey: '', fades: new Map(), fadeKey: '' };
     let map = this.parts.get(el);
     if (!map) { map = new Map(); this.parts.set(el, map); }
     map.set(pseudo, p);
@@ -268,6 +347,8 @@ class Runtime {
     p.el.removeAttribute(ATTR[p.pseudo]);
     p.el.style.removeProperty(VAR[p.pseudo] + '-clip');
     p.el.style.removeProperty(VAR[p.pseudo] + '-paint');
+    p.fades.clear();
+    p.fadeKey = '';
     p.active = false;
   }
 
@@ -294,6 +375,18 @@ class Runtime {
     if (!p) return;
     if ('propertyName' in e) {
       if (!PAINT_PROPS.test(e.propertyName)) return;
+      if (e.type === 'transitionrun' && COLOR_PROPS.test(e.propertyName) && this.startFade(p, e.propertyName)) {
+        p.paintDirty = true;
+        this.schedule();
+        return;
+      }
+      if (p.fades.has(e.propertyName)) {
+        if (e.type !== 'transitionrun') p.fades.delete(e.propertyName);
+        p.paintDirty = true;
+        p.needsWrite = true;
+        this.schedule();
+        return;
+      }
     } else if (e.type === 'animationstart' && !this.animationTouchesPaint(el, e.animationName)) return;
     const n = this.animating.get(p) ?? 0;
     if (e.type === 'transitionrun' || e.type === 'animationstart') this.animating.set(p, n + 1);
@@ -303,13 +396,34 @@ class Runtime {
     this.schedule();
   };
 
+  private startFade(p: Part, property: string): boolean {
+    const animation = p.el.getAnimations?.().find((a) => {
+      const effect = a.effect as KeyframeEffect | null;
+      return (a as CSSTransition).transitionProperty === property && (effect?.pseudoElement || '') === p.pseudo;
+    });
+    const effect = animation?.effect as KeyframeEffect | null;
+    const frames = effect?.getKeyframes();
+    if (!animation || !effect || !frames || frames.length !== 2 || !p.decor) return false;
+    if (p.fades.get(property)?.animation === animation) return true;
+    const key = property.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+    const from = frames[0][key], to = frames[1][key];
+    const timing = effect.getTiming();
+    if (typeof from !== 'string' || typeof to !== 'string' || typeof timing.duration !== 'number' || !timing.duration) return false;
+    const fade: PaintFade = { animation, property, from, to, duration: timing.duration, delay: Number(timing.delay) - Number(animation.currentTime ?? 0), easing: timing.easing && timing.easing !== 'linear' ? timing.easing : frames[0].easing || 'linear' };
+    if (!sameGeometry(withFade(p.decor, fade, false), withFade(p.decor, fade, true))) return false;
+    p.fades.set(property, fade);
+    p.fadeKey = '';
+    p.needsWrite = true;
+    return true;
+  }
+
   /** CSS 动画是否动到描边、outline、透明度这类会影响补丁的属性（比如 ok-breathe 动 box-shadow；ok-shimmer 只动背景位置） */
   private animationTouchesPaint(el: Element, name: string): boolean {
     try {
       const a = el.getAnimations?.({ subtree: true }).find((x) => (x as CSSAnimation).animationName === name);
       const frames = (a?.effect as KeyframeEffect | null)?.getKeyframes?.();
       if (!frames) return true;
-      return frames.some((f) => Object.keys(f).some((k) => /^(boxShadow|outline|opacity|border)/.test(k)));
+      return frames.some((f) => Object.keys(f).some((k) => /^(boxShadow|outline|border)/.test(k)));
     } catch { return true; }
   }
 
@@ -373,13 +487,14 @@ class Runtime {
     const attached = new Map<Part, { path: string; reach: number }>();
     for (const p of all) {
       if (!p.pseudo || !p.decor) continue;
-      const reach = outerExtent(p.decor);
+      const decor = clipDecor(p);
+      const reach = outerExtent(decor);
       if (reach <= 0) continue;
       const a = this.anchorOf(p);
       if (!a) continue;
       const cur = attached.get(a) ?? { path: '', reach: 0 };
       // 外扩 1px：环的边由伪元素自己的 clip 切一次就够，锚点的 clip 不再在同一条边上再切一次（两次抗锯齿会让环变细）
-      cur.path += outerRegions(p.decor, { x: 0, y: 0 }, 1);
+      cur.path += outerRegions(decor, { x: 0, y: 0 }, 1);
       cur.reach = Math.max(cur.reach, reach + 1);
       attached.set(a, cur);
     }
@@ -432,27 +547,33 @@ class Runtime {
 
   private readDecor(p: Part, view: Window) {
     const cs = view.getComputedStyle(p.el, p.pseudo || null);
+    // 交互的 rAF 可能先于 transitionrun；首个过渡帧也必须直接使用固定端点。
+    for (const a of p.el.getAnimations?.() ?? []) {
+      const property = (a as CSSTransition).transitionProperty;
+      if (COLOR_PROPS.test(property)) this.startFade(p, property);
+    }
     const size = this.sizeOf(p, cs);
     if (!size || !p.rawRadii) { if (p.decor || p.active) p.needsWrite = true; p.decor = null; p.key = ''; return; }
     const [w, h] = size;
     const raw = p.rawRadii.map((r) => resolveRadius(r, w, h)) as CornerRadii;
     const outlineOn = cs.outlineStyle !== 'none' && cs.outlineStyle !== 'auto' && px(cs.outlineWidth) > 0;
-    const decor: CornerDecor = {
+    const border: CornerDecor['border'] = [px(cs.borderTopWidth), px(cs.borderRightWidth), px(cs.borderBottomWidth), px(cs.borderLeftWidth)];
+    let decor: CornerDecor = {
       w, h,
       radii: clampRadii(w, h, raw),
       ks: p.ks,
-      border: [px(cs.borderTopWidth), px(cs.borderRightWidth), px(cs.borderBottomWidth), px(cs.borderLeftWidth)],
-      borderColor: cs.borderTopColor,
+      border,
+      // 没有边框时 currentColor 的文字过渡不应使补丁失效。
+      borderColor: border.some((width) => width > 0) ? cs.borderTopColor : 'transparent',
       shadows: parseBoxShadow(cs.boxShadow),
       outline: outlineOn ? { offset: px(cs.outlineOffset), width: px(cs.outlineWidth), color: cs.outlineColor } : null,
     };
-    // 伪元素整体透明（比如还没选中的选项卡片的环）：外侧装饰不可见，不并进锚点的 clip
-    if (p.pseudo && px(cs.opacity) === 0) {
-      decor.shadows = decor.shadows.map((s) => (s.inset ? s : { ...s, color: 'transparent' }));
-      if (decor.outline) decor.outline = { ...decor.outline, color: 'transparent' };
-    }
+    // 透明度由原生合成；保留不可见伪元素的几何，淡入淡出期间不替换补丁或裁切。
+    for (const fade of p.fades.values()) decor = withFade(decor, fade, true);
     // 有可见的外侧装饰时，记下背后的颜色（见 CornerDecor.backdrop）。伪元素背后是它覆盖的那个元素的背后
-    if (outerExtent(decor) > 0) {
+    let from = decor;
+    for (const fade of p.fades.values()) from = withFade(from, fade, false);
+    if (outerExtent(decor) > 0 || outerExtent(from) > 0) {
       const a = p.pseudo ? this.anchorOf({ ...p, decor }) : null;
       decor.backdrop = backdropOf(view, ((a ? a.el : p.el) as HTMLElement).parentElement);
     }
@@ -479,18 +600,28 @@ class Runtime {
       if (p.active) this.clearPart(p);
       return;
     }
-    // clip 只和几何有关（外侧装饰只看可见与否，不看颜色）
-    const clipKey = JSON.stringify([d.w, d.h, d.radii, d.ks, d.shadows.map((x) => [x.inset, x.dx, x.dy, x.spread, x.blur ?? 0, colorAlpha(x.color) > 0]),
-      d.outline && [d.outline.offset, d.outline.width, colorAlpha(d.outline.color) > 0], p.attached, p.attachedReach, p.clipsOverflow]);
+    // clip 只和几何有关（外侧装饰只看可见与否，不看颜色）。
+    const cd = clipDecor(p);
+    const clipKey = JSON.stringify([cd.w, cd.h, cd.radii, cd.ks, cd.shadows.map((x) => [x.inset, x.dx, x.dy, x.spread, x.blur ?? 0, colorAlpha(x.color) > 0]),
+      cd.outline && [cd.outline.offset, cd.outline.width, colorAlpha(cd.outline.color) > 0], p.attached, p.attachedReach, p.clipsOverflow]);
     // 不裁溢出的元素：大矩形外扩 1024px，溢出的子元素（角标、提示）照常可见
-    const clip = clipKey === p.clipKey ? p.clip : `path("${cornerClipPath(d, p.clipsOverflow ? 0 : 1024, p.attached, p.attachedReach)}")`;
+    const clip = clipKey === p.clipKey ? p.clip : `path("${cornerClipPath(cd, p.clipsOverflow ? 0 : 1024, p.attached, p.attachedReach)}")`;
     p.clipKey = clipKey;
     let pd = d;
     if (p.attached) {
       // 锚点自己没有外侧装饰时还没取过背后的颜色
       pd = { ...d, attached: p.attached, backdrop: d.backdrop || backdropOf(this.doc.defaultView!, p.el.parentElement) };
     }
-    const paint = paintFor(pd);
+    let paint: string;
+    // 透明终点不再使用 backdrop；忽略它可以直接保留已经淡出的资源。
+    const paintKey = JSON.stringify({ ...pd, backdrop: outerExtent(pd) > 0 || pd.attached ? pd.backdrop : undefined });
+    if (p.fades.size) {
+      if (p.fadeKey === paintKey) paint = p.paint;
+      else {
+        paint = fadePaint(pd, [...p.fades.values()].map((fade) => ({ ...fade, delay: Number(fade.animation.effect?.getTiming().delay ?? 0) - Number(fade.animation.currentTime ?? 0) })));
+        p.fadeKey = paintKey;
+      }
+    } else paint = p.fadeKey === paintKey ? p.paint : paintFor(pd);
     if (clip !== p.clip) { p.el.style.setProperty(v + '-clip', clip); p.clip = clip; }
     if (paint !== p.paint) {
       if (paint) p.el.style.setProperty(v + '-paint', paint); else p.el.style.removeProperty(v + '-paint');

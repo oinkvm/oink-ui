@@ -1,0 +1,10 @@
+body { margin: 0; background: var(--ok-bg); }
+main { display: grid; gap: 32px; width: 320px; margin: 48px; }
+#ring-card {
+  position: relative; width: 320px; height: 96px; border: 0;
+  border-radius: var(--ok-r-5); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner);
+  background: var(--ok-card); color: var(--ok-text);
+  box-shadow: 0 0 0 2px var(--ok-bg), 0 0 0 4px transparent;
+  transition: box-shadow var(--ok-dur-3) var(--ok-ease-out);
+}
+#ring-card[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ok-bg), 0 0 0 4px var(--ok-accent); }
