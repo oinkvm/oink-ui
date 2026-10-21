@@ -78,6 +78,76 @@ function nativeFade(el: HTMLElement, from: string, to: string) {
 }
 
 describe('超椭圆回退', () => {
+  it.each(['dashed', 'dotted', 'double', 'auto'])('非实线 outline（%s）保留原生绘制，恢复实线后重新接管', async (style) => {
+    mockSupport(false);
+    const el = host();
+    el.style.outlineStyle = style;
+    el.style.outlineWidth = '2px';
+    el.style.outlineColor = 'blue';
+    install();
+    await flush();
+    expect(el.hasAttribute('data-ok-se')).toBe(false);
+    expect(el.style.getPropertyValue('--ok-se-paint')).toBe('');
+    el.style.outlineStyle = 'solid';
+    await flush();
+    expect(el.getAttribute('data-ok-se')).toBe('on');
+    el.style.outlineStyle = style;
+    await flush();
+    expect(el.hasAttribute('data-ok-se')).toBe(false);
+    el.style.outlineStyle = 'solid';
+    await flush();
+    expect(el.getAttribute('data-ok-se')).toBe('on');
+    expect(el.style.getPropertyValue('--ok-se-paint')).not.toBe('');
+  });
+
+  it('同尺寸伪元素的虚线轮廓连同锚点一起保留原生圆角', async () => {
+    mockSupport(false);
+    const el = host();
+    const pseudo = document.createElement('i');
+    pseudo.style.cssText = '--ok-shape: superellipse(1.75); content: ""; display: block; width: 200px; height: 80px; border-radius: 24px; outline-style: dashed; outline-width: 2px; outline-color: blue';
+    window.getComputedStyle = ((target: Element, ps?: string | null) => target === el && ps === '::after' ? pseudo.style : gcs(target, ps)) as typeof window.getComputedStyle;
+    install();
+    await flush();
+    expect(el.hasAttribute('data-ok-se-after')).toBe(false);
+    expect(el.hasAttribute('data-ok-se')).toBe(false);
+    pseudo.style.outlineStyle = 'solid';
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    await Promise.resolve();
+    expect(el.getAttribute('data-ok-se-after')).toBe('on');
+    expect(el.getAttribute('data-ok-se')).toBe('on');
+    expect(el.style.getPropertyValue('--ok-se-paint')).not.toBe('');
+  });
+
+  it('交互样式在同一任务的微任务中提交，不等下一帧', async () => {
+    mockSupport(false);
+    const el = host();
+    install();
+    await flush();
+    const old = el.style.getPropertyValue('--ok-se-paint');
+    // 模拟 :focus / :hover；计算样式变了，但没有 DOM mutation。
+    let shadow = 'inset 0 0 0 1px red';
+    window.getComputedStyle = ((target: Element, pseudo?: string | null) => {
+      const cs = gcs(target, pseudo);
+      if (target === el && !pseudo) Object.defineProperty(cs, 'boxShadow', { value: shadow });
+      return cs;
+    }) as typeof window.getComputedStyle;
+    el.addEventListener('focusin', () => { shadow = 'inset 0 0 0 1px blue'; });
+    el.dispatchEvent(new Event('focusin', { bubbles: true }));
+    await Promise.resolve();
+    expect(el.style.getPropertyValue('--ok-se-paint')).not.toBe(old);
+    expect(decodeURIComponent(el.style.getPropertyValue('--ok-se-paint'))).toContain("fill='blue'");
+  });
+
+  it('transitionrun 返回前提交端点资源，不把首次绘制推迟到下一帧', async () => {
+    mockSupport(false);
+    const el = host();
+    install();
+    await flush();
+    nativeFade(el, 'inset 0 0 0 1px red', 'inset 0 0 0 1px blue');
+    transition(el, 'box-shadow');
+    expect(decodeURIComponent(el.style.getPropertyValue('--ok-se-paint'))).toContain('@keyframes');
+  });
+
   it('颜色过渡预画固定端点；中间帧不重画 SVG，尺寸改变仍重画', async () => {
     mockSupport(false);
     const el = host();

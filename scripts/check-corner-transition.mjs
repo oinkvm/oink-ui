@@ -8,7 +8,8 @@ import { execFileSync } from 'node:child_process';
 import { createServer } from 'vite';
 
 const modulePath = process.argv[2] || 'playwright';
-const { webkit, chromium } = await import(modulePath.startsWith('/') ? pathToFileURL(modulePath).href : modulePath);
+const { webkit: defaultWebkit, chromium } = await import(modulePath.startsWith('/') ? pathToFileURL(modulePath).href : modulePath);
+const { webkit } = process.env.PLAYWRIGHT_WEBKIT_MODULE ? await import(pathToFileURL(resolve(process.env.PLAYWRIGHT_WEBKIT_MODULE)).href) : { webkit: defaultWebkit };
 const output = resolve(process.argv[3] || '.claude/ring-evidence/frames');
 await mkdir(output, { recursive: true });
 

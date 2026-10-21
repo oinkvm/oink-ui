@@ -131,6 +131,21 @@ describe('计算样式的解析', () => {
 });
 
 describe('裁剪和补丁', () => {
+  it.each(['dashed', 'dotted', 'double', 'auto'])('非实线 outline（%s）不生成实线补丁', (style) => {
+    const outline = { offset: 2, width: 2, color: 'red', style };
+    expect(cornerPaint(decor({ outline }))).toBeNull();
+  });
+
+  it.each([[0, 0], [0, 24], [24, 0]])('退化直角（%s，%s）不进入补丁的抗锯齿扩张区域', (x, y) => {
+    const p = cornerPaint(decor({
+      radii: [[24, 24], [x, y], [x, y], [24, 24]],
+      shadows: parseBoxShadow('0 0 0 2px white, 0 0 0 4px blue'),
+    }))!;
+    const holes = /<clipPath id='h'><path d='([^']*)'/.exec(p.svg)![1];
+    // 只有左边两个曲角需要补画；右边原生直角必须原样保留。
+    expect(holes.match(/M/g)).toHaveLength(2);
+  });
+
   it('clip：大矩形 + 四角的洞 + 超椭圆；有可见 outline 时再并上外环、挖掉中间的缝', () => {
     const plain = cornerClipPath(decor(), 1024);
     expect(plain.match(/M/g)!.length).toBe(1 + 4 + 1);
