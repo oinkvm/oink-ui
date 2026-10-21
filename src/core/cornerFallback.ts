@@ -1,7 +1,7 @@
 import { canUseDOM } from './utils';
 import { useIsoLayoutEffect } from './hooks';
 import {
-  borderImageValue, clampRadii, colorAlpha, cornerClipPath, cornerPaint, outerExtent, outerRegions, paintSizeKey, parseBoxShadow, parseCornerShape,
+  borderImageValue, clampRadii, colorAlpha, cornerClipPath, cornerPaint, nativeOutline, outerExtent, outerRegions, paintSizeKey, parseBoxShadow, parseCornerShape,
 } from './corner';
 import type { CornerDecor, CornerKs, CornerPaint, CornerRadii } from './corner';
 
@@ -11,8 +11,8 @@ import type { CornerDecor, CornerKs, CornerPaint, CornerRadii } from './corner';
  *
  * 机制（为什么这样做见 README 的“圆角”一节）：
  * 1. 识别：样式表里每条 `corner-shape: X` 旁边都写了一条 `--ok-shape: X`。不认识 corner-shape 的内核会丢掉前者，
- *    但保留后者；--ok-shape 注册成不继承的自定义属性（base.css），`inherit` 也照常生效。读到的不是 round 就要接管。
- *    伪元素（::before / ::after）也一样读。
+ *    但保留后者；--ok-shape 注册成不继承的自定义属性（base.css），`inherit` 也照常生效。读到的不是 round 就登记。
+ *    伪元素（::before / ::after）也一样读。非实线 outline 的部件及同尺寸锚点保留原生圆角，避免虚线重复绘制或被裁掉。
  * 2. 令牌：<html> 加上 data-ok-corner-fallback，tokens.css 把 --ok-corner / --ok-rk 换成和 Chromium 一样的
  *    superellipse(1.75) / 1.45，半径和同心内边距都和 Chromium 一致。
  * 3. 接管的元素加 data-ok-se="on"：原生 border-radius 置 0（角上原生画的都是直角），
@@ -22,7 +22,8 @@ import type { CornerDecor, CornerKs, CornerPaint, CornerRadii } from './corner';
  * 4. 读真实半径：原生半径被置 0 了，读的时候把所有接管的元素临时切成 data-ok-se="r"（覆盖失效）、读完切回去，
  *    同一个任务里完成，中间不会绘制；组件不过渡 border-radius，所以切换不会触发过渡。
  * 5. 跟随变化：ResizeObserver（尺寸）、MutationObserver（挂载、卸载、属性）、交互事件（悬停、按下、聚焦、勾选）、
- *    过渡和动画事件（只有几何变化才逐帧重画）、窗口尺寸和配色方案变化。
+ *    交互在同任务的微任务中提交；过渡和动画事件同步提交，不把已观察到的样式变化拖到下一帧。
+ *    只有几何变化才逐帧重画；颜色过渡保持固定端点资源。窗口尺寸和配色方案变化也会重读。
  */
 
 type PseudoKey = '' | '::before' | '::after';
@@ -66,6 +67,8 @@ interface Part {
   clip: string;
   paint: string;
   active: boolean;
+  /** 非实线轮廓及其同尺寸锚点交还原生绘制。 */
+  native: boolean;
   /** 伪元素：自己的外侧装饰挂到哪个部件的 clip 上 */
   anchor: Part | null;
   /** 为这个部件观察尺寸的元素 */
@@ -226,6 +229,8 @@ class Runtime {
   private scanAll = false;
   private mql: MediaQueryList | null = null;
   private flushing = false;
+  private interactionPending = false;
+  private destroyed = false;
 
   constructor(doc: Document) {
     this.doc = doc;
@@ -253,6 +258,7 @@ class Runtime {
   }
 
   destroy() {
+    this.destroyed = true;
     this.mo.disconnect();
     this.ro.disconnect();
     if (this.raf) cancelAnimationFrame(this.raf);
@@ -314,7 +320,7 @@ class Runtime {
   }
 
   private addPart(el: HTMLElement, pseudo: PseudoKey, ks: CornerKs) {
-    const p: Part = { el, pseudo, ks, rawRadii: null, geomDirty: true, paintDirty: true, needsWrite: true, clipsOverflow: false, key: '', decor: null, attached: '', attachedReach: 0, clip: '', paint: '', active: false, anchor: null, watched: [], clipKey: '', fades: new Map(), fadeKey: '' };
+    const p: Part = { el, pseudo, ks, rawRadii: null, geomDirty: true, paintDirty: true, needsWrite: true, clipsOverflow: false, key: '', decor: null, attached: '', attachedReach: 0, clip: '', paint: '', active: false, native: false, anchor: null, watched: [], clipKey: '', fades: new Map(), fadeKey: '' };
     let map = this.parts.get(el);
     if (!map) { map = new Map(); this.parts.set(el, map); }
     map.set(pseudo, p);
@@ -349,6 +355,8 @@ class Runtime {
     p.el.style.removeProperty(VAR[p.pseudo] + '-paint');
     p.fades.clear();
     p.fadeKey = '';
+    // 临时交还原生后还能恢复；缓存中的旧字符串不能让恢复时的变量写入被跳过。
+    p.clip = p.paint = p.clipKey = '';
     p.active = false;
   }
 
@@ -366,7 +374,15 @@ class Runtime {
     for (const [el, map] of this.parts) {
       if (scope === this.doc || scope.contains(el) || (t && el.contains(t))) { map.forEach((p) => { p.paintDirty = true; }); any = true; }
     }
-    if (any) this.schedule();
+    if (any && !this.interactionPending) {
+      // 在事件任务的微任务中读交互样式；应用处理器之后写入的属性由 MutationObserver 接续提交。
+      // rAF 若从正在派发的帧内预约，只能赶上下帧，会露出一帧原生直角。
+      this.interactionPending = true;
+      queueMicrotask(() => {
+        this.interactionPending = false;
+        if (!this.destroyed) this.flush();
+      });
+    }
   };
 
   private onAnim = (e: TransitionEvent | AnimationEvent) => {
@@ -377,23 +393,25 @@ class Runtime {
       if (!PAINT_PROPS.test(e.propertyName)) return;
       if (e.type === 'transitionrun' && COLOR_PROPS.test(e.propertyName) && this.startFade(p, e.propertyName)) {
         p.paintDirty = true;
-        this.schedule();
+        this.flush();
         return;
       }
       if (p.fades.has(e.propertyName)) {
         if (e.type !== 'transitionrun') p.fades.delete(e.propertyName);
         p.paintDirty = true;
         p.needsWrite = true;
-        this.schedule();
+        this.flush();
         return;
       }
     } else if (e.type === 'animationstart' && !this.animationTouchesPaint(el, e.animationName)) return;
+    // transitionrun / animationstart 在绘制前派发；此处同步读写，再为后续几何帧预约 rAF。
     const n = this.animating.get(p) ?? 0;
     if (e.type === 'transitionrun' || e.type === 'animationstart') this.animating.set(p, n + 1);
     else if (n <= 1) this.animating.delete(p);
     else this.animating.set(p, n - 1);
     p.paintDirty = true;
-    this.schedule();
+    this.flush();
+    if (this.animating.size) this.schedule();
   };
 
   private startFade(p: Part, property: string): boolean {
@@ -483,10 +501,22 @@ class Runtime {
     const view = this.doc.defaultView!;
     for (const p of all) if (p.paintDirty) { p.paintDirty = false; this.readDecor(p, view); }
 
+    // 原生虚线不能被同尺寸锚点的超椭圆 clip 再切一次；border-radius: inherit 也不能继承到回退的 0。
+    // 仍保留登记，轮廓改回实线后同一次 flush 即可恢复接管。
+    const natives = new Set(all.filter((p) => p.decor && nativeOutline(p.decor.outline)));
+    for (const p of natives) if (p.pseudo) {
+      const anchor = this.anchorOf(p);
+      if (anchor) natives.add(anchor);
+    }
+    for (const p of all) {
+      const native = natives.has(p);
+      if (p.native !== native) { p.native = native; p.needsWrite = true; }
+    }
+
     // 伪元素的外侧装饰并到它覆盖的那个部件的 clip 上（卡片的覆盖链接焦点环、选项卡片的选中环）
     const attached = new Map<Part, { path: string; reach: number }>();
     for (const p of all) {
-      if (!p.pseudo || !p.decor) continue;
+      if (!p.pseudo || !p.decor || p.native) continue;
       const decor = clipDecor(p);
       const reach = outerExtent(decor);
       if (reach <= 0) continue;
@@ -547,7 +577,7 @@ class Runtime {
 
   private readDecor(p: Part, view: Window) {
     const cs = view.getComputedStyle(p.el, p.pseudo || null);
-    // 交互的 rAF 可能先于 transitionrun；首个过渡帧也必须直接使用固定端点。
+    // 交互微任务和属性观察器可能先于 transitionrun；首个过渡帧也必须直接使用固定端点。
     for (const a of p.el.getAnimations?.() ?? []) {
       const property = (a as CSSTransition).transitionProperty;
       if (COLOR_PROPS.test(property)) this.startFade(p, property);
@@ -556,7 +586,7 @@ class Runtime {
     if (!size || !p.rawRadii) { if (p.decor || p.active) p.needsWrite = true; p.decor = null; p.key = ''; return; }
     const [w, h] = size;
     const raw = p.rawRadii.map((r) => resolveRadius(r, w, h)) as CornerRadii;
-    const outlineOn = cs.outlineStyle !== 'none' && cs.outlineStyle !== 'auto' && px(cs.outlineWidth) > 0;
+    const outlineOn = cs.outlineStyle !== 'none' && px(cs.outlineWidth) > 0;
     const border: CornerDecor['border'] = [px(cs.borderTopWidth), px(cs.borderRightWidth), px(cs.borderBottomWidth), px(cs.borderLeftWidth)];
     let decor: CornerDecor = {
       w, h,
@@ -566,7 +596,7 @@ class Runtime {
       // 没有边框时 currentColor 的文字过渡不应使补丁失效。
       borderColor: border.some((width) => width > 0) ? cs.borderTopColor : 'transparent',
       shadows: parseBoxShadow(cs.boxShadow),
-      outline: outlineOn ? { offset: px(cs.outlineOffset), width: px(cs.outlineWidth), color: cs.outlineColor } : null,
+      outline: outlineOn ? { offset: px(cs.outlineOffset), width: px(cs.outlineWidth), color: cs.outlineColor, style: cs.outlineStyle } : null,
     };
     // 透明度由原生合成；保留不可见伪元素的几何，淡入淡出期间不替换补丁或裁切。
     for (const fade of p.fades.values()) decor = withFade(decor, fade, true);
@@ -596,7 +626,7 @@ class Runtime {
   private write(p: Part) {
     const d = p.decor;
     const attr = ATTR[p.pseudo], v = VAR[p.pseudo];
-    if (!d) {
+    if (!d || p.native) {
       if (p.active) this.clearPart(p);
       return;
     }

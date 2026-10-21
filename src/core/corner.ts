@@ -154,9 +154,14 @@ export function parseCornerShape(value: string): CornerKs | null {
    回退绘制：把一个元素的圆角装饰（背景之外的部分）描述成数据，再生成 clip-path 和 border-image
    ========================================================================== */
 
-/** 一层阴影（来自计算后的 box-shadow）。模糊忽略不计：设计里没有阴影，只有零模糊的描边和高光 */
+/** 一层阴影（来自计算后的 box-shadow）。零模糊用于描边和高光；外阴影的 blur 保留高斯模糊 */
 export interface ShadowLayer { inset: boolean; dx: number; dy: number; spread: number; color: string; blur?: number }
-export interface OutlineLayer { offset: number; width: number; color: string }
+export interface OutlineLayer { offset: number; width: number; color: string; style?: string }
+
+/** 非实线轮廓交还原生绘制：补丁无法与浏览器的虚线相位、双线间距一致。省略 style 的旧调用按 solid 处理。 */
+export function nativeOutline(outline: Pick<OutlineLayer, 'style' | 'width'> | null): boolean {
+  return !!outline && outline.width > 0 && !!outline.style && outline.style !== 'none' && outline.style !== 'solid';
+}
 
 /** 一个元素（或伪元素）在回退里需要知道的全部：尺寸、半径（已缩放）、曲率、边框、阴影、outline */
 export interface CornerDecor {
@@ -342,7 +347,7 @@ export function paintSizeKey(d: CornerDecor): string {
 
 export function cornerPaint(d: CornerDecor, layout: CornerDecor = d): CornerPaint | null {
   const { w, h, radii, ks } = d;
-  if (w <= 0 || h <= 0) return null;
+  if (w <= 0 || h <= 0 || nativeOutline(d.outline)) return null;
   const hasRadius = radii.some(([x, y]) => x > 0 && y > 0);
   const hasBorder = d.border.some((b) => b > 0) && colorAlpha(d.borderColor) > 0;
   const shadows = d.shadows.filter((s) => colorAlpha(s.color) > 0);
@@ -374,8 +379,10 @@ export function cornerPaint(d: CornerDecor, layout: CornerDecor = d): CornerPain
   // 洞朝盒内的两条边再往里收 1px：和 clip 的洞边重合时两边各抗锯齿一次，交界的像素会漏出一点；曲线在那里已经和直边重合，用不着补丁
   const [rtl, rtr, rbr, rbl] = radii;
   const hole = (x: number, y: number, w: number, h: number) => (w > 0 && h > 0 ? rectPath({ x, y, w, h }) : '');
-  const holes = hole(-E, -E, rtl[0] + E - 1, rtl[1] + E - 1) + hole(vw - rtr[0] + 1, -E, rtr[0] + E - 1, rtr[1] + E - 1)
-    + hole(vw - rbr[0] + 1, vh - rbr[1] + 1, rbr[0] + E - 1, rbr[1] + E - 1) + hole(-E, vh - rbl[1] + 1, rbl[0] + E - 1, rbl[1] + E - 1);
+  // 半径任一轴为零时，clip 没有挖洞，原生直角已经正确；不能让补丁的 AA 外扩从这里漏出。
+  const curvedHole = (r: CornerRadius, x: number, y: number) => r[0] > 0 && r[1] > 0 ? hole(x, y, r[0] + E - 1, r[1] + E - 1) : '';
+  const holes = curvedHole(rtl, -E, -E) + curvedHole(rtr, vw - rtr[0] + 1, -E)
+    + curvedHole(rbr, vw - rbr[0] + 1, vh - rbr[1] + 1) + curvedHole(rbl, -E, vh - rbl[1] + 1);
   let defs = `<clipPath id='h'><path d='${holes}'/></clipPath><clipPath id='p'><path d='${P ?? Cx}'/></clipPath>`;
   let body = '';
   // 外侧装饰伸进盒子矩形、又在超椭圆外的那一弯：先铺背后的颜色，盖住原生直角底色
