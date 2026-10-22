@@ -3,6 +3,7 @@ import type { CSSProperties, InputHTMLAttributes, MouseEvent, ReactNode } from '
 import { Icon, cx, mergeRefs, useControllable, useLocale } from '../core';
 import type { IconName } from '../core';
 import { useFieldControl } from './fieldContext';
+import { guardImeEnter } from '../core/ime';
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix' | 'value' | 'defaultValue' | 'onChange'> {
   value?: string;
@@ -73,6 +74,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {prefix != null && <span className="ok-input__affix">{prefix}</span>}
       <input
         {...rest}
+        onKeyDownCapture={event => { if (!guardImeEnter(event)) rest.onKeyDownCapture?.(event); }}
         ref={mergeRefs(ref, inner)}
         id={field.id}
         type={isPassword && revealed ? 'text' : type}

@@ -1,3 +1,4 @@
+import { guardImeEnter } from '../core/ime';
 import { forwardRef, useContext, useId, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 import { Icon, cx, useControllable, useEvent, useLocale } from '../core';
@@ -79,6 +80,7 @@ const SelectBase = forwardRef<HTMLDivElement, BaseProps>(function SelectBase(
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    if (guardImeEnter(e)) return;
     if (disabled) return;
     const k = e.key;
     const typing = isTypeaheadKey(e) && (k !== ' ' || typeahead.pending());

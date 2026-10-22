@@ -2,6 +2,7 @@ import { forwardRef, useRef } from 'react';
 import type { CSSProperties, TextareaHTMLAttributes } from 'react';
 import { cx, mergeRefs, useControllable, useIsoLayoutEffect } from '../core';
 import { useFieldControl } from './fieldContext';
+import { guardImeEnter } from '../core/ime';
 
 export interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'defaultValue' | 'onChange'> {
   value?: string;
@@ -45,6 +46,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   return (
     <textarea
       {...rest}
+      onKeyDownCapture={event => { if (!guardImeEnter(event)) rest.onKeyDownCapture?.(event); }}
       ref={mergeRefs(ref, inner)}
       id={field.id}
       rows={minRows}

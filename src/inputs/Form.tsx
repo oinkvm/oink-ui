@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import type { FormEvent, FormHTMLAttributes, HTMLAttributes } from 'react';
 import { cx } from '../core';
+import { guardImeEnter } from '../core/ime';
 
 export interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, 'onSubmit'> {
   /** 项与项的间距 */
@@ -20,6 +21,7 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(function Form({ size 
         onSubmit?.(new FormData(e.currentTarget), e);
       }}
       {...rest}
+      onKeyDownCapture={event => { if (!guardImeEnter(event)) rest.onKeyDownCapture?.(event); }}
     >
       {children}
     </form>

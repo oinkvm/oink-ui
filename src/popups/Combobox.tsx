@@ -1,3 +1,4 @@
+import { guardImeEnter } from '../core/ime';
 import { forwardRef, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, InputHTMLAttributes, KeyboardEvent, ReactNode, Ref } from 'react';
 import { Icon, cx, mergeRefs, useControllable, useEvent, useLocale } from '../core';
@@ -160,6 +161,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
         autoCapitalize="none"
         spellCheck={false}
         {...rest}
+        onKeyDownCapture={event => { if (!guardImeEnter(event)) rest.onKeyDownCapture?.(event); }}
         ref={mergeRefs(ref, inputRef)}
         id={field.id}
         role="combobox"

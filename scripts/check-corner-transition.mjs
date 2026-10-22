@@ -80,6 +80,29 @@ function sheet(images) {
   return encode(width, height, pixels);
 }
 
+/** 固定几何上的实色像素作掩码：每帧比较四角与直边的 RGB，不把红色过渡当作消失。 */
+function colourMask(reference, inset) {
+  const { width: w, height: h } = reference;
+  const pixel = (x, y) => [...reference.pixels.subarray((y * w + x) * reference.channels, (y * w + x) * reference.channels + 3)];
+  const delta = (a, b) => Math.max(...a.map((v, c) => Math.abs(v - b[c])));
+  const y = inset ? 17 : 10;
+  const edge = pixel(Math.floor(w / 2), y);
+  const straight = Array.from({ length: Math.floor(w / 3) }, (_, i) => [Math.floor(w / 3) + i, y]);
+  const corners = [[true, true], [false, true], [false, false], [true, false]].map(([left, top]) => {
+    const points = [];
+    for (let py = top ? 0 : h - 70; py < (top ? 70 : h); py++) for (let px = left ? 0 : w - 70; px < (left ? 70 : w); px++) {
+      if (delta(pixel(px, py), edge) <= 5) points.push([px, py]);
+    }
+    assert.ok(points.length > 8, '参考帧缺少实色曲线像素');
+    return points;
+  });
+  return [straight, ...corners];
+}
+function colourMismatch(img, mask) {
+  const means = mask.map(points => [0, 1, 2].map(c => points.reduce((sum, [x, y]) => sum + img.pixels[(y * img.width + x) * img.channels + c], 0) / points.length));
+  return Math.max(...means.slice(1).flatMap(corner => corner.map((value, c) => Math.abs(value - means[0][c]))));
+}
+
 const baseline = process.env.CORNER_BASELINE === '1';
 const baselineRef = process.env.CORNER_BASELINE_REF || '6d2fd52';
 const server = await createServer({
@@ -151,6 +174,36 @@ try {
         const result = { engine, scenario, fallback, frames: frames.length, times, broken, scores, paintResources: paints.length, samples, errors };
         results.push(result);
         console.log(JSON.stringify({ engine, scenario, fallback, frames: frames.length, broken, paintResources: paints.length, times: times.slice(0, 8), scores: scores.slice(0, 4), errors }));
+      }
+      for (const scenario of ['accent', 'invalid']) {
+        await page.evaluate(() => {
+          window.cornerTransition.setAccent('blue'); window.cornerTransition.setInvalid(false);
+          document.querySelector('#ring-card').setAttribute('aria-pressed', 'true');
+          document.querySelector('#focus-input').focus();
+        });
+        await page.waitForTimeout(350);
+        const target = page.locator(scenario === 'accent' ? '#ring-card' : '.ok-input');
+        const rect = await target.boundingBox();
+        const clip = { x: rect.x - 8, y: rect.y - 8, width: rect.width + 16, height: rect.height + 16 };
+        const mask = colourMask(decode(await page.screenshot({ clip, animations: 'allow', caret: 'hide' })), scenario === 'invalid');
+        const frames = [], scores = [], samples = [];
+        for (let i = 0; i < 48; i++) {
+          if (i % 8 === 0) await page.evaluate(({ scenario, i }) => {
+            if (scenario === 'accent') window.cornerTransition.setAccent(['orange', 'amber', 'blue', 'pink', 'violet', 'blue'][i / 8]);
+            else window.cornerTransition.setInvalid(i % 16 === 0);
+          }, { scenario, i });
+          await page.evaluate(() => new Promise(requestAnimationFrame));
+          samples.push(await target.evaluate(el => ({ paint: el.style.getPropertyValue('--ok-se-paint'), shadow: getComputedStyle(el).boxShadow })));
+          const png = await page.screenshot({ clip, animations: 'allow', caret: 'hide' });
+          await writeFile(resolve(output, `${engine}-${scenario}-${String(i).padStart(2, '0')}.png`), png);
+          const img = decode(png); frames.push(img); scores.push(colourMismatch(img, mask));
+        }
+        const broken = scores.flatMap((score, index) => score > 24 ? [index] : []);
+        const result = { engine, scenario, frames: frames.length, broken, scores, paintResources: new Set(samples.map(s => s.paint)).size, samples, errors };
+        results.push(result);
+        await writeFile(resolve(output, `${engine}-${scenario}-sheet.png`), sheet(frames));
+        console.log(JSON.stringify({ engine, scenario, broken, maxColourMismatch: Math.max(...scores), paintResources: result.paintResources }));
+        if (!baseline && engine === 'webkit') assert.equal(result.paintResources, 1, '颜色变化替换了 canvas 图像源');
       }
       // 原生 opacity 选中环：首帧起即有固定资源，淡入时无需再生成。
       await page.locator('.ok-option').click();

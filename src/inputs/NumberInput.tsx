@@ -1,3 +1,4 @@
+import { guardImeEnter } from '../core/ime';
 import { forwardRef, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, InputHTMLAttributes, KeyboardEvent, PointerEvent } from 'react';
 import { Icon, animate, clamp, cx, mergeRefs, useControllable, useLocale } from '../core';
@@ -147,6 +148,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(functi
       </button>
       <input
         {...rest}
+        onKeyDownCapture={event => { if (!guardImeEnter(event)) rest.onKeyDownCapture?.(event); }}
         ref={mergeRefs(ref, inner)}
         id={field.id}
         className="ok-stepper__value"

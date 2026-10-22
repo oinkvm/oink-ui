@@ -1,3 +1,4 @@
+import { guardImeEnter } from '../core/ime';
 import { forwardRef, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 import { cx, Icon, useControllable } from '../core';
@@ -55,6 +56,7 @@ export const Tree = forwardRef<HTMLUListElement, TreeProps>(function Tree(
   const setOpen = (id: string, on: boolean) => setExpanded(on ? [...expanded.filter((x) => x !== id), id] : expanded.filter((x) => x !== id));
 
   const onKeyDown = (e: KeyboardEvent<HTMLUListElement>) => {
+    if (guardImeEnter(e)) return;
     const el = e.target as HTMLElement;
     if (el.getAttribute('role') !== 'treeitem') return;   // 节点内容里的控件自己处理按键
     const at = usable.findIndex((f) => f.node.id === el.dataset.id);

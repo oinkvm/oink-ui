@@ -1,3 +1,4 @@
+import { guardImeEnter } from '../core/ime';
 import { forwardRef, useEffect, useId, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent } from 'react';
 import { VisuallyHidden, animate, cx, mergeRefs, useControllable, useLocale } from '../core';
@@ -58,6 +59,7 @@ export const Hotkey = forwardRef<HTMLDivElement, HotkeyProps>(function Hotkey(
   const stop = () => { setRecording(false); setMods([]); };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (guardImeEnter(e)) return;
     onKeyDown?.(e);
     if (field.disabled) return;
     if (!recording) {

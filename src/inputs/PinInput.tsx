@@ -1,3 +1,4 @@
+import { guardImeEnter } from '../core/ime';
 import { forwardRef, useRef } from 'react';
 import type { ClipboardEvent, HTMLAttributes, KeyboardEvent } from 'react';
 import { cx, useControllable, useLocale } from '../core';
@@ -115,6 +116,7 @@ export const PinInput = forwardRef<HTMLDivElement, PinInputProps>(function PinIn
             disabled={field.disabled}
             value={current[i] ?? ''}
             onChange={(e) => handleChange(i, e.target.value)}
+            onKeyDownCapture={guardImeEnter}
             onKeyDown={(e) => handleKey(i, e)}
             onPaste={(e) => handlePaste(i, e)}
             onFocus={(e) => e.target.select()}

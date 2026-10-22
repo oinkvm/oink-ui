@@ -268,6 +268,59 @@ describe('超椭圆回退', () => {
     expect(el.style.getPropertyValue('--ok-se-paint')).not.toBe(resource);
   });
 
+  it('WebKit 颜色过渡同步重画同一 canvas，原生直边和曲线不替换图像源', async () => {
+    mockSupport(false);
+    const fills: string[] = [];
+    const ctx = {
+      canvas: { width: 100, height: 100 }, fillStyle: '',
+      clearRect: vi.fn(), save: vi.fn(), restore: vi.fn(), scale: vi.fn(), translate: vi.fn(), clip: vi.fn(),
+      fill() { fills.push(this.fillStyle); },
+    };
+    const canvas = vi.fn((_kind: string, _name: string, _width: number, _height: number) => ctx);
+    const ratio = window.devicePixelRatio;
+    Object.defineProperty(document, 'getCSSCanvasContext', { configurable: true, value: canvas });
+    vi.stubGlobal('Path2D', class { constructor(_path: string) {} });
+    try {
+      const el = host();
+      let shadow = 'inset 0 0 0 1px rgb(255, 0, 0)';
+      window.getComputedStyle = ((target: Element, pseudo?: string | null) => {
+        const cs = gcs(target, pseudo);
+        if (target === el && !pseudo) Object.defineProperty(cs, 'boxShadow', { value: shadow });
+        return cs;
+      }) as typeof window.getComputedStyle;
+      install();
+      await flush();
+      const source = el.style.getPropertyValue('--ok-se-paint');
+      expect(source).toMatch(/^-webkit-canvas\(ok-se-\d+\)/);
+      const write = vi.spyOn(el.style, 'setProperty');
+      nativeFade(el, shadow, 'inset 0 0 0 1px rgb(0, 0, 255)');
+      transition(el, 'box-shadow');
+      for (const colour of ['rgb(192, 0, 63)', 'rgb(128, 0, 127)', 'rgb(0, 0, 255)']) {
+        shadow = `inset 0 0 0 1px ${colour}`;
+        await new Promise(requestAnimationFrame);
+        expect(fills.at(-1)).toBe(colour);
+        expect(el.style.getPropertyValue('--ok-se-paint')).toBe(source);
+      }
+      expect(write.mock.calls.filter(([name]) => name === '--ok-se-paint')).toHaveLength(0);
+      expect(new Set(canvas.mock.calls.map(args => args[1])).size).toBe(1);
+      Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: 2 });
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      await Promise.resolve();
+      expect(el.style.getPropertyValue('--ok-se-paint')).not.toBe(source);
+      Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: ratio });
+      Object.defineProperty(el, 'getAnimations', { value: () => [] });
+      transition(el, 'box-shadow', 'transitionend');
+      undos.splice(0).forEach(undo => undo());
+      expect(canvas).toHaveBeenLastCalledWith('2d', expect.any(String), 0, 0);
+      expect(el.style.getPropertyValue('--ok-se-paint')).toBe('');
+    } finally {
+      undos.splice(0).forEach(undo => undo());
+      Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: ratio });
+      delete (document as Document & { getCSSCanvasContext?: unknown }).getCSSCanvasContext;
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('内核支持 corner-shape 时什么都不做：不建观察器、不改 DOM', async () => {
     mockSupport(true);
     const el = host();

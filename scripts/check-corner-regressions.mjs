@@ -98,7 +98,8 @@ try {
         const probe = await page.evaluate(() => window.cornerProbe);
         await page.screenshot({ path: resolve(output, `${engine}-${scenario}.png`) });
         const resources = new Set(probe.frames.map((f) => f.paint)).size;
-        results.push({ engine, scenario, resources, probe, pass: engine === 'chromium' ? probe.first === '' : scenario === 'geometry' ? probe.events.length > 0 && probe.events.every(Boolean) : probe.first !== '' && probe.first !== probe.before && (scenario !== 'fade' || (decodeURIComponent(probe.first).includes('@keyframes') && resources <= 2)) });
+        const canvas = probe.first.startsWith('-webkit-canvas(');
+        results.push({ engine, scenario, resources, probe, pass: engine === 'chromium' ? probe.first === '' : scenario === 'geometry' ? probe.events.length > 0 && probe.events.every(Boolean) : probe.first !== '' && (canvas || probe.first !== probe.before) && (scenario !== 'fade' || (canvas ? resources <= 2 : decodeURIComponent(probe.first).includes('@keyframes') && resources <= 2)) });
       }
     } finally { await browser.close(); }
   }

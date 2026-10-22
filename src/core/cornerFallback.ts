@@ -4,6 +4,7 @@ import {
   borderImageValue, clampRadii, colorAlpha, cornerClipPath, cornerPaint, nativeOutline, outerExtent, outerRegions, paintSizeKey, parseBoxShadow, parseCornerShape,
 } from './corner';
 import type { CornerDecor, CornerKs, CornerPaint, CornerRadii } from './corner';
+import { CornerCanvas, cornerCanvasSupported } from './cornerCanvas';
 
 /**
  * 超椭圆圆角的回退：不支持 `corner-shape` 的内核（Safari / macOS 上 Tauri 用的 WKWebView、Firefox）里，
@@ -17,13 +18,13 @@ import type { CornerDecor, CornerKs, CornerPaint, CornerRadii } from './corner';
  *    superellipse(1.75) / 1.45，半径和同心内边距都和 Chromium 一致。
  * 3. 接管的元素加 data-ok-se="on"：原生 border-radius 置 0（角上原生画的都是直角），
  *    clip-path 在四个角按超椭圆和外侧装饰（outline、外阴影）的真实形状裁掉多余的直角，
- *    border-image 用一张九宫格 SVG 补上直角画不出的那几弯（描边、顶部高光、焦点环、边框）。直边全部还是原生绘制，
- *    所以悬停、按下的颜色过渡照常由浏览器做；角上预画过渡两端，只对固定图层做透明度动画。
+ *    border-image 用九宫格补上直角画不出的那几弯（描边、顶部高光、焦点环、边框）。WebKit 使用持久的 CSS canvas，
+ *    同步执行 SVG 路径并读取本帧原生过渡的颜色，不替换图像、不另开图像动画时间轴；其它内核保留 SVG 端点淡化。
  * 4. 读真实半径：原生半径被置 0 了，读的时候把所有接管的元素临时切成 data-ok-se="r"（覆盖失效）、读完切回去，
  *    同一个任务里完成，中间不会绘制；组件不过渡 border-radius，所以切换不会触发过渡。
  * 5. 跟随变化：ResizeObserver（尺寸）、MutationObserver（挂载、卸载、属性）、交互事件（悬停、按下、聚焦、勾选）、
  *    交互在同任务的微任务中提交；过渡和动画事件同步提交，不把已观察到的样式变化拖到下一帧。
- *    只有几何变化才逐帧重画；颜色过渡保持固定端点资源。窗口尺寸和配色方案变化也会重读。
+ *    WebKit 在过渡帧同步重画同一 canvas；其它内核的颜色过渡保持固定端点资源。窗口尺寸和配色方案变化也会重读。
  */
 
 type PseudoKey = '' | '::before' | '::after';
@@ -78,6 +79,7 @@ interface Part {
   /** 原生颜色过渡的端点；计算值的中间颜色不进入 SVG 缓存 */
   fades: Map<string, PaintFade>;
   fadeKey: string;
+  canvas: CornerCanvas | null;
 }
 
 /** 当前内核要不要回退：能确定不支持 corner-shape、并且有需要的观察器时才要 */
@@ -231,9 +233,11 @@ class Runtime {
   private flushing = false;
   private interactionPending = false;
   private destroyed = false;
+  private canvas: boolean;
 
   constructor(doc: Document) {
     this.doc = doc;
+    this.canvas = cornerCanvasSupported(doc);
     this.root = doc.documentElement;
     this.root.setAttribute(CORNER_FALLBACK_ATTR, '');
     this.ro = new ResizeObserver((entries) => {
@@ -320,7 +324,7 @@ class Runtime {
   }
 
   private addPart(el: HTMLElement, pseudo: PseudoKey, ks: CornerKs) {
-    const p: Part = { el, pseudo, ks, rawRadii: null, geomDirty: true, paintDirty: true, needsWrite: true, clipsOverflow: false, key: '', decor: null, attached: '', attachedReach: 0, clip: '', paint: '', active: false, native: false, anchor: null, watched: [], clipKey: '', fades: new Map(), fadeKey: '' };
+    const p: Part = { el, pseudo, ks, rawRadii: null, geomDirty: true, paintDirty: true, needsWrite: true, clipsOverflow: false, key: '', decor: null, attached: '', attachedReach: 0, clip: '', paint: '', active: false, native: false, anchor: null, watched: [], clipKey: '', fades: new Map(), fadeKey: '', canvas: null };
     let map = this.parts.get(el);
     if (!map) { map = new Map(); this.parts.set(el, map); }
     map.set(pseudo, p);
@@ -350,6 +354,8 @@ class Runtime {
   }
 
   private clearPart(p: Part) {
+    p.canvas?.destroy();
+    p.canvas = null;
     p.el.removeAttribute(ATTR[p.pseudo]);
     p.el.style.removeProperty(VAR[p.pseudo] + '-clip');
     p.el.style.removeProperty(VAR[p.pseudo] + '-paint');
@@ -391,7 +397,7 @@ class Runtime {
     if (!p) return;
     if ('propertyName' in e) {
       if (!PAINT_PROPS.test(e.propertyName)) return;
-      if (e.type === 'transitionrun' && COLOR_PROPS.test(e.propertyName) && this.startFade(p, e.propertyName)) {
+      if (!this.canvas && e.type === 'transitionrun' && COLOR_PROPS.test(e.propertyName) && this.startFade(p, e.propertyName)) {
         p.paintDirty = true;
         this.flush();
         return;
@@ -577,10 +583,10 @@ class Runtime {
 
   private readDecor(p: Part, view: Window) {
     const cs = view.getComputedStyle(p.el, p.pseudo || null);
-    // 交互微任务和属性观察器可能先于 transitionrun；首个过渡帧也必须直接使用固定端点。
+    // 交互可能先于 transitionrun；SVG 路径需要提前准备端点，canvas 直接读取本帧原生颜色。
     for (const a of p.el.getAnimations?.() ?? []) {
       const property = (a as CSSTransition).transitionProperty;
-      if (COLOR_PROPS.test(property)) this.startFade(p, property);
+      if (!this.canvas && COLOR_PROPS.test(property)) this.startFade(p, property);
     }
     const size = this.sizeOf(p, cs);
     if (!size || !p.rawRadii) { if (p.decor || p.active) p.needsWrite = true; p.decor = null; p.key = ''; return; }
@@ -608,7 +614,7 @@ class Runtime {
       decor.backdrop = backdropOf(view, ((a ? a.el : p.el) as HTMLElement).parentElement);
     }
     const clips = p.pseudo ? true : cs.overflowX !== 'visible' && cs.overflowY !== 'visible';
-    const key = JSON.stringify(decor) + clips;
+    const key = JSON.stringify(decor) + clips + (this.canvas ? view.devicePixelRatio : '');
     if (key !== p.key) { p.key = key; p.decor = decor; p.clipsOverflow = clips; p.needsWrite = true; }
   }
 
@@ -645,7 +651,11 @@ class Runtime {
     let paint: string;
     // 透明终点不再使用 backdrop；忽略它可以直接保留已经淡出的资源。
     const paintKey = JSON.stringify({ ...pd, backdrop: outerExtent(pd) > 0 || pd.attached ? pd.backdrop : undefined });
-    if (p.fades.size) {
+    if (this.canvas) {
+      // 读取本帧原生过渡的计算颜色，同步重画固定源；曲线与直边共用同一帧时间。
+      p.canvas ??= new CornerCanvas(this.doc);
+      paint = p.canvas.paint(cornerPaint(pd));
+    } else if (p.fades.size) {
       if (p.fadeKey === paintKey) paint = p.paint;
       else {
         paint = fadePaint(pd, [...p.fades.values()].map((fade) => ({ ...fade, delay: Number(fade.animation.effect?.getTiming().delay ?? 0) - Number(fade.animation.currentTime ?? 0) })));

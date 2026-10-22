@@ -1,3 +1,4 @@
+import { guardImeEnter } from '../core/ime';
 import { Children, forwardRef, useId, useRef, useState } from 'react';
 import type { CSSProperties, HTMLAttributes, KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { BREAKPOINTS, clamp, cx, mergeRefs, useControllable, useIsoLayoutEffect, useLocale } from '../core';
@@ -100,6 +101,7 @@ export const SplitPane = forwardRef<HTMLDivElement, SplitPaneProps>(function Spl
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (guardImeEnter(e)) return;
     if (isStacked) return;
     const delta = e.shiftKey ? 10 : step;
     const dec = horizontal ? 'ArrowLeft' : 'ArrowUp';

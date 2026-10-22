@@ -1,3 +1,4 @@
+import { guardImeEnter, isImeComposing } from '../core/ime';
 import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { Icon, cx, useControllable, useIsoLayoutEffect, useLocale } from '../core';
@@ -156,7 +157,7 @@ export const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(fu
 
   const onKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     // 输入法还在组字时，方向键和回车归输入法
-    if (e.nativeEvent.isComposing) return;
+    if (guardImeEnter(e) || isImeComposing(e)) return;
     switch (e.key) {
       case 'ArrowDown': e.preventDefault(); move(1); break;
       case 'ArrowUp': e.preventDefault(); move(-1); break;
