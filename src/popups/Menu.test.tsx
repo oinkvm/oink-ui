@@ -186,6 +186,29 @@ describe('Menu', () => {
     expect(menu).not.toHaveAttribute('data-hl');
   });
 
+  it('指针移到菜单里的非菜单项内容（分隔线、自定义控件行）上：高亮淡出，焦点离开上一项，但不抢走控件的焦点', async () => {
+    const user = userEvent.setup();
+    render(
+      <Menu aria-label="屏幕">
+        <MenuItem>隐藏</MenuItem>
+        <MenuSeparator />
+        <div data-testid="row"><input aria-label="速度" /></div>
+      </Menu>,
+    );
+    const menu = screen.getByRole('menu', { name: '屏幕' });
+    const item = screen.getByRole('menuitem', { name: '隐藏' });
+    await user.hover(item);
+    expect(menu).toHaveAttribute('data-hl');
+    await user.hover(screen.getByTestId('row'));
+    expect(menu).not.toHaveAttribute('data-hl');
+    expect(item).not.toHaveFocus();
+    const input = screen.getByRole('textbox', { name: '速度' });
+    await user.click(input);
+    expect(input).toHaveFocus();
+    await user.hover(screen.getByTestId('row'));
+    expect(input).toHaveFocus();
+  });
+
   it('图标列：带图标的项标 data-icon，供样式给同一菜单里不带图标的项留出图标位', () => {
     render(
       <Menu aria-label="操作">

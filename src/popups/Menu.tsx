@@ -27,6 +27,8 @@ interface MenuValue {
 const MenuContext = createContext<MenuValue | null>(null);
 
 const ITEM = '[data-ok-item]:not([aria-disabled="true"])';
+/** 所有项，包括禁用项（禁用项自己处理指针：高亮淡出） */
+const ITEM_ANY = '[data-ok-item]';
 /** 指针停在安全三角里不动超过这么久，就按它脚下的项处理（不会一直卡着） */
 const SETTLE_MS = 150;
 const textOf = (el: HTMLElement) => el.dataset.text ?? el.querySelector('.ok-menu__label')?.textContent ?? el.textContent ?? '';
@@ -58,8 +60,10 @@ export const Menu = forwardRef<HTMLDivElement, MenuProps>(function Menu(
     hold.current = false;
     setOpenSub(null);
     moveTo(null);
+    // 焦点在某一项上才交回菜单本身；在菜单里的输入框等控件上则不动，指针离开不打断输入
     const el = elRef.current;
-    if (el && el !== document.activeElement && el.contains(document.activeElement)) el.focus({ preventScroll: true });
+    const active = document.activeElement;
+    if (el && active !== el && active?.matches(ITEM_ANY) && el.contains(active)) el.focus({ preventScroll: true });
   });
   const value = useMemo<MenuValue>(() => ({ highlight: moveTo, openSub, setOpenSub, holding, clear }), [moveTo, openSub, holding, clear]);
 
@@ -160,7 +164,11 @@ export const Menu = forwardRef<HTMLDivElement, MenuProps>(function Menu(
         onPointerMove={(e) => {
           onPointerMove?.(e);
           // 子菜单开着时由上面的文档监听记录（它在捕获阶段，先于这里）
-          if (!openSub) pointer.current = { x: e.clientX, y: e.clientY };
+          if (openSub) return;
+          pointer.current = { x: e.clientX, y: e.clientY };
+          // 指针在本菜单里、但不在任何项上（分隔线、标题、自定义控件行）：高亮淡出
+          const t = e.target as Element;
+          if (e.currentTarget.contains(t) && !t.closest(ITEM_ANY)) clear();
         }}
         onFocus={(e) => {
           onFocus?.(e);
