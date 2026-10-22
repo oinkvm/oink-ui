@@ -24,6 +24,8 @@ export interface NumberInputProps extends Omit<InputHTMLAttributes<HTMLInputElem
   invalid?: boolean;
   decrementLabel?: string;
   incrementLabel?: string;
+  /** 加减时数字按方向滚入，默认开启 */
+  rollValue?: boolean;
   rootClassName?: string;
   rootStyle?: CSSProperties;
 }
@@ -38,7 +40,7 @@ const REPEAT_EVERY = 60;
 export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(function NumberInput(
   {
     value, defaultValue, onChange, min = -Infinity, max = Infinity, step = 1, largeStep, precision, format, size = 'md', invalid: invalidProp,
-    decrementLabel: decrementLabelProp, incrementLabel: incrementLabelProp, className, style, rootClassName, rootStyle,
+    decrementLabel: decrementLabelProp, incrementLabel: incrementLabelProp, rollValue = true, className, style, rootClassName, rootStyle,
     id, disabled: disabledProp, required: requiredProp, readOnly, 'aria-describedby': describedByProp, onKeyDown, onBlur, onFocus, ...rest
   }, ref,
 ) {
@@ -79,7 +81,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(functi
     latest.current = next;
     apply.current(next);
     // 数字按方向滚入
-    animate(el, [{ transform: `translateY(${dir * 60}%)`, opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { spring: 'spring' });
+    if (rollValue) animate(el, [{ transform: `translateY(${dir * 60}%)`, opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { spring: 'spring' });
     return true;
   };
   const stepBy = (dir: number, amount = step) => moveTo(latest.current + dir * amount, dir);

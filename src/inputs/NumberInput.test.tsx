@@ -47,6 +47,24 @@ describe('NumberInput', () => {
     expect(spin).toHaveValue('4');
   });
 
+  it('rollValue={false}：加减时数字不滚入；默认滚入', async () => {
+    const user = userEvent.setup();
+    const animate = vi.fn((_keyframes: unknown) => null);
+    const original = HTMLElement.prototype.animate;
+    HTMLElement.prototype.animate = animate as unknown as typeof original;
+    try {
+      const rolls = () => animate.mock.calls.filter(c => JSON.stringify(c[0]).includes('translateY')).length;
+      const { unmount } = render(<NumberInput aria-label="速度" defaultValue={1} step={0.1} rollValue={false} />);
+      await user.click(screen.getByRole('button', { name: /增加|Increase/ }));
+      expect(screen.getByRole('spinbutton', { name: '速度' })).toHaveValue('1.1');
+      expect(rolls()).toBe(0);
+      unmount();
+      render(<NumberInput aria-label="速度" defaultValue={1} step={0.1} />);
+      await user.click(screen.getByRole('button', { name: /增加|Increase/ }));
+      expect(rolls()).toBe(1);
+    } finally { HTMLElement.prototype.animate = original; }
+  });
+
   it('按住按钮连发，松开停止', () => {
     vi.useFakeTimers();
     try {
