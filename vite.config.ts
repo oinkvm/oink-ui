@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig, transformWithEsbuild } from 'vite';
 import type { Plugin } from 'vite';
+import { configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -47,5 +48,9 @@ export default defineConfig({
       output: { assetFileNames: 'oink-ui[extname]' },
     },
   },
-  test: { environment: 'jsdom', globals: true, setupFiles: ['./vitest.setup.ts'], css: false },
+  test: {
+    environment: 'jsdom', globals: true, setupFiles: ['./vitest.setup.ts'], css: false,
+    minWorkers: 1, maxWorkers: 4,
+    exclude: [...configDefaults.exclude, '**/.claude/**'],
+  },
 });

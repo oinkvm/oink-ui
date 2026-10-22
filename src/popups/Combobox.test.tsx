@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { Field } from '../inputs/Field';
@@ -53,6 +53,7 @@ describe('Combobox', () => {
 
   it('异步：loading 时显示加载状态并标 aria-busy，选项由外部给出', async () => {
     const user = userEvent.setup();
+    let completeSearch!: () => void;
     function Demo() {
       const [loading, setLoading] = useState(false);
       const [options, setOptions] = useState<SelectOption[]>([]);
@@ -61,7 +62,7 @@ describe('Combobox', () => {
           aria-label="城市" filter={false} options={options} loading={loading} loadingText="正在搜索…"
           onInputChange={(text) => {
             setLoading(true);
-            setTimeout(() => { setOptions(text ? [{ value: 'sh', label: `${text}-上海` }] : []); setLoading(false); }, 20);
+            completeSearch = () => { setOptions(text ? [{ value: 'sh', label: `${text}-上海` }] : []); setLoading(false); };
           }}
         />
       );
@@ -69,8 +70,10 @@ describe('Combobox', () => {
     render(<Demo />);
     const input = screen.getByRole('combobox');
     await user.type(input, 's');
-    expect(await screen.findByText('正在搜索…')).toBeInTheDocument();
+    // 加载态由外部请求决定；先断言，再放行结果，避免 20ms 定时器抢在断言前结束。
+    expect(screen.getByText('正在搜索…')).toBeInTheDocument();
     expect(input).toHaveAttribute('aria-busy', 'true');
+    act(() => { completeSearch(); });
     const option = await screen.findByRole('option', { name: 's-上海' });
     await waitFor(() => expect(screen.queryByText('正在搜索…')).toBeNull());
     // 结果回来后自动高亮第一项，回车直接选中
