@@ -1,6 +1,6 @@
 /* Segmented · 搬自 oink.css 第 7 节 */
 .ok-seg {
-  position: relative; isolation: isolate; display: inline-flex; padding: 3px;
+  position: relative; isolation: isolate; display: inline-flex; flex: none; width: max-content; box-sizing: border-box; padding: 3px;
   border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; background: var(--ok-well);
 }
 .ok-seg__thumb {
@@ -14,7 +14,7 @@
 .ok-seg__item {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 1;
   height: calc(var(--ok-h-md) - 6px); padding: 0 16px; margin: 0; border: 0; border-radius: inherit; corner-shape: inherit; --ok-shape: inherit; background: none;
-  font: 600 14px/1 var(--ok-font); color: var(--ok-text-2); white-space: nowrap; cursor: pointer;
+  font: 400 14px/1 var(--ok-font); color: var(--ok-text-2); white-space: nowrap; cursor: pointer;
   transition: color var(--ok-dur-2) var(--ok-ease-out), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
 }
 @media (hover: hover) { .ok-seg__item:hover { color: var(--ok-text); } }
@@ -22,7 +22,7 @@
 .ok-seg__item[aria-checked="true"] { color: var(--ok-text); }
 .ok-seg__item .ok-icon { width: 16px; height: 16px; }
 .ok-seg--sm .ok-seg__item { height: calc(var(--ok-h-sm) - 6px); padding: 0 12px; font-size: 13px; }
-.ok-seg--block { display: flex; }
+.ok-seg--block { display: flex; width: auto; }
 
 /* —— 以下为组件库补充 —— */
 .ok-seg { max-width: 100%; min-width: 0; }

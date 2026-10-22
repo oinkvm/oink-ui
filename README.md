@@ -62,6 +62,22 @@ export function App() {
 
 `oink-ui/styles.css` contains every design token (`--ok-*`) and every component's styles. To ship only what you use, import `oink-ui/styles/base.css` first and then one entry per component family, e.g. `oink-ui/styles/button.css`, `oink-ui/styles/dialog.css`. The comment at the top of each entry lists the other entries it depends on.
 
+## Control defaults and settings rows
+
+Button, Input (including affixes), Select, Segmented and Menu use regular (400) text, including selected menu options. Selection is shown by the existing fill or checkmark. SearchInput retains its 500 navigation text; Kbd also uses 500. Sizes and variants keep their existing meanings: `size="sm"` remains an explicit compact choice (32px desktop height), while the default `md` remains 40px and `lg` remains 48px. Small ColorSwatches remain 22px; menus and tooltips keep their existing geometry.
+
+Switch defaults to a 44×26px track, a 26×20px thumb and 12px checked travel. `size="lg"` retains the previous 54×32px track (32×26px thumb, 16px travel); `size="sm"` uses 36×22px (20×16px thumb, 10px travel). All sizes keep the 3px inset, stretched thumb when pressed, native checkbox, focus ring and disabled states.
+
+Row labels use 14px/1.3 at 400; descriptions use 12.5px/1.4 at 300. The 56px minimum height, 12px vertical padding, 20px horizontal inset and Group surfaces are unchanged. By default, controls keep their natural width while labels wrap; `controlWidth="fill"`, a fixed width and `stack="auto"` still opt into flexible layouts. Segmented keeps its natural width unless `block` is set.
+
+Accordion headings use the same 56px minimum height, padding and text as Row. A plain Accordion directly inside Group inherits the group's inset, shares dividers with adjacent rows and removes its own content padding so nested rows align. A plain Accordion in an already padded Card still has no horizontal inset. Use `variant="plain"` for these embedded panels to avoid a second Group surface.
+
+The browser regression check covers switch sizes and pressed geometry, regular text, selected options, Group-embedded Accordion alignment and Row's natural / fill / fixed / wrapping layouts in light and dark. It uses an existing Playwright installation and writes evidence outside the repository:
+
+```sh
+node scripts/check-control-defaults.mjs /path/to/playwright/index.mjs /absolute/evidence/directory
+```
+
 ## Theming and locale
 
 `OinkProvider` sets the theme, accent color, motion preference and the language of built-in strings:

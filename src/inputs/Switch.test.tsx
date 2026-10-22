@@ -3,6 +3,21 @@ import userEvent from '@testing-library/user-event';
 import { Switch } from './Switch';
 
 describe('Switch', () => {
+  it('默认使用中号；尺寸只作用于外层，原生输入和受控行为不变', async () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<Switch aria-label="尺寸" checked onChange={onChange} />);
+    const sw = screen.getByRole('switch', { name: '尺寸' });
+    expect(sw.parentElement).not.toHaveClass('ok-switch--sm', 'ok-switch--lg');
+    for (const size of ['sm', 'lg'] as const) {
+      rerender(<Switch aria-label="尺寸" size={size} checked onChange={onChange} />);
+      expect(sw.parentElement).toHaveClass(`ok-switch--${size}`);
+      expect(sw).not.toHaveAttribute('size');
+      await userEvent.click(sw);
+      expect(onChange).toHaveBeenLastCalledWith(false);
+      expect(sw).toBeChecked();
+    }
+  });
+
   it('是真的 input[type=checkbox] role="switch"，结构与原型一致', () => {
     render(<Switch aria-label="开机启动" defaultChecked />);
     const sw = screen.getByRole('switch', { name: '开机启动' });

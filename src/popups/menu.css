@@ -37,7 +37,7 @@
   /* 点按热区：桌面 36，触屏 / 手机宽度下 44（--ok-h-item） */
   min-height: var(--ok-h-item); padding: 0 10px; margin: 0; border: 0;
   border-radius: calc(12px * var(--ok-rk)); corner-shape: var(--ok-corner); --ok-shape: var(--ok-corner); background: none;
-  font: 500 14px/1 var(--ok-font); color: var(--ok-text); text-align: left; white-space: nowrap; cursor: pointer;
+  font: 400 14px/1 var(--ok-font); color: var(--ok-text); text-align: left; white-space: nowrap; cursor: pointer;
   outline: 2px solid transparent; outline-offset: -2px;
   -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
 }
@@ -46,9 +46,9 @@
 .ok-menu__item[aria-disabled="true"] { color: var(--ok-text-3); cursor: not-allowed; }
 .ok-menu__item[aria-disabled="true"] .ok-icon { color: var(--ok-text-3); }
 .ok-menu__label { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
-/* 选中项加粗，和触发按钮同字重；打开前按“全部加粗”量一次宽度，切换选中时菜单不变宽 */
+/* 选中和测量时保持常规字重；对勾表达选中，切换时文字宽度不变。 */
 .ok-menu__item[aria-selected="true"],
-.ok-menu[data-measuring] .ok-menu__item { font-weight: 600; }
+.ok-menu[data-measuring] .ok-menu__item { font-weight: 400; }
 .ok-menu__item .ok-icon { width: 17px; height: 17px; color: var(--ok-text-2); }
 .ok-menu__item--success,
 .ok-menu__item--success .ok-icon { color: var(--ok-success-text); }
@@ -58,7 +58,7 @@
 .ok-menu__item--danger .ok-icon { color: var(--ok-danger-text); }
 .ok-menu__item--info,
 .ok-menu__item--info .ok-icon { color: var(--ok-info-text); }
-.ok-menu__meta { margin-left: auto; padding-left: 20px; font: 500 12px/1 var(--ok-font); color: var(--ok-text-3); }
+.ok-menu__meta { margin-left: auto; padding-left: 20px; font: 400 12px/1 var(--ok-font); color: var(--ok-text-3); }
 .ok-menu__check {
   flex: none; width: 16px; height: 16px; margin-left: auto; fill: none; stroke: var(--ok-text); stroke-width: 2.4;
   stroke-linecap: round; stroke-linejoin: round;

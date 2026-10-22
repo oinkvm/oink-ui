@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Control defaults</title>
+<style>body{margin:24px;background:var(--ok-surface);font-family:var(--ok-font)}#root{display:grid;gap:16px;max-width:560px}.switches{display:flex;align-items:center;gap:24px}.narrow{width:280px}</style>
+<div id="root"></div>
+<script type="module">
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {OinkProvider,Switch,Button,Input,SearchInput,Select,Segmented,Group,Row,Slider,Accordion} from '/src/index.ts';
+import '/src/styles.css';
+const h=React.createElement;
+const options=[{value:'one',label:'One'},{value:'two',label:'Two'}];
+createRoot(document.getElementById('root')).render(h(OinkProvider,{defaultMotion:'reduced',locale:'en-US'},
+ h('div',{className:'switches'},...['sm','md','lg'].map(size=>h(Switch,{key:size,size,'aria-label':size,defaultChecked:true})),h(Switch,{'aria-label':'default'}),h(Switch,{'aria-label':'disabled',disabled:true,defaultChecked:true})),
+ h(Button,{size:'sm'},'Action'),h(Input,{'aria-label':'Form',size:'sm',defaultValue:'Text',suffix:'MB'}),h(SearchInput,{'aria-label':'Search',size:'sm'}),
+ h(Select,{'aria-label':'Select',size:'sm',options,defaultValue:'one'}),
+ h(Segmented,{'aria-label':'Natural',size:'sm',options,defaultValue:'one'}),h(Segmented,{'aria-label':'Block',block:true,size:'sm',options,defaultValue:'one'}),
+ h(Group,{},h(Row,{label:'A long label that wraps while its control keeps a natural width',description:'A description'},h(Button,{size:'sm'},'Natural')),
+ h(Row,{label:'Fill',controlWidth:'fill'},h(Input,{'aria-label':'Fill input'})),
+ h(Row,{label:'Fixed',controlWidth:200},h(Input,{'aria-label':'Fixed input'})),
+ h(Row,{label:'Slider'},h(Slider,{'aria-label':'Slider'})),
+ h(Accordion,{variant:'plain',defaultValue:['row'],items:[{value:'row',title:h('span',{className:'ok-row__text'},h('span',{className:'ok-row__label'},'Details'),h('span',{className:'ok-row__desc'},'Expandable row')),content:h(Row,{label:'Inside'},h(Button,{size:'sm'},'Nested'))}]})),
+ h('div',{className:'narrow'},h(Group,{},h(Row,{label:'Wrap',stack:'auto',controlWidth:'fill'},h(Input,{'aria-label':'Wrap input'}))))
+));
+</script></html>

@@ -4,6 +4,8 @@ import { cx, useControllable } from '../core';
 import { useFieldControl } from './fieldContext';
 
 export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size' | 'checked' | 'defaultChecked' | 'onChange'> {
+  /** 轨道尺寸：sm 36×22、md（默认）44×26、lg 54×32。 */
+  size?: 'sm' | 'md' | 'lg';
   checked?: boolean;
   defaultChecked?: boolean;
   /** 第一个参数是新的开关状态 */
@@ -20,13 +22,13 @@ export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
  * ref 和其余原生属性落在 <input> 上；className / style 落在外层 <label> 上。
  */
 export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
-  { checked, defaultChecked = false, onChange, labelPosition = 'end', children, className, style, rootClassName, rootStyle, id, disabled: disabledProp, required: requiredProp, 'aria-describedby': describedByProp, ...rest }, ref,
+  { size = 'md', checked, defaultChecked = false, onChange, labelPosition = 'end', children, className, style, rootClassName, rootStyle, id, disabled: disabledProp, required: requiredProp, 'aria-describedby': describedByProp, ...rest }, ref,
 ) {
   const field = useFieldControl({ id, disabled: disabledProp, required: requiredProp, 'aria-describedby': describedByProp });
   const [on, setOn] = useControllable(checked, defaultChecked, onChange);
   const label = children != null && <span className="ok-switch__label">{children}</span>;
   return (
-    <label className={cx('ok-switch', rootClassName, className)} style={{ ...rootStyle, ...style }} data-label-position={labelPosition}>
+    <label className={cx('ok-switch', size !== 'md' && `ok-switch--${size}`, rootClassName, className)} style={{ ...rootStyle, ...style }} data-label-position={labelPosition}>
       {labelPosition === 'start' && label}
       <input
         {...rest}

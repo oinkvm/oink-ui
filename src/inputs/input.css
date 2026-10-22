@@ -18,8 +18,10 @@
 }
 .ok-input input {
   all: unset; flex: 1; min-width: 0; height: 100%;
-  font: 500 15px/1 var(--ok-font); color: var(--ok-text);
+  font: 400 15px/1 var(--ok-font); color: var(--ok-text);
 }
+/* 搜索是导航控件，保留略重的文字；表单输入使用常规字重。 */
+.ok-input input[type="search"] { font-weight: 500; }
 .ok-input input::placeholder { color: var(--ok-text-3); }
 .ok-input input::-webkit-search-cancel-button { display: none; }
 .ok-input--pill { border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round; padding: 0 16px; }
@@ -55,7 +57,7 @@
 .ok-input--sm input { font-size: 13px; }
 .ok-input--sm.ok-input--pill { border-radius: var(--ok-r-full); }
 .ok-input--inline { display: inline-flex; vertical-align: middle; }
-.ok-input__affix { display: inline-flex; align-items: center; flex: none; gap: 6px; font: 500 14px/1 var(--ok-font); color: inherit; white-space: nowrap; }
+.ok-input__affix { display: inline-flex; align-items: center; flex: none; gap: 6px; font: 400 14px/1 var(--ok-font); color: inherit; white-space: nowrap; }
 .ok-input__affix .ok-icon { width: 18px; height: 18px; }
 .ok-input__toggle {
   display: grid; place-items: center; flex: none; width: 28px; height: 28px; margin-right: -6px; padding: 0; border: 0;

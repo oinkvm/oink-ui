@@ -16,7 +16,7 @@
   display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: none;
   min-width: 0; max-width: 100%; height: var(--ok-h-md); padding: 0 12px 0 16px; margin: 0; border: 0;
   border-radius: var(--ok-r-full); corner-shape: round; --ok-shape: round;
-  background: var(--ok-fill); color: var(--ok-text); font: 600 14px/1 var(--ok-font); cursor: pointer;
+  background: var(--ok-fill); color: var(--ok-text); font: 400 14px/1 var(--ok-font); cursor: pointer;
   transition: background-color var(--ok-dur-2), transform var(--ok-spring-bouncy-dur) var(--ok-spring-bouncy);
 }
 @media (hover: hover) { .ok-select__trigger:hover:not(:disabled) { background: var(--ok-fill-hover); } }
