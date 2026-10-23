@@ -1,4 +1,4 @@
-import { cloneElement, forwardRef, isValidElement, useEffect, useId, useMemo, useRef } from 'react';
+import { cloneElement, forwardRef, isValidElement, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { HTMLAttributes, ReactElement, ReactNode } from 'react';
 import { Icon, animate, cx } from '../core';
 import { FieldContext } from './fieldContext';
@@ -55,12 +55,17 @@ export const Field = forwardRef<HTMLDivElement, FieldProps>(function Field(
   // 校验失败的那一下：控件横向抖动（原型的 ok-shake）
   const control = useRef<HTMLDivElement>(null);
   const wasInvalid = useRef(invalid);
+  const [composing, setComposing] = useState(false);
   useEffect(() => {
+    // macOS 26.6.2 WKWebView 提交组字会先 deleteCompositionText（临时空值），
+    // 再 insertFromComposition。回车守卫拦不住输入事件；只在组字结束后判断抖动，
+    // 不过滤 onChange、不改写受控输入值，普通编辑的错误反馈仍然即时生效。
+    if (composing) return;
     if (invalid && !wasInvalid.current) {
       animate(control.current, { transform: ['translateX(0)', 'translateX(-7px)', 'translateX(6px)', 'translateX(-4px)', 'translateX(2px)', 'translateX(0)'] }, { duration: 520 });
     }
     wasInvalid.current = invalid;
-  }, [invalid]);
+  }, [invalid, composing]);
 
   const controlProps: FieldControlProps = {
     id,
@@ -91,6 +96,8 @@ export const Field = forwardRef<HTMLDivElement, FieldProps>(function Field(
       data-invalid={invalid ? '' : undefined}
       data-disabled={disabled ? '' : undefined}
       {...rest}
+      onCompositionStartCapture={event => { setComposing(true); rest.onCompositionStartCapture?.(event); }}
+      onCompositionEndCapture={event => { setComposing(false); rest.onCompositionEndCapture?.(event); }}
     >
       {label != null && (
         <label

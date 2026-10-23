@@ -128,6 +128,8 @@ Code that reads the tokens to draw matching shapes (`getComputedStyle(document.d
 
 Text controls cancel an IME-confirmation Enter before caller key handlers or implicit form submission. Both `isComposing` and WebKit's trailing `keyCode === 229` are recognised, including when `compositionend` precedes the keydown. A subsequent ordinary Enter keeps its usual behaviour. This boundary also covers SearchInput, date/colour text editors, NumberInput, Combobox and PIN cells; Form protects raw inputs, and explicit Enter actions ignore the same confirmation key.
 
+Field waits until composition ends before starting its error shake. WKWebView briefly deletes the marked text before inserting the committed text, so live validation can report a temporary empty value even when no form is submitted. Input changes are preserved; a genuinely invalid committed value still shakes, and ordinary editing keeps immediate feedback. This behaviour was verified with macOS 26.6.2 Pinyin in WKWebView.
+
 ## Development
 
 ```bash
