@@ -209,6 +209,27 @@ describe('Menu', () => {
     expect(input).toHaveFocus();
   });
 
+  it('菜单里的输入框正在输入时指针移到菜单项上：项只高亮，不抢走输入框的焦点', async () => {
+    const user = userEvent.setup();
+    render(
+      <Menu aria-label="屏幕">
+        <MenuItem>隐藏</MenuItem>
+        <MenuSeparator />
+        <div data-testid="row"><input aria-label="速度" /></div>
+      </Menu>,
+    );
+    const menu = screen.getByRole('menu', { name: '屏幕' });
+    const item = screen.getByRole('menuitem', { name: '隐藏' });
+    const input = screen.getByRole('textbox', { name: '速度' });
+    await user.click(input);
+    await user.hover(item);
+    expect(input).toHaveFocus();
+    expect(menu).toHaveAttribute('data-hl');
+    await user.hover(screen.getByTestId('row'));
+    expect(input).toHaveFocus();
+    expect(menu).not.toHaveAttribute('data-hl');
+  });
+
   it('图标列：带图标的项标 data-icon，供样式给同一菜单里不带图标的项留出图标位', () => {
     render(
       <Menu aria-label="操作">

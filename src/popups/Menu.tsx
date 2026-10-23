@@ -29,6 +29,7 @@ const MenuContext = createContext<MenuValue | null>(null);
 const ITEM = '[data-ok-item]:not([aria-disabled="true"])';
 /** 所有项，包括禁用项（禁用项自己处理指针：高亮淡出） */
 const ITEM_ANY = '[data-ok-item]';
+const EDITABLE = 'input, textarea, select, [contenteditable=""], [contenteditable="true"]';
 /** 指针停在安全三角里不动超过这么久，就按它脚下的项处理（不会一直卡着） */
 const SETTLE_MS = 150;
 const textOf = (el: HTMLElement) => el.dataset.text ?? el.querySelector('.ok-menu__label')?.textContent ?? el.textContent ?? '';
@@ -253,7 +254,14 @@ const ItemBase = forwardRef<HTMLButtonElement, ItemBaseProps>(function ItemBase(
         if (menu.openSub && menu.openSub !== subId && menu.holding()) return;
         // 禁用项：高亮淡出，不停在上一项
         if (disabled) { menu.clear(); return; }
-        if (document.activeElement !== e.currentTarget) e.currentTarget.focus({ preventScroll: true });
+        const active = document.activeElement;
+        // 菜单里的输入框正在输入：只移高亮、收起别的子菜单，不抢焦点，指针路过不打断输入
+        if (active instanceof HTMLElement && active !== e.currentTarget && active.matches(EDITABLE) && e.currentTarget.closest('.ok-menu')?.contains(active)) {
+          menu.highlight(e.currentTarget);
+          if (!subId && menu.openSub) menu.setOpenSub(null);
+          return;
+        }
+        if (active !== e.currentTarget) e.currentTarget.focus({ preventScroll: true });
       }}
     >
       {renderIcon(icon)}
