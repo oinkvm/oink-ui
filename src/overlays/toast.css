@@ -47,6 +47,8 @@
 .ok-toast__body { flex: 1; display: grid; gap: 2px; min-width: 0; }
 .ok-toast__title { font: 600 14px/1.45 var(--ok-font); overflow-wrap: anywhere; }
 .ok-toast__desc { font: 450 13px/1.5 var(--ok-font); color: var(--ok-text-2); overflow-wrap: anywhere; }
+/* 文字可选中复制，页面整体禁选时也一样；选字不会关闭通知（见 Toast.tsx） */
+.ok-toast__title, .ok-toast__desc { user-select: text; -webkit-user-select: text; cursor: text; }
 .ok-toast__desc:empty { display: none; }
 .ok-toast__action { flex: none; }
 .ok-toast__close { flex: none; margin-right: -4px; color: var(--ok-text-2); }

@@ -102,4 +102,14 @@ describe('overlays 样式', () => {
     }
     expect(rules.some((r) => r.selector === '[data-touch] .ok-toast .ok-toast__action' && r.body.includes('--_h: var(--ok-h-item)'))).toBe(true);
   });
+
+  it('Toast：标题和描述可以选中，页面整体禁选时也一样；文字上是文本光标', () => {
+    const rules = parse(read('toast.css'));
+    for (const selector of ['.ok-toast__title', '.ok-toast__desc']) {
+      const body = rules.filter((r) => r.media === null && r.selector === selector).map((r) => r.body).join(' ');
+      expect(body).toContain('user-select: text');
+      expect(body).toContain('-webkit-user-select: text');
+      expect(body).toContain('cursor: text');
+    }
+  });
 });

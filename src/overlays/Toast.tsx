@@ -122,9 +122,16 @@ interface ToastItemProps {
 
 function ToastItem({ record, position, defaultDuration, pauseOnHover, closeLabel, register }: ToastItemProps) {
   const ref = useRef<HTMLDivElement | null>(null);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
   const [paused, setPaused] = useState(false);
   const hovering = useRef(false);
   const focused = useRef(false);
+  /** 指针正按在标题或描述上（可能马上要拖选） */
+  const pressing = useRef(false);
+  /** 刚在这条通知里选了字（选区在通知里，之后还没在文字以外的地方按下过） */
+  const holding = useRef(false);
+  /** 这次按下是在选字，或按下时通知里正有选区：随后的 click 不关闭通知 */
+  const keepOnClick = useRef(false);
   const duration = record.duration ?? defaultDuration;
   const remain = useRef(duration);
   const { id, leaving } = record;
@@ -166,7 +173,64 @@ function ToastItem({ record, position, defaultDuration, pauseOnHover, closeLabel
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leaving, id]);
 
-  const sync = () => setPaused(hovering.current || focused.current);
+  const sync = () => setPaused(hovering.current || focused.current || pressing.current || holding.current);
+
+  /** 选区的起点或终点在这条通知里（拖选可以从文字拖到通知外面） */
+  const hasSelection = () => {
+    const node = ref.current;
+    const selection = node?.ownerDocument.getSelection();
+    if (!node || !selection || selection.isCollapsed) return false;
+    return node.contains(selection.anchorNode) || node.contains(selection.focusNode);
+  };
+
+  // 文字可以选中复制：按着文字、或刚在通知里选了字时暂停计时，点通知也不关；松开并且选区没了，再交还给悬停规则。
+  // 在文字以外的地方按下就算选完了：页面（或通知外面的容器）禁选时，Chromium 在那里按下不会清掉旧选区，
+  // 只看选区的话，选过字的通知会一直停着、点不掉（WebKit 会清掉，两边结果一样）
+  useEffect(() => {
+    const doc = ref.current?.ownerDocument;
+    const win = doc?.defaultView;
+    if (!doc || !win) return;
+    const onSelectionChange = () => {
+      const next = hasSelection();
+      if (next !== holding.current) { holding.current = next; sync(); }
+    };
+    // 捕获阶段，赶在浏览器为这次按下改选区之前
+    const onPress = (e: PointerEvent) => {
+      const target = e.target as Node | null;
+      const inside = !!target && !!ref.current?.contains(target);
+      const inText = !!target && !!bodyRef.current?.contains(target);
+      // 触屏上点一下文字仍然关闭：触屏靠长按选字，长按不会触发 click
+      keepOnClick.current = inside && ((inText && e.pointerType !== 'touch') || holding.current);
+      if (inText) pressing.current = true;
+      else holding.current = false;
+      sync();
+    };
+    const onRelease = () => {
+      if (!pressing.current) return;
+      pressing.current = false;
+      holding.current = hasSelection();
+      sync();
+    };
+    doc.addEventListener('selectionchange', onSelectionChange);
+    win.addEventListener('pointerdown', onPress, true);
+    win.addEventListener('pointerup', onRelease, true);
+    win.addEventListener('pointercancel', onRelease, true);
+    return () => {
+      doc.removeEventListener('selectionchange', onSelectionChange);
+      win.removeEventListener('pointerdown', onPress, true);
+      win.removeEventListener('pointerup', onRelease, true);
+      win.removeEventListener('pointercancel', onRelease, true);
+    };
+    // 回调里只读 ref，订阅一次就够
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onClick = () => {
+    // 按下之后才拖出来的选区（从留白拖进文字）也算
+    const keep = keepOnClick.current || holding.current;
+    keepOnClick.current = false;
+    if (!keep) dismiss(id);
+  };
   const tone = record.tone && record.tone !== 'neutral' && record.tone !== 'accent' ? record.tone : 'default';
   const live = record.live ?? (record.tone === 'danger' ? 'assertive' : 'polite');
   const closable = record.closable ?? duration <= 0;
@@ -181,7 +245,7 @@ function ToastItem({ record, position, defaultDuration, pauseOnHover, closeLabel
       aria-live={live}
       aria-atomic="true"
       data-leaving={leaving ? '' : undefined}
-      onClick={() => dismiss(id)}
+      onClick={onClick}
       onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); dismiss(id); } }}
       onPointerEnter={pauseOnHover ? () => { hovering.current = true; sync(); } : undefined}
       onPointerLeave={pauseOnHover ? () => { hovering.current = false; sync(); } : undefined}
@@ -193,7 +257,7 @@ function ToastItem({ record, position, defaultDuration, pauseOnHover, closeLabel
           {record.icon ?? <svg className="ok-toast__glyph" viewBox="0 0 20 20">{TOAST_ICON[tone]}</svg>}
         </span>
       )}
-      <div className="ok-toast__body">
+      <div ref={bodyRef} className="ok-toast__body">
         <div className="ok-toast__title">{record.title}</div>
         {hasDescription && <div className="ok-toast__desc">{record.description}</div>}
       </div>
@@ -240,7 +304,10 @@ export interface ToasterProps extends HTMLAttributes<HTMLDivElement> {
   max?: number;
   /** 默认的自动消失时间（ms），默认 4200；0 表示不自动消失 */
   duration?: number;
-  /** 指针停在通知上时暂停计时，默认开。键盘焦点在通知里时总是暂停 */
+  /**
+   * 指针停在通知上时暂停计时，默认开。键盘焦点在通知里、按着通知文字、或通知里有选中的文字时总是暂停。
+   * 标题和描述可以选中复制：点文字、拖选、带着选区点通知都不会关闭它（触屏上点一下文字仍然关闭）
+   */
   pauseOnHover?: boolean;
   /** 到视口边缘的距离（px），默认 20，窄屏 12 */
   offset?: number;

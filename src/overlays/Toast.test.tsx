@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import { Toaster, toast } from './Toast';
 
 afterEach(async () => {
@@ -146,6 +146,156 @@ describe('Toast', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  describe('文字可以选中复制', () => {
+    afterEach(() => { clearSelection(); });
+    /** 像浏览器那样选中一段文字，并发出 selectionchange */
+    function select(node: Node) {
+      act(() => {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const selection = document.getSelection()!;
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.dispatchEvent(new Event('selectionchange'));
+      });
+    }
+    function clearSelection() {
+      act(() => { document.getSelection()?.removeAllRanges(); document.dispatchEvent(new Event('selectionchange')); });
+    }
+    /** jsdom 没有 PointerEvent：用 MouseEvent 补上 pointerType */
+    function pointer(type: 'pointerdown' | 'pointerup', node: Element, pointerType = 'mouse') {
+      const event = new MouseEvent(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'pointerType', { value: pointerType });
+      fireEvent(node, event);
+    }
+    /** 一次完整的点击：按下、松开、click */
+    function press(node: Element, pointerType = 'mouse') {
+      pointer('pointerdown', node, pointerType);
+      pointer('pointerup', node, pointerType);
+      fireEvent.click(node);
+    }
+    function show(options: Parameters<typeof toast>[0], duration?: number) {
+      render(<Toaster duration={duration} />);
+      act(() => { toast(options); });
+      const item = document.querySelector<HTMLElement>('.ok-toast')!;
+      return { item, title: item.querySelector<HTMLElement>('.ok-toast__title')!, desc: item.querySelector<HTMLElement>('.ok-toast__desc')!, icon: item.querySelector<HTMLElement>('.ok-toast__icon')! };
+    }
+    const open = () => document.querySelector('.ok-toast:not([data-leaving])');
+
+    it('点文字、双击、三击、从文字拖选到通知别处，都不关闭', () => {
+      const { item, title, desc } = show({ title: '无法应用布局', description: '甲已离线', duration: 0 });
+      press(title);
+      press(desc); press(desc); fireEvent.dblClick(desc);
+      press(title); press(title); press(title);
+      // 从标题拖到通知的留白处松开：click 落在两者共同的祖先，也就是通知本身
+      pointer('pointerdown', title);
+      select(title);
+      pointer('pointerup', item);
+      fireEvent.click(item);
+      expect(open()).not.toBeNull();
+    });
+
+    it('通知里有选区时点它不关闭（浏览器按下时就清掉了选区也一样）；没有选区时点留白照常关闭', () => {
+      const { icon, title } = show({ title: '无法应用布局', duration: 0 });
+      select(title);
+      pointer('pointerdown', icon);
+      clearSelection();
+      pointer('pointerup', icon);
+      fireEvent.click(icon);
+      expect(open()).not.toBeNull();
+      press(icon);
+      expect(open()).toBeNull();
+    });
+
+    it('页面禁选时浏览器不清旧选区：带着选区点一下留着，再点一下关闭；在通知外按下就恢复计时', () => {
+      vi.useFakeTimers();
+      try {
+        const { icon, title } = show('无法应用布局', 1000);
+        select(title);
+        // 选区一直在（Chromium 在禁选的地方按下不清选区）
+        press(icon);
+        expect(open()).not.toBeNull();
+        press(icon);
+        expect(open()).toBeNull();
+        act(() => { toast('配对失败'); });
+        const next = document.querySelector<HTMLElement>('.ok-toast:not([data-leaving])')!;
+        select(next.querySelector('.ok-toast__title')!);
+        act(() => { vi.advanceTimersByTime(5000); });
+        expect(open()).not.toBeNull();
+        pointer('pointerdown', document.body);
+        pointer('pointerup', document.body);
+        act(() => { vi.advanceTimersByTime(1100); });
+        expect(open()).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('操作按钮和关闭按钮照常工作，有选区时也一样', () => {
+      const undo = vi.fn();
+      const { item, title } = show({ title: '已删除', action: { label: '撤销', onClick: undo } });
+      select(title);
+      press(within(item).getByRole('button', { name: '撤销' }));
+      expect(undo).toHaveBeenCalledTimes(1);
+      expect(open()).toBeNull();
+      act(() => { toast({ title: '配对失败', duration: 0 }); });
+      const next = document.querySelector<HTMLElement>('.ok-toast:not([data-leaving])')!;
+      select(next.querySelector('.ok-toast__title')!);
+      press(within(next).getByRole('button', { name: '关闭' }));
+      expect(open()).toBeNull();
+    });
+
+    it('按着文字或通知里有选区时暂停计时；松开、选区清掉之后按悬停规则接着走', () => {
+      vi.useFakeTimers();
+      try {
+        const { item, title } = show('无法应用布局', 1000);
+        pointer('pointerdown', title);
+        act(() => { vi.advanceTimersByTime(5000); });
+        expect(open()).not.toBeNull();
+        // 拖选到通知外面松开：指针已经离开，选区还在，继续暂停
+        select(title);
+        fireEvent.pointerLeave(item);
+        pointer('pointerup', document.body);
+        act(() => { vi.advanceTimersByTime(5000); });
+        expect(open()).not.toBeNull();
+        // 暂停不靠焦点
+        expect(document.activeElement).toBe(document.body);
+        clearSelection();
+        act(() => { vi.advanceTimersByTime(700); });
+        expect(open()).not.toBeNull();
+        act(() => { vi.advanceTimersByTime(400); });
+        expect(open()).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('选区清掉时指针还停在通知上：继续按悬停暂停', () => {
+      vi.useFakeTimers();
+      try {
+        const { item, title } = show('无法应用布局', 1000);
+        fireEvent.pointerEnter(item);
+        pointer('pointerdown', title);
+        select(title);
+        pointer('pointerup', title);
+        clearSelection();
+        act(() => { vi.advanceTimersByTime(5000); });
+        expect(open()).not.toBeNull();
+        fireEvent.pointerLeave(item);
+        act(() => { vi.advanceTimersByTime(1100); });
+        expect(open()).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('触屏上点一下文字仍然关闭', () => {
+      const { title } = show({ title: '已保存', duration: 0 });
+      press(title, 'touch');
+      expect(open()).toBeNull();
+    });
   });
 
   describe('位置', () => {
